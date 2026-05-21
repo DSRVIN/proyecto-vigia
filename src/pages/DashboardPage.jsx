@@ -1,7 +1,8 @@
-import React, { useMemo } from 'react';
-import { BookOpen, Users, Clock, AlertTriangle, TrendingUp, Star, ChevronRight, Calendar, Award } from 'lucide-react';
+import React, { useMemo, useState, useEffect } from 'react';
+import { BookOpen, Users, Clock, AlertTriangle, TrendingUp, Star, ChevronRight, Calendar, Award, RefreshCw, XCircle } from 'lucide-react';
 import { useApp } from '../context/AppContext.jsx';
 import RiskBadge from '../components/ui/RiskBadge.jsx';
+import { supabase } from '../supabaseClient';
 
 function StatPill({ icon: Icon, label, value, color }) {
   return (
@@ -163,6 +164,106 @@ function GlobalKPIs() {
 export default function DashboardPage() {
   const { state, actions } = useApp();
   const { teacher, courses } = state;
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchStudents = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const { data, error: dbError } = await supabase
+          .from('students')
+          .select('*, grades(pc1, pc2, pc3, pc4, promedio, nota_final, riesgo, necesita_pc4)');
+
+        if (dbError) throw dbError;
+
+        if (data) {
+          const mapped = data.map(st => {
+            const rawGrades = Array.isArray(st.grades) ? st.grades[0] : st.grades;
+
+            const pc1 = rawGrades?.pc1 ?? 0;
+            const pc2 = rawGrades?.pc2 ?? 0;
+            const pc3 = rawGrades?.pc3 ?? 0;
+            const pc4 = rawGrades?.pc4 ?? null;
+
+            const gradesObj = {
+              PC1: pc1,
+              PC2: pc2,
+              PC3: pc3,
+              PC4: pc4
+            };
+
+            return {
+              ...st,
+              cursoId: st.curso_id,
+              PC1: pc1,
+              PC2: pc2,
+              PC3: pc3,
+              PC4: pc4,
+              grades: gradesObj,
+              promedio: rawGrades?.promedio ?? 0,
+              notaFinal: rawGrades?.nota_final ?? 0,
+              riesgo: rawGrades?.riesgo ?? 'BAJO',
+              necesitaPC4: rawGrades?.necesita_pc4 ?? 0,
+              intervenido: st.intervenido ?? false,
+              actividadMensual: st.actividad_mensual || [
+                { mes: 'Feb', accesos: 20 },
+                { mes: 'Mar', accesos: 18 },
+                { mes: 'Abr', accesos: 15 },
+                { mes: 'May', accesos: 10 }
+              ],
+              email: st.email || `${st.codigo?.toLowerCase()}@utp.edu.pe`
+            };
+          });
+
+          actions.setStudents(mapped);
+        }
+      } catch (err) {
+        console.error('Error fetching students:', err);
+        setError('No se pudo cargar la información de estudiantes de Supabase.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchStudents();
+  }, []);
+
+  if (loading && state.students.length === 0) {
+    return (
+      <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 py-8">
+        <div className="flex flex-col gap-4 animate-pulse">
+          <div className="h-10 w-1/3 bg-slate-800 rounded-xl" />
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mt-4">
+            {[...Array(5)].map((_, i) => (
+              <div key={i} className="h-24 bg-slate-800 rounded-xl" />
+            ))}
+          </div>
+          <div className="h-6 w-1/4 bg-slate-800 rounded-xl mt-8" />
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5 mt-4">
+            {[...Array(3)].map((_, i) => (
+              <div key={i} className="h-64 bg-slate-800 rounded-xl" />
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error && state.students.length === 0) {
+    return (
+      <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 py-12 flex flex-col items-center justify-center min-h-[50vh]">
+        <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-2xl flex flex-col items-center max-w-md text-center gap-4">
+          <XCircle className="text-red-400" size={48} />
+          <div>
+            <h3 className="text-lg font-bold text-white">Error de Conexión</h3>
+            <p className="text-sm text-slate-400 mt-1">{error}</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 py-8">

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Eye, EyeOff, Shield, Lock, AlertTriangle, Mail, ArrowRight, RefreshCw, CheckCircle2, XCircle } from 'lucide-react';
 import { useApp } from '../context/AppContext.jsx';
+import { useAuth } from '../hooks/useAuth.js';
 
 // Animated background particles
 function Particles() {
@@ -53,60 +54,47 @@ function EyeLogoBig() {
 
 // ── Login Form ────────────────────────────────────────────────
 function LoginForm() {
-  const { state, actions } = useApp();
+  const { actions } = useApp();
+  const { signIn, loading, error: authError } = useAuth();
   const [codigo, setCodigo] = useState('');
   const [password, setPassword] = useState('');
   const [showPass, setShowPass] = useState(false);
   const [codeError, setCodeError] = useState('');
 
-  const remainingAttempts = 3 - state.loginAttempts;
-
   const validateCode = (val) => {
     if (!val) { setCodeError(''); return; }
-    if (!/^C/.test(val)) setCodeError('Solo identificadores con prefijo "C" son permitidos.');
-    else if (!/^C\d{1,5}$/.test(val)) setCodeError('Formato: C seguido de 5 dígitos (ej. C13005)');
-    else setCodeError('');
+    if (val.includes('@')) {
+      if (!val.endsWith('@utp.edu.pe')) {
+        setCodeError('El correo institucional debe terminar en @utp.edu.pe');
+      } else {
+        setCodeError('');
+      }
+    } else {
+      if (!/^C/.test(val)) setCodeError('Solo identificadores con prefijo "C" o correos @utp.edu.pe son autorizados.');
+      else if (!/^C\d{1,5}$/.test(val)) setCodeError('Formato: C seguido de 5 dígitos (ej. C13005)');
+      else setCodeError('');
+    }
   };
 
   const handleCodeChange = (e) => {
-    const val = e.target.value.toUpperCase();
-    setCodigo(val);
-    validateCode(val);
-    if (state.loginError) actions.clearLoginError();
+    const val = e.target.value;
+    // Auto capitalize if it doesn't contain an email '@' to preserve code UX
+    const processedVal = val.includes('@') ? val : val.toUpperCase();
+    setCodigo(processedVal);
+    validateCode(processedVal);
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!codigo || !password || codeError) return;
-    actions.login(codigo, password);
-  };
+    if (!codigo || !password || codeError || loading) return;
 
-  if (state.accountLocked) {
-    return (
-      <div className="text-center space-y-5 animate-fade-in">
-        <div className="mx-auto w-16 h-16 bg-red-500/20 border border-red-500/40 rounded-full flex items-center justify-center">
-          <Lock size={28} className="text-red-400" />
-        </div>
-        <div>
-          <h3 className="text-lg font-bold text-red-400">Cuenta Bloqueada</h3>
-          <p className="text-sm text-slate-400 mt-1">
-            Se superó el límite de {3} intentos fallidos de inicio de sesión.
-          </p>
-        </div>
-        <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-4 text-sm text-red-300">
-          <p className="font-medium mb-1">⚠ Política de Seguridad UTP</p>
-          <p>Por protección, el acceso ha sido restringido temporalmente. Utilice el flujo de recuperación para restablecer el acceso.</p>
-        </div>
-        <button
-          onClick={actions.initiateRecovery}
-          className="btn-shine w-full py-3 rounded-xl bg-gradient-to-r from-blue-600 to-violet-600 hover:from-blue-500 hover:to-violet-500 text-white font-semibold text-sm transition-all flex items-center justify-center gap-2"
-        >
-          <Mail size={16} />
-          Recuperar acceso por correo institucional
-        </button>
-      </div>
-    );
-  }
+    try {
+      const { user, profile } = await signIn(codigo, password);
+      actions.loginSuccess(user, profile);
+    } catch (err) {
+      console.error('Error de inicio de sesión:', err);
+    }
+  };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-5 animate-fade-in">
@@ -114,22 +102,22 @@ function LoginForm() {
       <div className="flex items-start gap-2.5 bg-blue-500/10 border border-blue-500/30 rounded-lg p-3">
         <Shield size={15} className="text-blue-400 flex-shrink-0 mt-0.5" />
         <p className="text-xs text-blue-300">
-          Acceso restringido a personal docente UTP. Solo identificadores con prefijo <strong>"C"</strong> son autorizados.
+          Acceso restringido a personal docente UTP. Use su código docente con prefijo <strong>"C"</strong> o su correo institucional.
         </p>
       </div>
 
       {/* Error */}
-      {state.loginError && (
+      {authError && (
         <div className="flex items-start gap-2.5 bg-red-500/10 border border-red-500/30 rounded-lg p-3 animate-fade-in">
           <XCircle size={15} className="text-red-400 flex-shrink-0 mt-0.5" />
-          <p className="text-xs text-red-300">{state.loginError}</p>
+          <p className="text-xs text-red-300">{authError}</p>
         </div>
       )}
 
       {/* Código */}
       <div className="space-y-1.5">
         <label className="text-xs font-semibold text-slate-300 uppercase tracking-wider">
-          Código Docente
+          Código Docente o Correo
         </label>
         <div className="relative">
           <input
@@ -137,12 +125,12 @@ function LoginForm() {
             value={codigo}
             onChange={handleCodeChange}
             placeholder="C13005"
-            maxLength={6}
+            disabled={loading}
             className={`input-glow w-full bg-slate-800/80 border rounded-xl px-4 py-3 text-white placeholder-slate-500
               font-mono text-sm tracking-wider outline-none transition-all
               ${codeError ? 'border-red-500/60 focus:border-red-500' : 'border-slate-600/60 focus:border-blue-500/80'}`}
           />
-          {codigo && !codeError && /^C\d{5}$/.test(codigo) && (
+          {codigo && !codeError && (codigo.includes('@') ? codigo.endsWith('@utp.edu.pe') : /^C\d{5}$/.test(codigo)) && (
             <CheckCircle2 size={16} className="absolute right-3 top-3.5 text-emerald-400" />
           )}
           {codeError && (
@@ -162,6 +150,7 @@ function LoginForm() {
             type={showPass ? 'text' : 'password'}
             value={password}
             onChange={e => setPassword(e.target.value)}
+            disabled={loading}
             placeholder="••••••••"
             className="input-glow w-full bg-slate-800/80 border border-slate-600/60 focus:border-blue-500/80 rounded-xl px-4 py-3 pr-12 text-white placeholder-slate-500 text-sm outline-none transition-all"
           />
@@ -175,30 +164,21 @@ function LoginForm() {
         </div>
       </div>
 
-      {/* Attempts warning */}
-      {state.loginAttempts > 0 && remainingAttempts > 0 && (
-        <div className="flex items-center gap-2 text-xs text-amber-400">
-          <AlertTriangle size={13} />
-          <span>Intentos restantes: <strong>{remainingAttempts}</strong> de 3</span>
-          <div className="flex gap-1 ml-auto">
-            {[...Array(3)].map((_, i) => (
-              <div key={i} className={`h-1.5 w-5 rounded-full ${i < (3 - remainingAttempts) ? 'bg-red-500' : 'bg-slate-600'}`} />
-            ))}
-          </div>
-        </div>
-      )}
-
       {/* Submit */}
       <button
         type="submit"
-        disabled={!codigo || !password || !!codeError}
+        disabled={!codigo || !password || !!codeError || loading}
         className="btn-shine w-full py-3.5 rounded-xl bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-500 hover:to-blue-600
           disabled:opacity-40 disabled:cursor-not-allowed text-white font-semibold text-sm transition-all
           flex items-center justify-center gap-2 shadow-lg shadow-blue-900/40"
       >
-        <Shield size={16} />
-        Acceder al Sistema VIGÍA
-        <ArrowRight size={16} />
+        {loading ? (
+          <RefreshCw size={16} className="animate-spin" />
+        ) : (
+          <Shield size={16} />
+        )}
+        {loading ? 'Autenticando...' : 'Acceder al Sistema VIGÍA'}
+        {!loading && <ArrowRight size={16} />}
       </button>
 
       {/* Demo credentials hint */}

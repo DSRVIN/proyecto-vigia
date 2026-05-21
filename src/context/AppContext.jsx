@@ -21,9 +21,9 @@ const initialState = {
   selectedCourse: null,
 
   // Data
-  students: STUDENTS_INITIAL,
+  students: [],
   courses: COURSES_INITIAL,
-  teacher: TEACHER,
+  teacher: { codigo: '', nombre: 'Cargando...', email: '', cargo: '', departamento: '', avatar: null },
 
   // UI
   adminTab: 'students', // 'students' | 'courses' | 'grades'
@@ -35,65 +35,27 @@ function reducer(state, action) {
   switch (action.type) {
 
     // AUTH
-    case 'LOGIN_ATTEMPT': {
-      const { codigo, password } = action.payload;
-      const isValidCode = /^C\d{5}$/.test(codigo);
-      const isCorrectCredentials = isValidCode && codigo === 'C13005' && password === 'Utp2026#';
-
-      if (isCorrectCredentials && !state.accountLocked) {
-        return {
-          ...state,
-          authState: 'authenticated',
-          currentUser: state.teacher,
-          loginAttempts: 0,
-        };
-      }
-
-      const newAttempts = state.loginAttempts + 1;
-      const locked = newAttempts >= 3;
-
+    case 'LOGIN_SUCCESS': {
+      const { profile } = action.payload;
       return {
         ...state,
-        loginAttempts: newAttempts,
-        accountLocked: locked,
-        loginError: !isValidCode
-          ? 'Acceso denegado: Solo identificadores con prefijo "C" son permitidos.'
-          : locked
-          ? 'Cuenta bloqueada por seguridad. Active el flujo de recuperación.'
-          : `Credenciales incorrectas. Intentos restantes: ${3 - newAttempts}`,
+        authState: 'authenticated',
+        currentUser: profile,
+        teacher: profile,
       };
     }
 
-    case 'INITIATE_RECOVERY': {
-      const code = Math.floor(100000 + Math.random() * 900000).toString();
+    case 'SET_STUDENTS':
       return {
         ...state,
-        authState: 'recovery',
-        recoveryCode: code,
-        recoveryEmail: 'c13005@utp.edu.pe',
-        loginError: null,
+        students: action.payload,
       };
-    }
-
-    case 'VERIFY_RECOVERY': {
-      if (action.payload.code === state.recoveryCode) {
-        return {
-          ...state,
-          authState: 'authenticated',
-          currentUser: state.teacher,
-          accountLocked: false,
-          loginAttempts: 0,
-          recoveryCode: null,
-        };
-      }
-      return { ...state, recoveryError: 'Código inválido. Verifique su correo institucional.' };
-    }
 
     case 'LOGOUT':
-      return { ...initialState, students: state.students, courses: state.courses };
-
-    case 'CLEAR_LOGIN_ERROR':
-      return { ...state, loginError: null };
+      return {
+        ...initialState,
+        students: [],
+      };
 
     // NAVIGATION
     case 'SELECT_COURSE':
@@ -191,11 +153,9 @@ export function AppProvider({ children }) {
   const [state, dispatch] = useReducer(reducer, initialState);
 
   const actions = {
-    login: (codigo, password) => dispatch({ type: 'LOGIN_ATTEMPT', payload: { codigo, password } }),
-    initiateRecovery: () => dispatch({ type: 'INITIATE_RECOVERY' }),
-    verifyRecovery: (code) => dispatch({ type: 'VERIFY_RECOVERY', payload: { code } }),
+    loginSuccess: (user, profile) => dispatch({ type: 'LOGIN_SUCCESS', payload: { user, profile } }),
+    setStudents: (students) => dispatch({ type: 'SET_STUDENTS', payload: students }),
     logout: () => dispatch({ type: 'LOGOUT' }),
-    clearLoginError: () => dispatch({ type: 'CLEAR_LOGIN_ERROR' }),
     selectCourse: (course) => dispatch({ type: 'SELECT_COURSE', payload: course }),
     goDashboard: () => dispatch({ type: 'GO_DASHBOARD' }),
     goAdmin: () => dispatch({ type: 'GO_ADMIN' }),
