@@ -1,25 +1,18 @@
 @import "tailwindcss";
 
 @theme {
-  --color-primary-50: #eff6ff;
-  --color-primary-100: #dbeafe;
-  --color-primary-200: #bfdbfe;
-  --color-primary-300: #93c5fd;
-  --color-primary-400: #60a5fa;
-  --color-primary-500: #3b82f6;
-  --color-primary-600: #2563eb;
-  --color-primary-700: #1d4ed8;
-  --color-primary-800: #1e40af;
-  --color-primary-900: #1e3a8a;
-  --color-primary-950: #172554;
+  /* Paleta Oficial UTP e Interfaz */
+  --color-utp-red: #990000;
+  --color-utp-hover: #7a0000;
+  --color-utp-glass: rgba(153, 0, 0, 0.1);
+  
+  --color-primary-50: #fef2f2;
+  --color-primary-500: #990000;
+  --color-primary-600: #7a0000;
 
-  --color-danger-400: #f87171;
-  --color-danger-500: #ef4444;
-  --color-danger-600: #dc2626;
-  --color-warning-400: #fbbf24;
-  --color-warning-500: #f59e0b;
-  --color-success-400: #4ade80;
-  --color-success-500: #22c55e;
+  --color-danger-400: #ef4444;
+  --color-danger-500: #dc2626;
+  --color-success-400: #22c55e;
 
   --font-sans: 'Inter', system-ui, sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
@@ -35,8 +28,12 @@ html {
 
 body {
   font-family: var(--font-sans);
-  background-color: #0f172a;
-  color: #f8fafc;
+  /* Fondo con la foto del campus y un sutil filtro oscuro para que resalte la tarjeta */
+  background: 
+    linear-gradient(rgba(15, 23, 42, 0.55), rgba(15, 23, 42, 0.65)), 
+    url('https://images.unsplash.com/photo-1541339907198-e08756dedf3f?q=80&w=1920') no-repeat center center fixed;
+  background-size: cover;
+  color: #1e293b;
   margin: 0;
   padding: 0;
   min-height: 100vh;
@@ -48,117 +45,40 @@ body {
   min-height: 100vh;
 }
 
-/* Custom scrollbar */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-::-webkit-scrollbar-track {
-  background: #1e293b;
-}
-::-webkit-scrollbar-thumb {
-  background: #334155;
-  border-radius: 3px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: #475569;
-}
-
-/* Animations */
+/* Animación de entrada suave */
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(8px); }
+  from { opacity: 0; transform: translateY(12px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
-@keyframes slideInLeft {
-  from { opacity: 0; transform: translateX(-20px); }
-  to { opacity: 1; transform: translateX(0); }
-}
-
-@keyframes pulse-slow {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
-}
-
-@keyframes shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
-}
-
-@keyframes scanline {
-  0% { transform: translateY(-100%); }
-  100% { transform: translateY(100vh); }
-}
-
-@keyframes blink {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0; }
-}
-
 .animate-fade-in {
-  animation: fadeIn 0.4s ease-out both;
+  animation: fadeIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
-.animate-shimmer {
-  animation: shimmer 2s infinite linear;
-}
-
-.animate-slide-in-left {
-  animation: slideInLeft 0.3s ease-out both;
-}
-
-.skeleton {
-  background: linear-gradient(
-    90deg,
-    #1e293b 25%,
-    #334155 50%,
-    #1e293b 75%
-  );
-  background-size: 200% 100%;
-  animation: shimmer 1.5s infinite;
-  border-radius: 6px;
-}
-
-/* Glass card effect */
+/* El cuadro del Form: Tono blanco/hueso translúcido impecable */
 .glass-card {
-  background: rgba(30, 41, 59, 0.8);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(148, 163, 184, 0.1);
+  background: rgba(248, 250, 252, 0.94);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35);
 }
 
-/* Risk badge glow */
-.risk-critical {
-  box-shadow: 0 0 12px rgba(239, 68, 68, 0.4);
+/* Inputs claros adaptados al cuadro blanco */
+.input-glow {
+  background-color: rgba(241, 245, 249, 0.8) !important;
+  border: 1px solid #cbd5e1 !important;
+  color: #0f172a !important;
 }
 
-.risk-high {
-  box-shadow: 0 0 12px rgba(245, 158, 11, 0.3);
-}
-
-/* Gradient text */
-.gradient-text {
-  background: linear-gradient(135deg, #60a5fa, #a78bfa);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-/* Eye pulse for logo */
-@keyframes eye-pulse {
-  0%, 100% { transform: scale(1); filter: drop-shadow(0 0 8px rgba(96, 165, 250, 0.6)); }
-  50% { transform: scale(1.05); filter: drop-shadow(0 0 16px rgba(96, 165, 250, 0.9)); }
-}
-
-.eye-logo {
-  animation: eye-pulse 3s ease-in-out infinite;
-}
-
-/* Input focus glow */
+/* Focus elegante con aura Guinda UTP */
 .input-glow:focus {
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3), 0 0 20px rgba(59, 130, 246, 0.1);
+  border-color: var(--color-utp-red) !important;
+  background-color: #ffffff !important;
+  box-shadow: 0 0 0 4px var(--color-utp-glass), 0 4px 10px rgba(0, 0, 0, 0.02);
 }
 
-/* Button shine effect */
+/* Efecto destello elegante al pasar el mouse por el botón */
 .btn-shine {
   position: relative;
   overflow: hidden;
@@ -170,24 +90,10 @@ body {
   left: -75%;
   width: 50%;
   height: 200%;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.25), transparent);
   transform: skewX(-20deg);
   transition: 0.6s;
 }
 .btn-shine:hover::after {
   left: 125%;
-}
-
-/* Modal backdrop */
-.modal-backdrop {
-  backdrop-filter: blur(8px);
-  background: rgba(0, 0, 0, 0.7);
-}
-
-/* Recharts custom tooltip */
-.recharts-tooltip-wrapper .recharts-default-tooltip {
-  background: #1e293b !important;
-  border: 1px solid #334155 !important;
-  border-radius: 8px !important;
-  color: #f8fafc !important;
 }
