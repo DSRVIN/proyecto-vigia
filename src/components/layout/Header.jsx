@@ -1,57 +1,16 @@
 import React from 'react';
-import { Eye, GraduationCap, Shield, Bell, LogOut, Settings, LayoutDashboard, ChevronRight } from 'lucide-react';
+import { Bell, LogOut, Settings, LayoutDashboard, ChevronRight } from 'lucide-react';
 import { useApp } from '../../context/AppContext.jsx';
-
-function EyeLogo({ size = 36 }) {
-  return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 48 48"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      className="eye-logo flex-shrink-0"
-    >
-      <defs>
-        <radialGradient id="eyeGrad" cx="50%" cy="50%" r="50%">
-          <stop offset="0%" stopColor="#60a5fa" />
-          <stop offset="100%" stopColor="#a78bfa" />
-        </radialGradient>
-        <filter id="eyeGlow">
-          <feGaussianBlur stdDeviation="1.5" result="blur" />
-          <feMerge>
-            <feMergeNode in="blur" />
-            <feMergeNode in="SourceGraphic" />
-          </feMerge>
-        </filter>
-      </defs>
-      {/* Outer eye shape */}
-      <path
-        d="M4 24 C12 10 36 10 44 24 C36 38 12 38 4 24Z"
-        stroke="url(#eyeGrad)"
-        strokeWidth="2"
-        fill="none"
-        filter="url(#eyeGlow)"
-      />
-      {/* Iris */}
-      <circle cx="24" cy="24" r="8" fill="url(#eyeGrad)" opacity="0.9" />
-      {/* Pupil */}
-      <circle cx="24" cy="24" r="4" fill="#0f172a" />
-      {/* Pupil highlight */}
-      <circle cx="26" cy="22" r="1.5" fill="white" opacity="0.8" />
-      {/* Eyelashes top */}
-      <line x1="16" y1="11" x2="16" y2="8" stroke="#60a5fa" strokeWidth="1.5" strokeLinecap="round" opacity="0.6" />
-      <line x1="24" y1="9" x2="24" y2="6" stroke="#60a5fa" strokeWidth="1.5" strokeLinecap="round" opacity="0.6" />
-      <line x1="32" y1="11" x2="32" y2="8" stroke="#60a5fa" strokeWidth="1.5" strokeLinecap="round" opacity="0.6" />
-    </svg>
-  );
-}
 
 export default function Header() {
   const { state, actions } = useApp();
   const { currentUser, currentView, selectedCourse } = state;
 
   const criticalCount = state.students.filter(s => s.riesgo === 'CRITICO').length;
+  
+  const isDashboard = currentView === 'dashboard';
+  const toggleButtonLabel = isDashboard ? 'Vista Admin' : 'Volver al Dashboard';
+  const ToggleIcon = isDashboard ? Settings : LayoutDashboard;
 
   const getBreadcrumb = () => {
     if (currentView === 'dashboard') return null;
@@ -66,43 +25,29 @@ export default function Header() {
   const breadcrumb = getBreadcrumb();
 
   return (
-    <header className="sticky top-0 z-40 glass-card border-b border-slate-700/50 shadow-2xl">
+    <header className="sticky top-0 z-50 bg-white border-b border-slate-200 shadow-sm">
       <div className="max-w-screen-2xl mx-auto px-4 sm:px-6">
         <div className="flex items-center justify-between h-16">
-
-          {/* Logo + Brand */}
-          <div className="flex items-center gap-3">
-            <button
-              onClick={actions.goDashboard}
-              className="flex items-center gap-3 group"
-            >
-              <EyeLogo size={38} />
-              <div className="leading-tight">
-                <span className="text-2xl font-black gradient-text tracking-tight">VIGÍA</span>
-                <p className="text-xs text-slate-400 font-medium hidden sm:block">
-                  Sistema de Alerta Temprana
-                </p>
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-1 cursor-pointer select-none" onClick={actions.goDashboard}>
+              <div className="flex gap-0.5">
+                <span className="bg-slate-900 text-white w-7 h-7 flex items-center justify-center rounded-sm font-black text-sm border border-slate-950">U</span>
+                <span className="bg-slate-900 text-white w-7 h-7 flex items-center justify-center rounded-sm font-black text-sm border border-slate-950">T</span>
+                <span className="bg-slate-900 text-white w-7 h-7 flex items-center justify-center rounded-sm font-black text-sm border border-slate-950">P</span>
               </div>
-            </button>
+              <span className="text-[#d32f2f] font-black text-xl mx-1">+</span>
+              <span className="text-slate-900 font-black text-xl tracking-tight">VIGÍA</span>
+            </div>
 
-            {/* Breadcrumb */}
             {breadcrumb && (
-              <div className="hidden md:flex items-center gap-1.5 ml-4 text-sm text-slate-400">
-                <span className="text-slate-600 mx-1">|</span>
+              <div className="hidden md:flex items-center gap-2 ml-4 text-sm font-bold text-slate-400 border-l border-slate-200 pl-4">
                 {breadcrumb.map((crumb, i) => (
                   <React.Fragment key={i}>
-                    {i > 0 && <ChevronRight size={14} className="text-slate-600" />}
+                    {i > 0 && <ChevronRight size={14} className="text-slate-300" />}
                     {crumb.action ? (
-                      <button
-                        onClick={crumb.action}
-                        className="hover:text-blue-400 transition-colors"
-                      >
-                        {crumb.label}
-                      </button>
+                      <button onClick={crumb.action} className="hover:text-blue-600 transition-colors">{crumb.label}</button>
                     ) : (
-                      <span className="text-slate-300 font-medium truncate max-w-48">
-                        {crumb.label}
-                      </span>
+                      <span className="text-slate-700">{crumb.label}</span>
                     )}
                   </React.Fragment>
                 ))}
@@ -110,74 +55,35 @@ export default function Header() {
             )}
           </div>
 
-          {/* Right side */}
           {currentUser && (
-            <div className="flex items-center gap-2">
-              {/* Alert bell */}
-              <button 
-                onClick={actions.toggleNotifications}
-                className="relative p-2 rounded-lg hover:bg-slate-700/60 transition-colors text-slate-400 hover:text-slate-200"
-              >
+            <div className="flex items-center gap-4">
+              <button onClick={actions.toggleNotifications} className="relative p-2 text-slate-500 hover:text-[#d32f2f] hover:bg-red-50 rounded-lg transition-colors">
                 <Bell size={18} />
-                {criticalCount > 0 && (
-                  <span className="absolute top-1 right-1 h-4 w-4 bg-red-500 rounded-full text-xs flex items-center justify-center text-white font-bold leading-none">
-                    {criticalCount}
-                  </span>
-                )}
+                {criticalCount > 0 && <span className="absolute top-1.5 right-1.5 h-4 w-4 bg-[#d32f2f] rounded-full text-[10px] flex items-center justify-center text-white font-black">{criticalCount}</span>}
               </button>
 
-              {/* Admin Panel */}
-              <button
-                onClick={actions.goAdmin}
-                className={`hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all
-                  ${currentView === 'admin'
-                    ? 'bg-blue-500/20 text-blue-400 border border-blue-500/40'
-                    : 'text-slate-400 hover:bg-slate-700/60 hover:text-slate-200'
-                  }`}
-              >
-                <Settings size={15} />
-                <span>Admin</span>
+              <div className="h-6 w-px bg-slate-300" />
+
+              <button onClick={isDashboard ? actions.goAdmin : actions.goDashboard} className="flex items-center gap-2 text-xs font-black uppercase tracking-wider px-3 py-1.5 rounded-lg text-slate-500 hover:bg-slate-100 hover:text-slate-900 transition-all border border-transparent hover:border-slate-200">
+                <ToggleIcon size={14} />
+                {toggleButtonLabel}
               </button>
 
-              {/* Dashboard */}
-              <button
-                onClick={actions.goDashboard}
-                className={`hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all
-                  ${currentView === 'dashboard'
-                    ? 'bg-blue-500/20 text-blue-400 border border-blue-500/40'
-                    : 'text-slate-400 hover:bg-slate-700/60 hover:text-slate-200'
-                  }`}
-              >
-                <LayoutDashboard size={15} />
-                <span>Dashboard</span>
-              </button>
-
-              {/* User avatar */}
-              <div className="flex items-center gap-2 ml-1 pl-3 border-l border-slate-700/60">
-                <div className="h-8 w-8 rounded-full bg-gradient-to-br from-blue-500 to-violet-600 flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
-                  {currentUser.nombre?.split(' ').map(n => n[0]).slice(0, 2).join('')}
+              <div className="flex items-center gap-3 pl-3 border-l border-slate-200">
+                <div className="text-right hidden lg:block">
+                  {/* AQUÍ TOMA EL NOMBRE REAL DEL USUARIO */}
+                  <p className="text-xs font-black text-slate-900">{currentUser.nombre || 'Usuario'}</p>
+                  <p className="text-[10px] text-slate-400 font-mono font-bold">{currentUser.codigo}</p>
                 </div>
-                <div className="hidden lg:block">
-                  <p className="text-xs font-semibold text-slate-200 leading-tight">
-                    {currentUser.nombre?.split(' ').slice(0, 2).join(' ')}
-                  </p>
-                  <p className="text-xs text-slate-500">{currentUser.codigo}</p>
-                </div>
-                <button
-                  onClick={actions.logout}
-                  title="Cerrar sesión"
-                  className="ml-1 p-1.5 rounded-lg text-slate-500 hover:text-red-400 hover:bg-red-500/10 transition-all"
-                >
-                  <LogOut size={15} />
+                <button onClick={actions.logout} className="p-2 text-slate-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors">
+                  <LogOut size={16} />
                 </button>
               </div>
             </div>
           )}
         </div>
       </div>
-
-      {/* Security bar */}
-      <div className="h-0.5 bg-gradient-to-r from-blue-900 via-blue-500 to-violet-600" />
+      <div className="h-0.5 bg-gradient-to-r from-slate-900 to-[#d32f2f]" />
     </header>
   );
 }

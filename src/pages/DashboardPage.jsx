@@ -1,19 +1,21 @@
 import React, { useMemo, useState, useEffect } from 'react';
-import { BookOpen, Users, Clock, AlertTriangle, TrendingUp, Star, ChevronRight, Calendar, Award, RefreshCw, XCircle } from 'lucide-react';
+import { BookOpen, Users, Clock, AlertTriangle, TrendingUp, Star, ChevronRight, Calendar, Award } from 'lucide-react';
 import { useApp } from '../context/AppContext.jsx';
 import RiskBadge from '../components/ui/RiskBadge.jsx';
 import { supabase } from '../supabaseClient';
 
+// Componente de píldora de estadísticas
 function StatPill({ icon: Icon, label, value, color }) {
   return (
-    <div className={`flex items-center gap-2 px-3 py-2 rounded-lg bg-slate-800/60 border border-slate-700/40`}>
+    <div className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-slate-50 border border-slate-200">
       <Icon size={14} className={color} />
-      <span className="text-xs text-slate-400">{label}:</span>
+      <span className="text-xs text-slate-600">{label}:</span>
       <span className={`text-xs font-bold ${color}`}>{value}</span>
     </div>
   );
 }
 
+// Tarjeta de Curso
 function CourseCard({ course, onClick }) {
   const { state } = useApp();
 
@@ -42,77 +44,72 @@ function CourseCard({ course, onClick }) {
   return (
     <div
       onClick={() => onClick(course)}
-      className="glass-card rounded-2xl p-6 cursor-pointer group hover:border-blue-500/40 hover:shadow-blue-900/20 hover:shadow-xl transition-all duration-300 border border-slate-700/30 hover:-translate-y-1"
+      className="bg-white border border-slate-200 rounded-2xl p-6 cursor-pointer group hover:border-[#d32f2f]/40 hover:shadow-xl transition-all duration-300 active:scale-[0.99] hover:-translate-y-1 shadow-md"
     >
-      {/* Top row */}
       <div className="flex items-start justify-between mb-4">
         <div className="flex-1">
-          <div className="flex items-center gap-2 mb-1">
-            <span className="text-xs font-mono text-slate-500 bg-slate-800/60 px-2 py-0.5 rounded">
+          <div className="flex items-center gap-2 mb-1.5">
+            <span className="text-xs font-mono text-slate-700 bg-slate-100 px-2 py-0.5 rounded font-bold border border-slate-200">
               {course.codigo} · {course.seccion}
             </span>
             <RiskBadge level={riskLevel} size="xs" />
           </div>
-          <h3 className="text-base font-bold text-slate-100 group-hover:text-blue-300 transition-colors leading-snug">
+          <h3 className="text-base font-black text-slate-900 group-hover:text-[#d32f2f] transition-colors leading-snug">
             {course.nombre}
           </h3>
         </div>
-        <div className="ml-3 p-2.5 rounded-xl bg-blue-500/10 border border-blue-500/20 group-hover:bg-blue-500/20 transition-all flex-shrink-0">
-          <BookOpen size={20} className="text-blue-400" />
+        <div className="ml-3 p-2.5 rounded-xl bg-red-50 border border-red-100 group-hover:bg-red-100 transition-all flex-shrink-0">
+          <BookOpen size={20} className="text-[#d32f2f]" />
         </div>
       </div>
 
-      {/* Meta info */}
       <div className="flex flex-wrap gap-2 mb-5">
-        <StatPill icon={Calendar} label="Horario" value={course.horario} color="text-slate-400" />
-        <StatPill icon={Award} label="Créditos" value={`${course.creditos} cr`} color="text-violet-400" />
+        <StatPill icon={Calendar} label="Horario" value={course.horario} color="text-slate-700" />
+        <StatPill icon={Award} label="Créditos" value={`${course.creditos} cr`} color="text-violet-700" />
       </div>
 
-      {/* KPI grid */}
-      <div className="grid grid-cols-4 gap-3 mb-5">
-        <div className="text-center">
-          <p className="text-xl font-black text-white">{stats.total}</p>
-          <p className="text-xs text-slate-500 mt-0.5">Alumnos</p>
+      <div className="grid grid-cols-4 gap-2 text-center bg-slate-50 border border-slate-200 rounded-xl py-3 mb-5 shadow-inner">
+        <div>
+          <p className="text-lg font-black text-slate-900">{stats.total}</p>
+          <p className="text-[11px] text-slate-500 font-bold uppercase tracking-wider">Alumnos</p>
         </div>
-        <div className="text-center">
-          <p className={`text-xl font-black ${stats.criticos > 0 ? 'text-red-400' : 'text-slate-400'}`}>{stats.criticos}</p>
-          <p className="text-xs text-slate-500 mt-0.5">Críticos</p>
+        <div>
+          <p className={`text-lg font-black ${stats.criticos > 0 ? 'text-[#d32f2f]' : 'text-slate-400'}`}>{stats.criticos}</p>
+          <p className="text-[11px] text-slate-500 font-bold uppercase tracking-wider">Críticos</p>
         </div>
-        <div className="text-center">
-          <p className="text-xl font-black text-white">{stats.promedio}</p>
-          <p className="text-xs text-slate-500 mt-0.5">Promedio</p>
+        <div>
+          <p className="text-lg font-black text-slate-900">{stats.promedio}</p>
+          <p className="text-[11px] text-slate-500 font-bold uppercase tracking-wider">Promedio</p>
         </div>
-        <div className="text-center">
-          <p className={`text-xl font-black ${stats.asistenciaAvg < 65 ? 'text-amber-400' : 'text-emerald-400'}`}>
+        <div>
+          <p className={`text-lg font-black ${stats.asistenciaAvg < 65 ? 'text-amber-600' : 'text-emerald-600'}`}>
             {stats.asistenciaAvg}%
           </p>
-          <p className="text-xs text-slate-500 mt-0.5">Asistencia</p>
+          <p className="text-[11px] text-slate-500 font-bold uppercase tracking-wider">Asist.</p>
         </div>
       </div>
 
-      {/* Health bar */}
       <div className="space-y-1.5">
         <div className="flex justify-between text-xs">
-          <span className="text-slate-500">Salud académica del aula</span>
-          <span className={`font-semibold ${healthPct >= 70 ? 'text-emerald-400' : healthPct >= 50 ? 'text-amber-400' : 'text-red-400'}`}>
+          <span className="text-slate-500 font-bold">Salud académica del aula</span>
+          <span className={`font-black ${healthPct >= 70 ? 'text-emerald-600' : healthPct >= 50 ? 'text-amber-600' : 'text-[#d32f2f]'}`}>
             {healthPct}%
           </span>
         </div>
-        <div className="h-2 bg-slate-800 rounded-full overflow-hidden">
+        <div className="h-2 bg-slate-200 rounded-full overflow-hidden">
           <div
             className={`h-full rounded-full transition-all duration-700 ${
-              healthPct >= 70 ? 'bg-gradient-to-r from-emerald-500 to-teal-400' :
+              healthPct >= 70 ? 'bg-gradient-to-r from-emerald-600 to-teal-500' :
               healthPct >= 50 ? 'bg-gradient-to-r from-amber-500 to-yellow-400' :
-              'bg-gradient-to-r from-red-600 to-red-400'
+              'bg-gradient-to-r from-[#d32f2f] to-red-400'
             }`}
             style={{ width: `${healthPct}%` }}
           />
         </div>
       </div>
 
-      {/* CTA */}
-      <div className="flex items-center justify-end mt-4 pt-3 border-t border-slate-700/40">
-        <span className="text-xs text-blue-400 font-medium group-hover:translate-x-1 transition-transform flex items-center gap-1">
+      <div className="flex items-center justify-end mt-4 pt-3 border-t border-slate-100">
+        <span className="text-xs text-[#d32f2f] font-black uppercase tracking-wider group-hover:translate-x-1 transition-transform flex items-center gap-1">
           Ver sección completa <ChevronRight size={14} />
         </span>
       </div>
@@ -120,7 +117,7 @@ function CourseCard({ course, onClick }) {
   );
 }
 
-// Global stats banner
+// Banners de KPIs Globales
 function GlobalKPIs() {
   const { state, actions } = useApp();
 
@@ -134,11 +131,11 @@ function GlobalKPIs() {
   }, [state.students]);
 
   const kpis = [
-    { label: 'Total Estudiantes', value: stats.total, icon: Users, color: 'text-blue-400', bg: 'bg-blue-500/10', border: 'border-blue-500/20', filterId: 'ALL' },
-    { label: 'Riesgo Crítico', value: stats.criticos, icon: AlertTriangle, color: 'text-red-400', bg: 'bg-red-500/10', border: 'border-red-500/20', filterId: 'CRITICO' },
-    { label: 'Riesgo Alto', value: stats.altos, icon: TrendingUp, color: 'text-amber-400', bg: 'bg-amber-500/10', border: 'border-amber-500/20', filterId: 'ALTO' },
-    { label: 'Posible Abandono', value: stats.abandono, icon: Clock, color: 'text-violet-400', bg: 'bg-violet-500/10', border: 'border-violet-500/20', filterId: 'ABANDONO' },
-    { label: 'Aprobados', value: stats.aprobados, icon: Star, color: 'text-emerald-400', bg: 'bg-emerald-500/10', border: 'border-emerald-500/20', filterId: 'APROBADOS' },
+    { label: 'Total Estudiantes', value: stats.total, icon: Users, color: 'text-slate-900', badgeColor: 'text-blue-600 bg-blue-50 border-blue-100', filterId: 'ALL' },
+    { label: 'Riesgo Crítico', value: stats.criticos, icon: AlertTriangle, color: 'text-[#d32f2f]', badgeColor: 'text-[#d32f2f] bg-red-50 border-red-100', filterId: 'CRITICO' },
+    { label: 'Riesgo Alto', value: stats.altos, icon: TrendingUp, color: 'text-amber-600', badgeColor: 'text-amber-600 bg-amber-50 border-amber-100', filterId: 'ALTO' },
+    { label: 'Posible Abandono', value: stats.abandono, icon: Clock, color: 'text-violet-600', badgeColor: 'text-violet-600 bg-violet-50 border-violet-100', filterId: 'ABANDONO' },
+    { label: 'Aprobados', value: stats.aprobados, icon: Star, color: 'text-emerald-600', badgeColor: 'text-emerald-600 bg-emerald-50 border-emerald-100', filterId: 'APROBADOS' },
   ];
 
   return (
@@ -147,23 +144,26 @@ function GlobalKPIs() {
         <div 
           key={kpi.label} 
           onClick={() => actions.setKPIFilter(kpi.filterId)}
-          className={`glass-card rounded-xl p-4 border ${kpi.border} ${kpi.bg} animate-fade-in cursor-pointer group hover:-translate-y-1 hover:shadow-lg transition-all duration-300`}
+          className="rounded-xl p-4 border border-slate-200 bg-white animate-fade-in cursor-pointer group hover:-translate-y-1 hover:shadow-lg transition-all duration-300 shadow-md"
           style={{ animationDelay: `${i * 50}ms` }}
         >
           <div className="flex items-center justify-between mb-2">
-            <p className={`text-xs text-slate-400 font-medium leading-tight group-hover:${kpi.color} transition-colors`}>{kpi.label}</p>
-            <kpi.icon size={16} className={`${kpi.color} group-hover:scale-110 transition-transform`} />
+            <p className="text-xs text-slate-500 font-black uppercase tracking-wider leading-tight group-hover:text-slate-900 transition-colors">{kpi.label}</p>
+            <div className={`p-1.5 rounded-lg border ${kpi.badgeColor}`}>
+              <kpi.icon size={14} className="group-hover:scale-110 transition-transform" />
+            </div>
           </div>
-          <p className={`text-3xl font-black ${kpi.color}`}>{kpi.value}</p>
+          <p className={`text-2xl font-black ${kpi.color}`}>{kpi.value}</p>
         </div>
       ))}
     </div>
   );
 }
 
+// ── Dashboard Principal ───────────────────────────────────────
 export default function DashboardPage() {
   const { state, actions } = useApp();
-  const { teacher, courses } = state;
+  const { teacher, courses, currentUser } = state; // Se añadió currentUser aquí
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -181,47 +181,19 @@ export default function DashboardPage() {
         if (data) {
           const mapped = data.map(st => {
             const rawGrades = Array.isArray(st.grades) ? st.grades[0] : st.grades;
-
-            const pc1 = rawGrades?.pc1 ?? 0;
-            const pc2 = rawGrades?.pc2 ?? 0;
-            const pc3 = rawGrades?.pc3 ?? 0;
-            const pc4 = rawGrades?.pc4 ?? null;
-
-            const gradesObj = {
-              PC1: pc1,
-              PC2: pc2,
-              PC3: pc3,
-              PC4: pc4
-            };
-
             return {
               ...st,
               cursoId: st.curso_id,
-              PC1: pc1,
-              PC2: pc2,
-              PC3: pc3,
-              PC4: pc4,
-              grades: gradesObj,
               promedio: rawGrades?.promedio ?? 0,
               notaFinal: rawGrades?.nota_final ?? 0,
               riesgo: rawGrades?.riesgo ?? 'BAJO',
-              necesitaPC4: rawGrades?.necesita_pc4 ?? 0,
-              intervenido: st.intervenido ?? false,
-              actividadMensual: st.actividad_mensual || [
-                { mes: 'Feb', accesos: 20 },
-                { mes: 'Mar', accesos: 18 },
-                { mes: 'Abr', accesos: 15 },
-                { mes: 'May', accesos: 10 }
-              ],
               email: st.email || `${st.codigo?.toLowerCase()}@utp.edu.pe`
             };
           });
-
           actions.setStudents(mapped);
         }
       } catch (err) {
         console.error('Error fetching students:', err);
-        setError('No se pudo cargar la información de estudiantes de Supabase.');
       } finally {
         setLoading(false);
       }
@@ -230,88 +202,45 @@ export default function DashboardPage() {
     fetchStudents();
   }, []);
 
-  if (loading && state.students.length === 0) {
-    return (
-      <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 py-8">
-        <div className="flex flex-col gap-4 animate-pulse">
-          <div className="h-10 w-1/3 bg-slate-800 rounded-xl" />
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mt-4">
-            {[...Array(5)].map((_, i) => (
-              <div key={i} className="h-24 bg-slate-800 rounded-xl" />
-            ))}
-          </div>
-          <div className="h-6 w-1/4 bg-slate-800 rounded-xl mt-8" />
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5 mt-4">
-            {[...Array(3)].map((_, i) => (
-              <div key={i} className="h-64 bg-slate-800 rounded-xl" />
-            ))}
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (error && state.students.length === 0) {
-    return (
-      <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 py-12 flex flex-col items-center justify-center min-h-[50vh]">
-        <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-2xl flex flex-col items-center max-w-md text-center gap-4">
-          <XCircle className="text-red-400" size={48} />
-          <div>
-            <h3 className="text-lg font-bold text-white">Error de Conexión</h3>
-            <p className="text-sm text-slate-400 mt-1">{error}</p>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 py-8">
-      {/* Welcome banner */}
-      <div className="mb-8 animate-fade-in">
-        <div className="flex items-start justify-between">
+    <div className="min-h-screen bg-slate-100 text-slate-900 pb-12">
+      <main className="max-w-screen-2xl mx-auto px-4 sm:px-6 py-8">
+        
+        {/* Banner de Bienvenida Dinámico */}
+        <div className="mb-8 animate-fade-in">
+          <div className="flex items-start justify-between">
+            <div>
+              <p className="text-xs text-[#d32f2f] font-black uppercase tracking-widest mb-1">
+                Bienvenido de vuelta
+              </p>
+              <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
+                {/* Nombre dinámico tomado del currentUser */}
+                {currentUser?.nombre ? `Docente ${currentUser.nombre}` : 'Dashboard Académico'}
+              </h1>
+              <p className="text-slate-600 text-xs mt-1.5 font-bold bg-white border border-slate-200 px-3 py-1.5 rounded-lg w-fit shadow-sm">
+                {teacher.departamento || 'Dirección de Tecnología Educativa'} <span className="text-slate-300">·</span> {teacher.cargo || 'Docente'} <span className="text-slate-300">·</span> <span className="text-[#d32f2f] font-black">Ciclo 2026-I</span>
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <GlobalKPIs />
+
+        <div className="mb-4 flex items-center justify-between">
           <div>
-            <p className="text-sm text-blue-400 font-semibold uppercase tracking-widest mb-1">
-              Bienvenido de vuelta
-            </p>
-            <h1 className="text-2xl sm:text-3xl font-black text-white">
-              {teacher.nombre}
-            </h1>
-            <p className="text-slate-400 text-sm mt-1">
-              {teacher.departamento} · {teacher.cargo} · Ciclo 2026-I
-            </p>
-          </div>
-          <div className="hidden md:flex items-center gap-2 px-4 py-2 bg-emerald-500/10 border border-emerald-500/20 rounded-xl">
-            <div className="h-2 w-2 bg-emerald-500 rounded-full animate-pulse" />
-            <span className="text-xs text-emerald-400 font-semibold">Sistema activo</span>
+            <h2 className="text-lg font-black text-slate-900 tracking-tight">Mis Secciones</h2>
+            <p className="text-sm text-slate-600 font-bold">{courses.length} cursos asignados este ciclo</p>
           </div>
         </div>
-      </div>
 
-      {/* Global KPIs */}
-      <GlobalKPIs />
-
-      {/* Course grid */}
-      <div className="mb-4 flex items-center justify-between">
-        <div>
-          <h2 className="text-lg font-bold text-white">Mis Secciones</h2>
-          <p className="text-sm text-slate-500">{courses.length} cursos asignados este ciclo</p>
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+          {courses.map((course, i) => (
+            <div key={course.id} style={{ animationDelay: `${i * 80}ms` }} className="animate-fade-in">
+              <CourseCard course={course} onClick={actions.selectCourse} />
+            </div>
+          ))}
         </div>
-        <button
-          onClick={actions.goAdmin}
-          className="text-xs text-blue-400 hover:text-blue-300 font-medium transition-colors flex items-center gap-1"
-        >
-          Gestionar cursos <ChevronRight size={14} />
-        </button>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
-        {courses.map((course, i) => (
-          <div key={course.id} style={{ animationDelay: `${i * 80}ms` }} className="animate-fade-in">
-            <CourseCard course={course} onClick={actions.selectCourse} />
-          </div>
-        ))}
-      </div>
+      </main>
     </div>
   );
 }
