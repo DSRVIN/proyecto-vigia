@@ -3,7 +3,9 @@
 // Motor de cálculo académico UTP
 // ============================================================
 
-import { calcPromedio, notaVisual, calcRiesgo, notaNecesariaPC4 } from '../services/metrics.service.js';
+import { calcPromedio, notaVisual, calcRiesgo, notaNecesariaPC4, ROUND_THRESHOLD, MIN_APPROVAL } from '../services/metrics.service.js';
+
+export { notaNecesariaPC4, ROUND_THRESHOLD, MIN_APPROVAL };
 
 // Génera historial de actividad mensual
 function genActividad(base) {
