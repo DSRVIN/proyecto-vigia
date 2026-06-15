@@ -1,5 +1,5 @@
 import React from 'react';
-import { Bell, LogOut, Settings, LayoutDashboard, ChevronRight } from 'lucide-react';
+import { Bell, LogOut, Settings, LayoutDashboard, ChevronRight, Headphones } from 'lucide-react';
 import { useApp } from '../../context/AppContext.jsx';
 
 export default function Header() {
@@ -15,6 +15,7 @@ export default function Header() {
   const getBreadcrumb = () => {
     if (currentView === 'dashboard') return null;
     if (currentView === 'admin') return [{ label: 'Dashboard', action: actions.goDashboard }, { label: 'Panel Administrativo' }];
+    if (currentView === 'callcenter') return [{ label: 'Dashboard', action: actions.goDashboard }, { label: 'Call Center' }];
     if (currentView === 'section' && selectedCourse) return [
       { label: 'Dashboard', action: actions.goDashboard },
       { label: selectedCourse.nombre }
@@ -63,6 +64,11 @@ export default function Header() {
               </button>
 
               <div className="h-6 w-px bg-slate-300" />
+
+              <button onClick={actions.goCallCenter} className="flex items-center gap-2 text-xs font-black uppercase tracking-wider px-3 py-1.5 rounded-lg text-slate-500 hover:bg-slate-100 hover:text-slate-900 transition-all border border-transparent hover:border-slate-200">
+                <Headphones size={14} />
+                CALL CENTER
+              </button>
 
               <button onClick={isDashboard ? actions.goAdmin : actions.goDashboard} className="flex items-center gap-2 text-xs font-black uppercase tracking-wider px-3 py-1.5 rounded-lg text-slate-500 hover:bg-slate-100 hover:text-slate-900 transition-all border border-transparent hover:border-slate-200">
                 <ToggleIcon size={14} />

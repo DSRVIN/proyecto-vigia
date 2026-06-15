@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useReducer, useCallback } from 'react';
-import { STUDENTS_INITIAL, COURSES_INITIAL, TEACHER, calcPromedio, notaVisual, calcRiesgo, notaNecesariaPC4 } from '../data/dataset.js';
+import { STUDENTS_INITIAL, COURSES_INITIAL, TEACHER } from '../data/dataset.js';
+import { calcPromedio, notaVisual, calcRiesgo, notaNecesariaPC4 } from '../services/metrics.service.js';
 
 // ============================================================
 // Global Application State with useReducer
@@ -17,7 +18,7 @@ const initialState = {
   recoveryEmail: null,
 
   // Navigation
-  currentView: 'dashboard', // 'dashboard' | 'section' | 'admin'
+  currentView: 'dashboard', // 'dashboard' | 'section' | 'admin' | 'callcenter'
   selectedCourse: null,
 
   // Data
@@ -66,6 +67,9 @@ function reducer(state, action) {
 
     case 'GO_ADMIN':
       return { ...state, currentView: 'admin', kpiFilter: null };
+
+    case 'GO_CALLCENTER':
+      return { ...state, currentView: 'callcenter', selectedCourse: null, kpiFilter: null };
 
     case 'SET_ADMIN_TAB':
       return { ...state, adminTab: action.payload };
@@ -159,6 +163,7 @@ export function AppProvider({ children }) {
     selectCourse: (course) => dispatch({ type: 'SELECT_COURSE', payload: course }),
     goDashboard: () => dispatch({ type: 'GO_DASHBOARD' }),
     goAdmin: () => dispatch({ type: 'GO_ADMIN' }),
+    goCallCenter: () => dispatch({ type: 'GO_CALLCENTER' }),
     setAdminTab: (tab) => dispatch({ type: 'SET_ADMIN_TAB', payload: tab }),
     toggleNotifications: () => dispatch({ type: 'TOGGLE_NOTIFICATIONS' }),
     setKPIFilter: (filter) => dispatch({ type: 'SET_KPI_FILTER', payload: filter }),

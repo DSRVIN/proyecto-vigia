@@ -9,6 +9,7 @@ const DashboardPage = lazy(() => import('./pages/DashboardPage.jsx'));
 const SectionPage   = lazy(() => import('./pages/SectionPage.jsx'));
 const AdminPage     = lazy(() => import('./pages/AdminPage.jsx'));
 const KPIStudentsPage = lazy(() => import('./pages/KPIStudentsPage.jsx'));
+const CallCenterDashboard = lazy(() => import('./pages/CallCenterDashboard.jsx'));
 
 function PageLoader() {
   return (
@@ -42,6 +43,7 @@ function AppRouter() {
           {currentView === 'section'   && <SectionPage />}
           {currentView === 'admin'     && <AdminPage />}
           {currentView === 'kpi_students' && <KPIStudentsPage />}
+          {currentView === 'callcenter' && <CallCenterDashboard />}
         </Suspense>
       </main>
 
