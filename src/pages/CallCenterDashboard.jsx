@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext.jsx';
-import { Zap, Loader2, MessageCircle, Mail, X, Search, CheckCircle, FileSpreadsheet } from 'lucide-react';
+import { Zap, Loader2, MessageCircle, Mail, X, Search, CheckCircle, FileSpreadsheet, AlertTriangle, BookOpen, Clock } from 'lucide-react';
 import RiskBadge from '../components/ui/RiskBadge.jsx';
 import { generarMensajeIntervencion } from '../services/ia.service.js';
+import { enrichStudentData } from '../data/dataset.js';
+import { enviarCorreoEstudiante } from '../services/messaging.service.js';
 import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
 
@@ -18,8 +20,17 @@ export default function CallCenterDashboard() {
   // Modal and AI States
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLoadingAI, setIsLoadingAI] = useState(false);
-  const [aiMessage, setAiMessage] = useState('');
   const [selectedStudent, setSelectedStudent] = useState(null);
+  const [aiComment, setAiComment] = useState('');
+  const [emailSubject, setEmailSubject] = useState('');
+  const [emailBody, setEmailBody] = useState('');
+  const [toast, setToast] = useState(null);
+  const [isSendingEmail, setIsSendingEmail] = useState(false);
+
+  const showToast = (message, type = 'success') => {
+    setToast({ message, type });
+    setTimeout(() => setToast(null), 4000);
+  };
 
   const totalStudents = students?.length || 0;
   const pendingPayments = students?.filter(s => s.estado_pago === 'Pendiente' || (!s.estado_pago && parseInt(s.codigo.replace(/\D/g, ''), 10) % 3 === 0)).length || 0;
@@ -107,23 +118,69 @@ export default function CallCenterDashboard() {
   };
 
   const handleIntervene = async (student) => {
-    // Generate deterministic / fallback values for execution
-    const estadoPago = student.estado_pago || (parseInt(student.codigo.replace(/\D/g, ''), 10) % 3 === 0 ? 'Pendiente' : 'Pagado');
-    const studentWithPayment = { ...student, estado_pago: estadoPago, ciclo: student.ciclo || '2026-I' };
+    // Enrich student details from DB or INITIAL dataset
+    const enriched = enrichStudentData(student);
     
-    setSelectedStudent(studentWithPayment);
+    setSelectedStudent(enriched);
     setIsModalOpen(true);
     setIsLoadingAI(true);
-    setAiMessage('');
+    setAiComment('');
+    setEmailSubject('');
+    setEmailBody('');
  
     try {
-      const message = await generarMensajeIntervencion(studentWithPayment);
-      setAiMessage(message);
+      const result = await generarMensajeIntervencion(enriched);
+      setAiComment(result.comentario || 'Diagnóstico no disponible.');
+      setEmailSubject(result.correo_personalizado?.asunto || 'Acompañamiento Académico UTP');
+      setEmailBody(result.correo_personalizado?.cuerpo || '');
     } catch (error) {
-      setAiMessage('Error al generar el mensaje con IA. Por favor, intente de nuevo.');
+      console.error('Error al generar el diagnóstico de la IA:', error);
+      showToast('Error al conectar con la IA. Se utilizará contingencia local.', 'error');
     } finally {
       setIsLoadingAI(false);
     }
+  };
+
+  const handleSendEmail = async () => {
+    if (!selectedStudent) return;
+    setIsSendingEmail(true);
+    try {
+      await enviarCorreoEstudiante({
+        student: selectedStudent,
+        asunto: emailSubject,
+        cuerpo: emailBody
+      });
+      setIntervenedIds(prev => {
+        const next = new Set(prev);
+        next.add(selectedStudent.codigo);
+        return next;
+      });
+      showToast(`¡Correo enviado exitosamente a ${selectedStudent.nombre}!`);
+      setIsModalOpen(false);
+    } catch (error) {
+      console.error('Error enviando correo:', error);
+      showToast('Error al enviar el correo. Por favor, intente nuevamente.', 'error');
+    } finally {
+      setIsSendingEmail(false);
+    }
+  };
+
+  const handleSendWhatsApp = () => {
+    if (!selectedStudent) return;
+    // Simular envío de WhatsApp imprimiendo log en consola
+    console.log('--- ENVÍO DE ALERTA WHATSAPP ---');
+    console.log(`Fecha/Hora: ${new Date().toLocaleString()}`);
+    console.log(`Destinatario: ${selectedStudent.nombre} (${selectedStudent.codigo})`);
+    console.log(`Mensaje Corto: Hola ${selectedStudent.nombre.split(' ')[0]}, te enviamos tu plan académico personalizado al correo institucional.`);
+    console.log('--------------------------------');
+
+    setIntervenedIds(prev => {
+      const next = new Set(prev);
+      next.add(selectedStudent.codigo);
+      return next;
+    });
+    showToast(`¡Alerta de WhatsApp enviada a ${selectedStudent.nombre}!`);
+    setIsModalOpen(false);
   };
 
   return (
@@ -311,14 +368,14 @@ export default function CallCenterDashboard() {
       {/* Modal for AI Intervention Message */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 transition-all duration-300">
-          <div className="bg-white rounded-2xl w-full max-w-lg shadow-2xl border border-slate-200 overflow-hidden animate-scale-in">
+          <div className="bg-white rounded-2xl w-full max-w-2xl shadow-2xl border border-slate-200 overflow-hidden animate-scale-in">
             {/* Modal Header */}
             <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-slate-50">
               <div>
-                <h3 className="font-black text-slate-900 text-base">Propuesta de Intervención</h3>
+                <h3 className="font-black text-slate-900 text-base">Propuesta de Intervención Inteligente</h3>
                 {selectedStudent && (
                   <p className="text-xs text-slate-500 font-bold">
-                    Estudiante: {selectedStudent.nombre} ({selectedStudent.codigo})
+                    Estudiante: {selectedStudent.nombre} ({selectedStudent.codigo}) · {selectedStudent.carrera}
                   </p>
                 )}
               </div>
@@ -331,37 +388,96 @@ export default function CallCenterDashboard() {
             </div>
 
             {/* Modal Content */}
-            <div className="p-6">
+            <div className="p-6 space-y-4 max-h-[75vh] overflow-y-auto custom-scrollbar">
               {isLoadingAI ? (
-                <div className="flex flex-col items-center justify-center py-10 gap-3">
-                  <Loader2 size={32} className="text-[#d32f2f] animate-spin" />
-                  <p className="text-sm text-slate-500 font-bold">Generando propuesta con Gemini AI...</p>
+                <div className="flex flex-col items-center justify-center py-12 gap-3">
+                  <Loader2 size={36} className="text-[#d32f2f] animate-spin" />
+                  <p className="text-sm text-slate-600 font-black uppercase tracking-wider animate-pulse">Generando propuesta con Gemini 2.5 Flash...</p>
                 </div>
               ) : (
                 <div className="space-y-4">
                   {selectedStudent && (
-                    <div className="grid grid-cols-3 gap-2 bg-slate-50 border border-slate-200/60 rounded-xl p-3 text-xs">
-                      <div>
-                        <span className="text-slate-400 font-bold block uppercase tracking-wider text-[9px]">Riesgo</span>
-                        <RiskBadge level={selectedStudent.riesgo} size="xs" />
+                    <>
+                      {/* Desglose Académico y Financiero */}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        {/* Panel Académico */}
+                        <div className="bg-slate-50 border border-slate-200/80 rounded-xl p-3 text-xs space-y-2">
+                          <h4 className="font-black text-slate-700 flex items-center gap-1.5 uppercase tracking-wider text-[10px]">
+                            <BookOpen size={12} className="text-blue-600" /> Resumen Académico
+                          </h4>
+                          <div className="grid grid-cols-3 gap-1 text-center">
+                            <div className="bg-white p-1.5 rounded-lg border border-slate-200 shadow-sm">
+                              <span className="text-[9px] text-slate-400 font-bold block">Promedio</span>
+                              <span className={`text-xs font-black ${selectedStudent.promedio >= 12 ? 'text-emerald-600' : 'text-red-600'}`}>{selectedStudent.promedio}</span>
+                            </div>
+                            <div className="bg-white p-1.5 rounded-lg border border-slate-200 shadow-sm">
+                              <span className="text-[9px] text-slate-400 font-bold block">Asistencia</span>
+                              <span className="text-xs font-black text-slate-800 font-mono">{Math.round((selectedStudent.academic?.asistencia_global ?? 0.75) * 100)}%</span>
+                            </div>
+                            <div className="bg-white p-1.5 rounded-lg border border-slate-200 shadow-sm">
+                              <span className="text-[9px] text-slate-400 font-bold block">Canvas</span>
+                              <span className="text-xs font-black text-slate-800">{selectedStudent.academic?.actividad_campus || 'Media'}</span>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Panel Financiero */}
+                        <div className="bg-slate-50 border border-slate-200/80 rounded-xl p-3 text-xs space-y-2">
+                          <h4 className="font-black text-slate-700 flex items-center gap-1.5 uppercase tracking-wider text-[10px]">
+                            <Clock size={12} className="text-amber-500" /> Resumen Financiero
+                          </h4>
+                          <div className="grid grid-cols-3 gap-1 text-center">
+                            <div className="bg-white p-1.5 rounded-lg border border-slate-200 shadow-sm">
+                              <span className="text-[9px] text-slate-400 font-bold block">Estado</span>
+                              <span className={`text-xs font-black uppercase ${selectedStudent.estado_pago === 'PAGADO' ? 'text-emerald-600' : 'text-orange-600'}`}>
+                                {selectedStudent.estado_pago}
+                              </span>
+                            </div>
+                            <div className="bg-white p-1.5 rounded-lg border border-slate-200 shadow-sm">
+                              <span className="text-[9px] text-slate-400 font-bold block">Vencidas</span>
+                              <span className="text-xs font-black text-slate-800 font-mono">{selectedStudent.detalle_pagos?.cuotas_vencidas ?? 0}</span>
+                            </div>
+                            <div className="bg-white p-1.5 rounded-lg border border-slate-200 shadow-sm">
+                              <span className="text-[9px] text-slate-400 font-bold block">Pendiente</span>
+                              <span className="text-xs font-black text-slate-800 font-mono">S/.{selectedStudent.detalle_pagos?.monto_pendiente ?? 0}</span>
+                            </div>
+                          </div>
+                        </div>
                       </div>
-                      <div>
-                        <span className="text-slate-400 font-bold block uppercase tracking-wider text-[9px]">Pago</span>
-                        <span className={`font-black uppercase text-[10px] ${selectedStudent.estado_pago === 'Pagado' ? 'text-emerald-600' : 'text-orange-600'}`}>
-                          {selectedStudent.estado_pago}
-                        </span>
-                      </div>
-                      <div>
-                        <span className="text-slate-400 font-bold block uppercase tracking-wider text-[9px]">Ciclo</span>
-                        <span className="font-black text-slate-700">{selectedStudent.ciclo}</span>
-                      </div>
-                    </div>
+                    </>
                   )}
 
-                  <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 min-h-[120px] flex items-center justify-center">
-                    <p className="text-sm text-slate-800 font-medium leading-relaxed whitespace-pre-wrap select-all">
-                      {aiMessage}
+                  {/* Comentario de Diagnóstico */}
+                  <div className="bg-violet-50 border border-violet-100 rounded-xl p-4 space-y-1.5">
+                    <div className="flex items-center gap-1.5">
+                      <Zap size={14} className="text-violet-600" />
+                      <h4 className="text-xs font-black text-violet-800 uppercase tracking-wider">Diagnóstico IA del Asesor</h4>
+                    </div>
+                    <p className="text-xs text-violet-950 font-medium leading-relaxed">
+                      {aiComment}
                     </p>
+                  </div>
+
+                  {/* Asunto Editable */}
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest block">Asunto del Correo</label>
+                    <input 
+                      type="text" 
+                      value={emailSubject} 
+                      onChange={(e) => setEmailSubject(e.target.value)}
+                      className="w-full bg-slate-50 border border-slate-200 focus:border-blue-500 focus:bg-white rounded-xl px-3 py-2 text-sm text-slate-900 font-semibold outline-none transition-all shadow-inner"
+                    />
+                  </div>
+
+                  {/* Cuerpo del Correo Editable */}
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest block">Cuerpo del Mensaje (Editable)</label>
+                    <textarea 
+                      value={emailBody} 
+                      onChange={(e) => setEmailBody(e.target.value)}
+                      rows={9}
+                      className="w-full bg-slate-50 border border-slate-200 focus:border-blue-500 focus:bg-white rounded-xl px-3 py-2 text-xs text-slate-900 font-medium leading-relaxed outline-none transition-all shadow-inner resize-y font-mono animate-fade-in"
+                    />
                   </div>
                 </div>
               )}
@@ -369,7 +485,7 @@ export default function CallCenterDashboard() {
 
             {/* Modal Footer */}
             {!isLoadingAI && (
-             <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-slate-100 bg-slate-50">
+              <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-slate-100 bg-slate-50">
                 <button
                   onClick={() => setIsModalOpen(false)}
                   className="px-4 py-2 rounded-xl border border-slate-200 hover:bg-slate-100 text-slate-700 font-bold text-xs uppercase tracking-wider transition-all"
@@ -377,38 +493,46 @@ export default function CallCenterDashboard() {
                   Cerrar
                 </button>
                 <button
-                  onClick={() => {
-                    window.alert('✅ WhatsApp enviado correctamente al estudiante.');
-                    setIntervenedIds(prev => {
-                      const next = new Set(prev);
-                      next.add(selectedStudent.codigo);
-                      return next;
-                    });
-                    setIsModalOpen(false);
-                  }}
-                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-white border border-blue-600 text-blue-600 hover:bg-blue-50 font-bold text-xs uppercase tracking-wider transition-all"
+                  onClick={handleSendWhatsApp}
+                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-white border border-emerald-600 text-emerald-700 hover:bg-emerald-50 font-bold text-xs uppercase tracking-wider transition-all"
                 >
                   <MessageCircle size={12} />
                   ENVIAR WHATSAPP
                 </button>
                 <button
-                  onClick={() => {
-                    window.alert(`✅ Correo enviado exitosamente a ${selectedStudent?.email}`);
-                    setIntervenedIds(prev => {
-                      const next = new Set(prev);
-                      next.add(selectedStudent.codigo);
-                      return next;
-                    });
-                    setIsModalOpen(false);
-                  }}
-                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs uppercase tracking-wider transition-all shadow-sm"
+                  onClick={handleSendEmail}
+                  disabled={isSendingEmail}
+                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs uppercase tracking-wider transition-all shadow-sm active:scale-95 disabled:bg-blue-400 disabled:cursor-not-allowed"
                 >
-                  <Mail size={12} />
-                  ENVIAR CORREO
+                  {isSendingEmail ? (
+                    <>
+                      <Loader2 size={12} className="animate-spin" />
+                      ENVIANDO...
+                    </>
+                  ) : (
+                    <>
+                      <Mail size={12} />
+                      ENVIAR CORREO
+                    </>
+                  )}
                 </button>
               </div>
             )}
           </div>
+        </div>
+      )}
+
+      {/* Toast Notification */}
+      {toast && (
+        <div className="fixed bottom-5 right-5 z-[100] bg-slate-900 border border-slate-700/50 text-white rounded-2xl px-5 py-4 shadow-2xl flex items-center gap-3 animate-slide-in">
+          <div className={`p-1.5 rounded-lg ${toast.type === 'success' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-red-500/20 text-red-400'}`}>
+            {toast.type === 'success' ? <CheckCircle size={16} /> : <AlertTriangle size={16} />}
+          </div>
+          <div className="min-w-[200px]">
+            <p className="text-xs font-black uppercase tracking-wider text-slate-400">Notificación</p>
+            <p className="text-sm font-bold text-slate-100">{toast.message}</p>
+          </div>
+          <button onClick={() => setToast(null)} className="ml-2 text-slate-400 hover:text-white transition-colors text-xs font-bold">✕</button>
         </div>
       )}
     </div>
