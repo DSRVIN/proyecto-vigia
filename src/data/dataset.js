@@ -86,11 +86,103 @@ courseProfiles.forEach(cp => {
 });
 
 // Procesa y enriquece los datos
+export function enrichStudentData(student, forceRefresh = false) {
+  if (student.academic && student.detalle_pagos && !forceRefresh) return student;
+
+  const codeVal = parseInt(student.codigo?.replace(/\D/g, '') || '0', 10);
+  
+  // 1. Payment status and details (normalize to PENDIENTE or PAGADO)
+  const isPaid = student.estado_pago?.toUpperCase() === 'PAGADO' || 
+                 student.estado_pago?.toUpperCase() === 'PAGO' ||
+                 (student.estado_pago === undefined && codeVal % 3 !== 0);
+                 
+  const normalizedEstadoPago = isPaid ? 'PAGADO' : 'PENDIENTE';
+
+  const detalle_pagos = isPaid ? {
+    cuotas_vencidas: 0,
+    monto_pendiente: 0.00,
+    proximo_vencimiento: '2026-07-30'
+  } : {
+    cuotas_vencidas: (codeVal % 2) + 1, // 1 or 2 overdue cuotas
+    monto_pendiente: ((codeVal % 3) + 1) * 350.00, // 350, 700, or 1050
+    proximo_vencimiento: '2026-06-30'
+  };
+
+  // 2. Academic general statistics
+  const asistVal = student.asistencia ?? 75;
+  const asistencia_global = Number((asistVal / 100).toFixed(2));
+  
+  const inactividadDias = student.actividadDias ?? 5;
+  const actividad_campus = inactividadDias > 14 ? 'Baja' : inactividadDias > 7 ? 'Media' : 'Alta';
+
+  // 3. Courses selection depending on student's career
+  const career = student.carrera || 'Ingeniería de Sistemas';
+  let academicCursos = [];
+  
+  const avg = student.promedio ?? 11.5;
+  
+  const generateCourseGrade = (courseName) => {
+    let grade = avg + (Math.random() * 4 - 2);
+    grade = Math.max(0, Math.min(20, Number(grade.toFixed(1))));
+    
+    let courseAsist = asistencia_global + (Math.random() * 0.1 - 0.05);
+    courseAsist = Math.max(0, Math.min(1.0, Number(courseAsist.toFixed(2))));
+    
+    const actLevels = ['Baja', 'Media', 'Alta'];
+    let actIndex = actLevels.indexOf(actividad_campus);
+    if (Math.random() > 0.7) {
+      actIndex = Math.max(0, Math.min(2, actIndex + (Math.random() > 0.5 ? 1 : -1)));
+    }
+    const actividad_virtual = actLevels[actIndex];
+
+    return {
+      nombre: courseName,
+      nota: grade,
+      asistencia: courseAsist,
+      actividad_virtual
+    };
+  };
+
+  if (career.toLowerCase().includes('ing')) {
+    academicCursos = [
+      generateCourseGrade('Cálculo Aplicado a la Física 1'),
+      generateCourseGrade('Principios de Algoritmos'),
+      generateCourseGrade('Matemática para Ingenieros 1')
+    ];
+  } else if (career.toLowerCase().includes('admin') || career.toLowerCase().includes('cont') || career.toLowerCase().includes('mark')) {
+    academicCursos = [
+      generateCourseGrade('Contabilidad General'),
+      generateCourseGrade('Macroeconomía'),
+      generateCourseGrade('Administración para los Negocios')
+    ];
+  } else {
+    academicCursos = [
+      generateCourseGrade('Comprensión y Redacción de Textos 1'),
+      generateCourseGrade('Introducción al Derecho')
+    ];
+  }
+
+  const promedio_general = student.promedio ?? Number((academicCursos.reduce((acc, c) => acc + c.nota, 0) / academicCursos.length).toFixed(1));
+
+  return {
+    ...student,
+    estado_pago: normalizedEstadoPago,
+    detalle_pagos,
+    academic: {
+      promedio_general: Number(promedio_general.toFixed(1)),
+      asistencia_global,
+      actividad_campus,
+      cursos: academicCursos
+    }
+  };
+}
+
 export const STUDENTS_INITIAL = rawStudents.map(s => {
   const grades = { PC1: s.PC1, PC2: s.PC2, PC3: s.PC3, PC4: s.PC4 ?? 0 };
   const promedio = calcPromedio({ ...grades, PC4: grades.PC4 });
   const riesgo = calcRiesgo(promedio, s.asistencia, s.actividadDias);
-  return {
+  
+  return enrichStudentData({
     ...s,
     grades,
     promedio,
@@ -102,7 +194,7 @@ export const STUDENTS_INITIAL = rawStudents.map(s => {
     foto: null,
     intervenido: false,
     estado_pago: Math.random() > 0.3 ? 'Pagado' : 'Pendiente',
-  };
+  });
 });
 
 // Cursos del docente

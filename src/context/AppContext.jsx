@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useReducer, useCallback } from 'react';
-import { STUDENTS_INITIAL, COURSES_INITIAL, TEACHER } from '../data/dataset.js';
+import { STUDENTS_INITIAL, COURSES_INITIAL, TEACHER, enrichStudentData } from '../data/dataset.js';
 import { calcPromedio, notaVisual, calcRiesgo, notaNecesariaPC4 } from '../services/metrics.service.js';
 
 // ============================================================
@@ -100,7 +100,7 @@ function reducer(state, action) {
         email: `${s.codigo.toLowerCase()}@utp.edu.pe`,
         intervenido: false,
       };
-      return { ...state, students: [...state.students, newStudent] };
+      return { ...state, students: [...state.students, enrichStudentData(newStudent)] };
     }
 
     case 'UPDATE_STUDENT': {
@@ -109,7 +109,7 @@ function reducer(state, action) {
         const grades = { ...st.grades, ...action.payload.changes };
         const promedio = calcPromedio(grades);
         const riesgo = calcRiesgo(promedio, st.asistencia, st.actividadDias);
-        return {
+        const updatedStudent = {
           ...st,
           ...action.payload.changes,
           grades,
@@ -118,6 +118,7 @@ function reducer(state, action) {
           riesgo,
           necesitaPC4: notaNecesariaPC4(grades),
         };
+        return enrichStudentData(updatedStudent, true);
       });
       return { ...state, students: updated };
     }
