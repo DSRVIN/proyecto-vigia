@@ -1,0 +1,52 @@
+name: CI/CD Pipeline - VIGÍA (Enterprise Deploy)
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    # 1. Clonar el código actualizado
+    - name: Checkout de código
+      uses: actions/checkout@v4
+
+    # 2. Configurar el entorno de Node.js
+    - name: Configurar Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+
+    # 3. Instalar dependencias de forma limpia
+    - name: Instalar dependencias
+      run: npm ci
+
+    # 4. Instalar Vercel CLI de forma global en el contenedor de GitHub
+    - name: Instalar Vercel CLI
+      run: npm install --global vercel@latest
+
+    # 5. Jalar variables de entorno y configuración desde Vercel
+    - name: Jalar entorno de Vercel
+      run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
+      env:
+        VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+        VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+
+    # 6. Compilar el proyecto localmente para asegurar cero errores de sintaxis
+    - name: Validar y Compilar Proyecto
+      run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
+      env:
+        VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+        VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+
+    # 7. Desplegar los archivos pre-compilados directo a producción
+    - name: Desplegar a Vercel Production
+      run: vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }}
+      env:
+        VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+        VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
