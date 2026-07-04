@@ -74,6 +74,12 @@ const courseProfiles = [
   { id: 'SIST107', counts: { good: 14, average: 7, risk_attendance: 4, risk_grades: 1, critical_abandonment: 0 } },
   { id: 'SIST108', counts: { good: 6, average: 8, risk_attendance: 5, risk_grades: 6, critical_abandonment: 5 } },
   { id: 'SIST109', counts: { good: 11, average: 14, risk_attendance: 1, risk_grades: 3, critical_abandonment: 1 } },
+  { id: 'SIST110', counts: { good: 7, average: 12, risk_attendance: 3, risk_grades: 4, critical_abandonment: 2 } },
+  { id: 'SIST111', counts: { good: 13, average: 9, risk_attendance: 2, risk_grades: 3, critical_abandonment: 1 } },
+  { id: 'SIST112', counts: { good: 6, average: 10, risk_attendance: 4, risk_grades: 5, critical_abandonment: 3 } },
+  { id: 'SIST113', counts: { good: 10, average: 13, risk_attendance: 3, risk_grades: 4, critical_abandonment: 2 } },
+  { id: 'SIST114', counts: { good: 8, average: 11, risk_attendance: 2, risk_grades: 6, critical_abandonment: 1 } },
+  { id: 'SIST115', counts: { good: 11, average: 10, risk_attendance: 3, risk_grades: 3, critical_abandonment: 2 } },
 ];
 
 const rawStudents = [];
@@ -208,6 +214,12 @@ export const COURSES_INITIAL = [
   { id: 'SIST107', nombre: 'Innovación y Transformación Digital', codigo: 'SIST107', seccion: 'G01', ciclo: '2026-I', horario: 'Jue 18:00-21:00', aula: 'H-501', alumnos: 26, creditos: 3 },
   { id: 'SIST108', nombre: 'Gestión del Servicio TI', codigo: 'SIST108', seccion: 'G01', ciclo: '2026-I', horario: 'Sab 08:00-11:00', aula: 'H-203', alumnos: 30, creditos: 3 },
   { id: 'SIST109', nombre: 'Hojas de Estilo en Cascada Avanzada', codigo: 'SIST109', seccion: 'G04', ciclo: '2026-I', horario: 'Lun/Mié 14:00-16:00', aula: 'Lab-105', alumnos: 30, creditos: 3 },
+  { id: 'SIST110', nombre: 'Redes y Comunicaciones', codigo: 'SIST110', seccion: 'G02', ciclo: '2026-I', horario: 'Mar/Jue 08:00-10:00', aula: 'Lab-103', alumnos: 28, creditos: 4 },
+  { id: 'SIST111', nombre: 'Inteligencia Artificial', codigo: 'SIST111', seccion: 'G01', ciclo: '2026-I', horario: 'Lun/Mié 10:00-12:00', aula: 'Lab-204', alumnos: 28, creditos: 4 },
+  { id: 'SIST112', nombre: 'Seguridad Informática', codigo: 'SIST112', seccion: 'G03', ciclo: '2026-I', horario: 'Vie 08:00-12:00', aula: 'Lab-106', alumnos: 28, creditos: 4 },
+  { id: 'SIST113', nombre: 'Desarrollo de Aplicaciones Móviles', codigo: 'SIST113', seccion: 'G01', ciclo: '2026-I', horario: 'Mar/Jue 14:00-16:00', aula: 'Lab-302', alumnos: 32, creditos: 3 },
+  { id: 'SIST114', nombre: 'Computación en la Nube', codigo: 'SIST114', seccion: 'G02', ciclo: '2026-I', horario: 'Lun/Mié 16:00-18:00', aula: 'H-303', alumnos: 28, creditos: 3 },
+  { id: 'SIST115', nombre: 'Análisis y Diseño de Sistemas', codigo: 'SIST115', seccion: 'G01', ciclo: '2026-I', horario: 'Jue 14:00-17:00', aula: 'H-404', alumnos: 29, creditos: 3 },
 ];
 
 // Docente
