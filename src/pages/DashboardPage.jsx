@@ -19,6 +19,7 @@ function StatPill({ icon: Icon, label, value, color }) {
 // Tarjeta de Curso
 function CourseCard({ course, onClick }) {
   const { state } = useApp();
+  const [isExpanded, setIsExpanded] = useState(false);
 
   const courseStudents = useMemo(
     () => state.students.filter(s => s.cursoId === course.id),
@@ -44,7 +45,8 @@ function CourseCard({ course, onClick }) {
 
   return (
     <div
-      onClick={() => onClick(course)}
+      onClick={() => setIsExpanded(!isExpanded)}
+      onDoubleClick={() => onClick(course)}
       className="bg-white border border-slate-200 rounded-2xl p-6 cursor-pointer group hover:border-[#d32f2f]/40 hover:shadow-xl transition-all duration-300 active:scale-[0.99] hover:-translate-y-1 shadow-md"
     >
       <div className="flex items-start justify-between mb-4">
@@ -64,55 +66,70 @@ function CourseCard({ course, onClick }) {
         </div>
       </div>
 
-      <div className="flex flex-wrap gap-2 mb-5">
+      <div className={`flex flex-wrap gap-2 transition-all duration-300 ${isExpanded ? 'mb-5' : 'mb-0'}`}>
         <StatPill icon={Calendar} label="Horario" value={course.horario} color="text-slate-700" />
         <StatPill icon={Award} label="Créditos" value={`${course.creditos} cr`} color="text-violet-700" />
       </div>
 
-      <div className="grid grid-cols-4 gap-2 text-center bg-slate-50 border border-slate-200 rounded-xl py-3 mb-5 shadow-inner">
-        <div>
-          <p className="text-lg font-black text-slate-900">{stats.total}</p>
-          <p className="text-[11px] text-slate-500 font-bold uppercase tracking-wider">Alumnos</p>
-        </div>
-        <div>
-          <p className={`text-lg font-black ${stats.criticos > 0 ? 'text-[#d32f2f]' : 'text-slate-400'}`}>{stats.criticos}</p>
-          <p className="text-[11px] text-slate-500 font-bold uppercase tracking-wider">Críticos</p>
-        </div>
-        <div>
-          <p className="text-lg font-black text-slate-900">{stats.promedio}</p>
-          <p className="text-[11px] text-slate-500 font-bold uppercase tracking-wider">Promedio</p>
-        </div>
-        <div>
-          <p className={`text-lg font-black ${stats.asistenciaAvg < 65 ? 'text-amber-600' : 'text-emerald-600'}`}>
-            {stats.asistenciaAvg}%
-          </p>
-          <p className="text-[11px] text-slate-500 font-bold uppercase tracking-wider">Asist.</p>
-        </div>
-      </div>
+      <div
+        className={`grid transition-all duration-300 ease-in-out ${
+          isExpanded ? 'opacity-100 mt-4' : 'opacity-0 pointer-events-none'
+        }`}
+        style={{ gridTemplateRows: isExpanded ? '1fr' : '0fr' }}
+      >
+        <div className="overflow-hidden">
+          <div className="grid grid-cols-4 gap-2 text-center bg-slate-50 border border-slate-200 rounded-xl py-3 mb-5 shadow-inner">
+            <div>
+              <p className="text-lg font-black text-slate-900">{stats.total}</p>
+              <p className="text-[11px] text-slate-500 font-bold uppercase tracking-wider">Alumnos</p>
+            </div>
+            <div>
+              <p className={`text-lg font-black ${stats.criticos > 0 ? 'text-[#d32f2f]' : 'text-slate-400'}`}>{stats.criticos}</p>
+              <p className="text-[11px] text-slate-500 font-bold uppercase tracking-wider">Críticos</p>
+            </div>
+            <div>
+              <p className="text-lg font-black text-slate-900">{stats.promedio}</p>
+              <p className="text-[11px] text-slate-500 font-bold uppercase tracking-wider">Promedio</p>
+            </div>
+            <div>
+              <p className={`text-lg font-black ${stats.asistenciaAvg < 65 ? 'text-amber-600' : 'text-emerald-600'}`}>
+                {stats.asistenciaAvg}%
+              </p>
+              <p className="text-[11px] text-slate-500 font-bold uppercase tracking-wider">Asist.</p>
+            </div>
+          </div>
 
-      <div className="space-y-1.5">
-        <div className="flex justify-between text-xs">
-          <span className="text-slate-500 font-bold">Salud académica del aula</span>
-          <span className={`font-black ${healthPct >= 70 ? 'text-emerald-600' : healthPct >= 50 ? 'text-amber-600' : 'text-[#d32f2f]'}`}>
-            {healthPct}%
-          </span>
-        </div>
-        <div className="h-2 bg-slate-200 rounded-full overflow-hidden">
-          <div
-            className={`h-full rounded-full transition-all duration-700 ${
-              healthPct >= 70 ? 'bg-gradient-to-r from-emerald-600 to-teal-500' :
-              healthPct >= 50 ? 'bg-gradient-to-r from-amber-500 to-yellow-400' :
-              'bg-gradient-to-r from-[#d32f2f] to-red-400'
-            }`}
-            style={{ width: `${healthPct}%` }}
-          />
-        </div>
-      </div>
+          <div className="space-y-1.5 mb-5">
+            <div className="flex justify-between text-xs">
+              <span className="text-slate-500 font-bold">Salud académica del aula</span>
+              <span className={`font-black ${healthPct >= 70 ? 'text-emerald-600' : healthPct >= 50 ? 'text-amber-600' : 'text-[#d32f2f]'}`}>
+                {healthPct}%
+              </span>
+            </div>
+            <div className="h-2 bg-slate-200 rounded-full overflow-hidden">
+              <div
+                className={`h-full rounded-full transition-all duration-700 ${
+                  healthPct >= 70 ? 'bg-gradient-to-r from-emerald-600 to-teal-500' :
+                  healthPct >= 50 ? 'bg-gradient-to-r from-amber-500 to-yellow-400' :
+                  'bg-gradient-to-r from-[#d32f2f] to-red-400'
+                }`}
+                style={{ width: `${healthPct}%` }}
+              />
+            </div>
+          </div>
 
-      <div className="flex items-center justify-end mt-4 pt-3 border-t border-slate-100">
-        <span className="text-xs text-[#d32f2f] font-black uppercase tracking-wider group-hover:translate-x-1 transition-transform flex items-center gap-1">
-          Ver sección completa <ChevronRight size={14} />
-        </span>
+          <div className="flex items-center justify-end pt-3 border-t border-slate-100">
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onClick(course);
+              }}
+              className="text-xs text-[#d32f2f] font-black uppercase tracking-wider group-hover:translate-x-1 transition-transform flex items-center gap-1 cursor-pointer bg-transparent border-0 p-0"
+            >
+              Ver sección completa <ChevronRight size={14} />
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   );
