@@ -33,14 +33,14 @@ export default function CallCenterDashboard() {
   };
 
   const totalStudents = students?.length || 0;
-  const pendingPayments = students?.filter(s => s.estado_pago === 'Pendiente' || (!s.estado_pago && parseInt(s.codigo.replace(/\D/g, ''), 10) % 3 === 0)).length || 0;
+  const pendingPayments = students?.filter(s => s.estado_pago === 'PENDIENTE' || (!s.estado_pago && parseInt(s.codigo.replace(/\D/g, ''), 10) % 3 === 0)).length || 0;
   const criticalRisk = students?.filter(s => s.riesgo === 'CRITICO' || s.riesgo === 'ALTO').length || 0;
 
   const filteredStudents = (students || [])
     .filter(student => {
-      const estadoPago = student.estado_pago || (parseInt(student.codigo.replace(/\D/g, ''), 10) % 3 === 0 ? 'Pendiente' : 'Pagado');
+      const estadoPago = student.estado_pago || (parseInt(student.codigo.replace(/\D/g, ''), 10) % 3 === 0 ? 'PENDIENTE' : 'PAGADO');
       if (activeFilter === 'DEBT') {
-        return estadoPago === 'Pendiente';
+        return estadoPago === 'PENDIENTE';
       }
       if (activeFilter === 'RISK') {
         return student.riesgo === 'CRITICO' || student.riesgo === 'ALTO';
@@ -83,7 +83,7 @@ export default function CallCenterDashboard() {
     });
 
     filteredStudents.forEach((student) => {
-      const estadoPago = student.estado_pago || (parseInt(student.codigo.replace(/\D/g, ''), 10) % 3 === 0 ? 'Pendiente' : 'Pagado');
+      const estadoPago = student.estado_pago || (parseInt(student.codigo.replace(/\D/g, ''), 10) % 3 === 0 ? 'PENDIENTE' : 'PAGADO');
       const estadoGestion = intervenedIds.has(student.codigo) ? 'Gestionado' : 'Pendiente';
       
       worksheet.addRow({
@@ -293,8 +293,8 @@ export default function CallCenterDashboard() {
               <tbody className="divide-y divide-slate-200 bg-white">
                 {filteredStudents && filteredStudents.length > 0 ? (
                   filteredStudents.map((student) => {
-                    const estadoPago = student.estado_pago || (parseInt(student.codigo.replace(/\D/g, ''), 10) % 3 === 0 ? 'Pendiente' : 'Pagado');
-                    const isPagado = estadoPago === 'Pagado';
+                    const estadoPago = student.estado_pago || (parseInt(student.codigo.replace(/\D/g, ''), 10) % 3 === 0 ? 'PENDIENTE' : 'PAGADO');
+                    const isPagado = estadoPago === 'PAGADO';
                     const isIntervened = intervenedIds.has(student.codigo);
 
                     return (
