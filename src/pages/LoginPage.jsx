@@ -148,7 +148,7 @@ function LoginForm() {
       {/* Demo hint */}
       <div className="text-center pt-2">
         <p className="text-xs text-slate-500">
-          Demo: <span className="text-slate-800 font-mono bg-slate-200/60 px-1.5 py-0.5 rounded">C13005</span> / <span className="text-slate-800 font-mono bg-slate-200/60 px-1.5 py-0.5 rounded">Utp2026#</span>
+          Demo: <span className="text-slate-800 font-mono bg-slate-200/60 px-1.5 py-0.5 rounded">C13005</span> o <span className="text-slate-800 font-mono bg-slate-200/60 px-1.5 py-0.5 rounded">C13007</span> / <span className="text-slate-800 font-mono bg-slate-200/60 px-1.5 py-0.5 rounded">Utp2026#</span>
         </p>
       </div>
     </form>

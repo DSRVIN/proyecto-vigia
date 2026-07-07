@@ -386,7 +386,7 @@ export default function AdminPage() {
           </div>
           <div className="flex items-center gap-2 px-4 py-2.5 bg-white border border-slate-200 rounded-xl w-fit shadow-md">
             <div className="h-2 w-2 bg-[#d32f2f] rounded-full animate-pulse" />
-            <span className="text-xs text-[#d32f2f] font-black font-mono uppercase tracking-wider">Modo Admin — {state.teacher?.codigo || 'C13005'}</span>
+            <span className="text-xs text-[#d32f2f] font-black font-mono uppercase tracking-wider">Modo Admin — {state.teacher?.codigo || 'Docente'}</span>
           </div>
         </div>
       </div>

@@ -64,7 +64,10 @@ function generateStudent(courseId, profile) {
   return { codigo: code, nombre, carrera, ciclo, PC1, PC2, PC3, PC4: null, asistencia, actividadDias, cursoId: courseId };
 }
 
-const courseProfiles = [
+// ============================================================
+// Perfiles de estudiantes por curso — Docente C13005
+// ============================================================
+const courseProfilesC13005 = [
   { id: 'SIST101', counts: { good: 10, average: 15, risk_attendance: 2, risk_grades: 4, critical_abandonment: 1 } },
   { id: 'SIST102', counts: { good: 5, average: 10, risk_attendance: 1, risk_grades: 12, critical_abandonment: 2 } },
   { id: 'SIST103', counts: { good: 15, average: 8, risk_attendance: 0, risk_grades: 2, critical_abandonment: 0 } },
@@ -74,22 +77,38 @@ const courseProfiles = [
   { id: 'SIST107', counts: { good: 14, average: 7, risk_attendance: 4, risk_grades: 1, critical_abandonment: 0 } },
   { id: 'SIST108', counts: { good: 6, average: 8, risk_attendance: 5, risk_grades: 6, critical_abandonment: 5 } },
   { id: 'SIST109', counts: { good: 11, average: 14, risk_attendance: 1, risk_grades: 3, critical_abandonment: 1 } },
-  { id: 'SIST110', counts: { good: 7, average: 12, risk_attendance: 3, risk_grades: 4, critical_abandonment: 2 } },
-  { id: 'SIST111', counts: { good: 13, average: 9, risk_attendance: 2, risk_grades: 3, critical_abandonment: 1 } },
-  { id: 'SIST112', counts: { good: 6, average: 10, risk_attendance: 4, risk_grades: 5, critical_abandonment: 3 } },
-  { id: 'SIST113', counts: { good: 10, average: 13, risk_attendance: 3, risk_grades: 4, critical_abandonment: 2 } },
-  { id: 'SIST114', counts: { good: 8, average: 11, risk_attendance: 2, risk_grades: 6, critical_abandonment: 1 } },
-  { id: 'SIST115', counts: { good: 11, average: 10, risk_attendance: 3, risk_grades: 3, critical_abandonment: 2 } },
 ];
 
-const rawStudents = [];
-courseProfiles.forEach(cp => {
-  Object.keys(cp.counts).forEach(profile => {
-    for (let i = 0; i < cp.counts[profile]; i++) {
-      rawStudents.push(generateStudent(cp.id, profile));
-    }
+// ============================================================
+// Perfiles de estudiantes por curso — Docente C13007
+// ============================================================
+const courseProfilesC13007 = [
+  { id: 'EDUC201', counts: { good: 8, average: 12, risk_attendance: 3, risk_grades: 5, critical_abandonment: 2 } },
+  { id: 'EDUC202', counts: { good: 11, average: 9, risk_attendance: 2, risk_grades: 4, critical_abandonment: 1 } },
+  { id: 'EDUC203', counts: { good: 6, average: 14, risk_attendance: 4, risk_grades: 3, critical_abandonment: 1 } },
+  { id: 'EDUC204', counts: { good: 13, average: 8, risk_attendance: 1, risk_grades: 2, critical_abandonment: 0 } },
+  { id: 'EDUC205', counts: { good: 7, average: 10, risk_attendance: 5, risk_grades: 6, critical_abandonment: 3 } },
+  { id: 'EDUC206', counts: { good: 10, average: 11, risk_attendance: 2, risk_grades: 3, critical_abandonment: 1 } },
+  { id: 'EDUC207', counts: { good: 9, average: 13, risk_attendance: 3, risk_grades: 4, critical_abandonment: 2 } },
+  { id: 'EDUC208', counts: { good: 12, average: 7, risk_attendance: 2, risk_grades: 5, critical_abandonment: 1 } },
+  { id: 'EDUC209', counts: { good: 5, average: 11, risk_attendance: 4, risk_grades: 7, critical_abandonment: 3 } },
+];
+
+// Genera estudiantes a partir de perfiles de curso
+function generateStudentsFromProfiles(profiles) {
+  const students = [];
+  profiles.forEach(cp => {
+    Object.keys(cp.counts).forEach(profile => {
+      for (let i = 0; i < cp.counts[profile]; i++) {
+        students.push(generateStudent(cp.id, profile));
+      }
+    });
   });
-});
+  return students;
+}
+
+const rawStudentsC13005 = generateStudentsFromProfiles(courseProfilesC13005);
+const rawStudentsC13007 = generateStudentsFromProfiles(courseProfilesC13007);
 
 // Procesa y enriquece los datos
 export function enrichStudentData(student, forceRefresh = false) {
@@ -183,27 +202,36 @@ export function enrichStudentData(student, forceRefresh = false) {
   };
 }
 
-export const STUDENTS_INITIAL = rawStudents.map(s => {
-  const grades = { PC1: s.PC1, PC2: s.PC2, PC3: s.PC3, PC4: s.PC4 ?? 0 };
-  const promedio = calcPromedio({ ...grades, PC4: grades.PC4 });
-  const riesgo = calcRiesgo(promedio, s.asistencia, s.actividadDias);
-  
-  return enrichStudentData({
-    ...s,
-    grades,
-    promedio,
-    notaFinal: notaVisual(promedio),
-    riesgo,
-    necesitaPC4: notaNecesariaPC4({ PC1: s.PC1, PC2: s.PC2, PC3: s.PC3 }),
-    actividadMensual: genActividad(Math.floor(30 - s.actividadDias * 0.8)),
-    email: `${s.codigo.toLowerCase()}@utp.edu.pe`,
-    foto: null,
-    intervenido: false,
-    estado_pago: Math.random() > 0.3 ? 'Pagado' : 'Pendiente',
+// Función para enriquecer un array de raw students
+function enrichRawStudents(rawStudents) {
+  return rawStudents.map(s => {
+    const grades = { PC1: s.PC1, PC2: s.PC2, PC3: s.PC3, PC4: s.PC4 ?? 0 };
+    const promedio = calcPromedio({ ...grades, PC4: grades.PC4 });
+    const riesgo = calcRiesgo(promedio, s.asistencia, s.actividadDias);
+    
+    return enrichStudentData({
+      ...s,
+      grades,
+      promedio,
+      notaFinal: notaVisual(promedio),
+      riesgo,
+      necesitaPC4: notaNecesariaPC4({ PC1: s.PC1, PC2: s.PC2, PC3: s.PC3 }),
+      actividadMensual: genActividad(Math.floor(30 - s.actividadDias * 0.8)),
+      email: `${s.codigo.toLowerCase()}@utp.edu.pe`,
+      foto: null,
+      intervenido: false,
+      estado_pago: Math.random() > 0.3 ? 'Pagado' : 'Pendiente',
+    });
   });
-});
+}
 
-// Cursos del docente
+// Estudiantes enriquecidos por docente (retrocompatibilidad)
+export const STUDENTS_INITIAL = enrichRawStudents(rawStudentsC13005);
+const STUDENTS_C13007 = enrichRawStudents(rawStudentsC13007);
+
+// ============================================================
+// Cursos del docente C13005 (15 cursos)
+// ============================================================
 export const COURSES_INITIAL = [
   { id: 'SIST101', nombre: 'Algoritmos y Estructuras de Datos', codigo: 'SIST101', seccion: 'G01', ciclo: '2026-I', horario: 'Lun/Mié 08:00-10:00', aula: 'H-201', alumnos: 32, creditos: 4 },
   { id: 'SIST102', nombre: 'Ingeniería de Software I', codigo: 'SIST102', seccion: 'G02', ciclo: '2026-I', horario: 'Mar/Jue 10:00-12:00', aula: 'H-305', alumnos: 30, creditos: 3 },
@@ -214,15 +242,26 @@ export const COURSES_INITIAL = [
   { id: 'SIST107', nombre: 'Innovación y Transformación Digital', codigo: 'SIST107', seccion: 'G01', ciclo: '2026-I', horario: 'Jue 18:00-21:00', aula: 'H-501', alumnos: 26, creditos: 3 },
   { id: 'SIST108', nombre: 'Gestión del Servicio TI', codigo: 'SIST108', seccion: 'G01', ciclo: '2026-I', horario: 'Sab 08:00-11:00', aula: 'H-203', alumnos: 30, creditos: 3 },
   { id: 'SIST109', nombre: 'Hojas de Estilo en Cascada Avanzada', codigo: 'SIST109', seccion: 'G04', ciclo: '2026-I', horario: 'Lun/Mié 14:00-16:00', aula: 'Lab-105', alumnos: 30, creditos: 3 },
-  { id: 'SIST110', nombre: 'Redes y Comunicaciones', codigo: 'SIST110', seccion: 'G02', ciclo: '2026-I', horario: 'Mar/Jue 08:00-10:00', aula: 'Lab-103', alumnos: 28, creditos: 4 },
-  { id: 'SIST111', nombre: 'Inteligencia Artificial', codigo: 'SIST111', seccion: 'G01', ciclo: '2026-I', horario: 'Lun/Mié 10:00-12:00', aula: 'Lab-204', alumnos: 28, creditos: 4 },
-  { id: 'SIST112', nombre: 'Seguridad Informática', codigo: 'SIST112', seccion: 'G03', ciclo: '2026-I', horario: 'Vie 08:00-12:00', aula: 'Lab-106', alumnos: 28, creditos: 4 },
-  { id: 'SIST113', nombre: 'Desarrollo de Aplicaciones Móviles', codigo: 'SIST113', seccion: 'G01', ciclo: '2026-I', horario: 'Mar/Jue 14:00-16:00', aula: 'Lab-302', alumnos: 32, creditos: 3 },
-  { id: 'SIST114', nombre: 'Computación en la Nube', codigo: 'SIST114', seccion: 'G02', ciclo: '2026-I', horario: 'Lun/Mié 16:00-18:00', aula: 'H-303', alumnos: 28, creditos: 3 },
-  { id: 'SIST115', nombre: 'Análisis y Diseño de Sistemas', codigo: 'SIST115', seccion: 'G01', ciclo: '2026-I', horario: 'Jue 14:00-17:00', aula: 'H-404', alumnos: 29, creditos: 3 },
 ];
 
-// Docente
+// ============================================================
+// Cursos de la docente C13007 — Mg. Andrea Salazar Rojas (9 cursos)
+// ============================================================
+const COURSES_C13007 = [
+  { id: 'EDUC201', nombre: 'Metodología de la Investigación Científica', codigo: 'EDUC201', seccion: 'G01', ciclo: '2026-I', horario: 'Lun/Mié 08:00-10:00', aula: 'H-101', alumnos: 30, creditos: 4 },
+  { id: 'EDUC202', nombre: 'Estadística Aplicada a la Educación', codigo: 'EDUC202', seccion: 'G02', ciclo: '2026-I', horario: 'Mar/Jue 10:00-12:00', aula: 'H-203', alumnos: 27, creditos: 3 },
+  { id: 'EDUC203', nombre: 'Psicología del Aprendizaje', codigo: 'EDUC203', seccion: 'G01', ciclo: '2026-I', horario: 'Vie 14:00-18:00', aula: 'H-305', alumnos: 28, creditos: 4 },
+  { id: 'EDUC204', nombre: 'Diseño Curricular por Competencias', codigo: 'EDUC204', seccion: 'G03', ciclo: '2026-I', horario: 'Lun 18:00-21:00', aula: 'H-402', alumnos: 24, creditos: 3 },
+  { id: 'EDUC205', nombre: 'Tecnología Educativa e Innovación', codigo: 'EDUC205', seccion: 'G01', ciclo: '2026-I', horario: 'Mié/Vie 10:00-12:00', aula: 'Lab-201', alumnos: 31, creditos: 3 },
+  { id: 'EDUC206', nombre: 'Evaluación del Rendimiento Académico', codigo: 'EDUC206', seccion: 'G02', ciclo: '2026-I', horario: 'Mar 14:00-17:00', aula: 'H-104', alumnos: 27, creditos: 3 },
+  { id: 'EDUC207', nombre: 'Gestión y Liderazgo Educativo', codigo: 'EDUC207', seccion: 'G01', ciclo: '2026-I', horario: 'Jue 18:00-21:00', aula: 'H-503', alumnos: 31, creditos: 3 },
+  { id: 'EDUC208', nombre: 'Seminario de Tesis I', codigo: 'EDUC208', seccion: 'G01', ciclo: '2026-I', horario: 'Sab 08:00-12:00', aula: 'H-301', alumnos: 27, creditos: 4 },
+  { id: 'EDUC209', nombre: 'Ética y Responsabilidad Social Universitaria', codigo: 'EDUC209', seccion: 'G04', ciclo: '2026-I', horario: 'Lun/Mié 14:00-16:00', aula: 'H-202', alumnos: 30, creditos: 3 },
+];
+
+// ============================================================
+// Docentes
+// ============================================================
 export const TEACHER = {
   codigo: 'C13005',
   nombre: 'Dr. Carlos Mendoza Paredes',
@@ -231,3 +270,30 @@ export const TEACHER = {
   departamento: 'Ing. de Sistemas',
   avatar: null,
 };
+
+const TEACHER_C13007 = {
+  codigo: 'C13007',
+  nombre: 'Mg. Andrea Salazar Rojas',
+  email: 'c13007@utp.edu.pe',
+  cargo: 'Docente Titular',
+  departamento: 'Ing. de Sistemas',
+  avatar: null,
+};
+
+// ============================================================
+// Funciones dinámicas por docente autenticado
+// ============================================================
+
+/** Devuelve los cursos asignados al docente según su código */
+export function getCoursesForTeacher(codigo) {
+  const code = (codigo || '').toUpperCase();
+  if (code === 'C13007') return COURSES_C13007;
+  return COURSES_INITIAL; // Default: C13005
+}
+
+/** Devuelve los estudiantes mock enriquecidos del docente según su código */
+export function getStudentsForTeacher(codigo) {
+  const code = (codigo || '').toUpperCase();
+  if (code === 'C13007') return STUDENTS_C13007;
+  return STUDENTS_INITIAL; // Default: C13005
+}
