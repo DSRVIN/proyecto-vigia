@@ -90,7 +90,7 @@ export default function CallCenterDashboard() {
         codigo: student.codigo,
         nombre: student.nombre,
         ciclo: student.ciclo || '2026-I',
-        promedio: student.promedio,
+        promedio: typeof student.promedio === 'number' ? Math.round(student.promedio * 100) / 100 : student.promedio,
         asistencia: `${student.asistencia}%`,
         riesgo: student.riesgo,
         pago: estadoPago,
@@ -311,7 +311,7 @@ export default function CallCenterDashboard() {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <span className={`text-sm font-black ${student.promedio >= 12 ? 'text-emerald-600' : 'text-[#d32f2f]'}`}>
-                            {student.promedio}
+                            {typeof student.promedio === 'number' ? Math.round(student.promedio * 100) / 100 : student.promedio}
                           </span>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-600 font-semibold">
@@ -408,7 +408,7 @@ export default function CallCenterDashboard() {
                           <div className="grid grid-cols-3 gap-1 text-center">
                             <div className="bg-white p-1.5 rounded-lg border border-slate-200 shadow-sm">
                               <span className="text-[9px] text-slate-400 font-bold block">Promedio</span>
-                              <span className={`text-xs font-black ${selectedStudent.promedio >= 12 ? 'text-emerald-600' : 'text-red-600'}`}>{selectedStudent.promedio}</span>
+                              <span className={`text-xs font-black ${selectedStudent.promedio >= 12 ? 'text-emerald-600' : 'text-red-600'}`}>{typeof selectedStudent.promedio === 'number' ? Math.round(selectedStudent.promedio * 100) / 100 : selectedStudent.promedio}</span>
                             </div>
                             <div className="bg-white p-1.5 rounded-lg border border-slate-200 shadow-sm">
                               <span className="text-[9px] text-slate-400 font-bold block">Asistencia</span>

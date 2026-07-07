@@ -3,7 +3,7 @@ import { BookOpen, Users, Clock, AlertTriangle, TrendingUp, Star, ChevronRight, 
 import { useApp } from '../context/AppContext.jsx';
 import RiskBadge from '../components/ui/RiskBadge.jsx';
 import { supabase } from '../supabaseClient';
-import { STUDENTS_INITIAL, enrichStudentData } from '../data/dataset.js';
+import { STUDENTS_INITIAL, enrichStudentData, getStudentsForTeacher } from '../data/dataset.js';
 
 // Componente de píldora de estadísticas
 function StatPill({ icon: Icon, label, value, color }) {
@@ -190,56 +190,62 @@ export default function DashboardPage() {
       setLoading(true);
       setError(null);
       try {
-        const { data, error: dbError } = await supabase
-          .from('students')
-          .select('*, grades(pc1, pc2, pc3, pc4, promedio, nota_final, riesgo, necesita_pc4)');
+        const courseIds = courses.map(c => c.id);
+        
+        if (courseIds.length > 0) {
+          const { data, error: dbError } = await supabase
+            .from('students')
+            .select('*, grades(pc1, pc2, pc3, pc4, promedio, nota_final, riesgo, necesita_pc4)')
+            .in('curso_id', courseIds);
 
-        if (dbError) throw dbError;
+          if (dbError) throw dbError;
 
-        if (data && data.length > 0) {
-          const mapped = data.map(st => {
-            const rawGrades = Array.isArray(st.grades) ? st.grades[0] : st.grades;
-            const cleanGrades = {
-              PC1: rawGrades?.pc1 ?? 0,
-              PC2: rawGrades?.pc2 ?? 0,
-              PC3: rawGrades?.pc3 ?? 0,
-              PC4: rawGrades?.pc4 ?? 0,
-            };
-            const baseStudent = {
-              ...st,
-              cursoId: st.curso_id,
-              promedio: rawGrades?.promedio ?? 0,
-              notaFinal: rawGrades?.nota_final ?? 0,
-              riesgo: rawGrades?.riesgo ?? 'BAJO',
-              email: st.email || `${st.codigo?.toLowerCase()}@utp.edu.pe`,
-              grades: cleanGrades,
-              asistencia: st.asistencia ?? 75,
-              actividadDias: st.actividad_dias ?? st.actividadDias ?? 5,
-              actividadMensual: st.actividadMensual || [
-                { mes: 'Feb', accesos: 20 },
-                { mes: 'Mar', accesos: 18 },
-                { mes: 'Abr', accesos: 15 },
-                { mes: 'May', accesos: 10 },
-              ],
-              necesitaPC4: rawGrades?.necesita_pc4 ?? null,
-            };
-            return enrichStudentData(baseStudent);
-          });
-          actions.setStudents(mapped);
-        } else {
-          console.log('No students in database, seeding with mock data');
-          actions.setStudents(STUDENTS_INITIAL);
+          if (data && data.length > 0) {
+            const mapped = data.map(st => {
+              const rawGrades = Array.isArray(st.grades) ? st.grades[0] : st.grades;
+              const cleanGrades = {
+                PC1: rawGrades?.pc1 ?? 0,
+                PC2: rawGrades?.pc2 ?? 0,
+                PC3: rawGrades?.pc3 ?? 0,
+                PC4: rawGrades?.pc4 ?? 0,
+              };
+              const baseStudent = {
+                ...st,
+                cursoId: st.curso_id,
+                promedio: rawGrades?.promedio ?? 0,
+                notaFinal: rawGrades?.nota_final ?? 0,
+                riesgo: rawGrades?.riesgo ?? 'BAJO',
+                email: st.email || `${st.codigo?.toLowerCase()}@utp.edu.pe`,
+                grades: cleanGrades,
+                asistencia: st.asistencia ?? 75,
+                actividadDias: st.actividad_dias ?? st.actividadDias ?? 5,
+                actividadMensual: st.actividadMensual || [
+                  { mes: 'Feb', accesos: 20 },
+                  { mes: 'Mar', accesos: 18 },
+                  { mes: 'Abr', accesos: 15 },
+                  { mes: 'May', accesos: 10 },
+                ],
+                necesitaPC4: rawGrades?.necesita_pc4 ?? null,
+              };
+              return enrichStudentData(baseStudent);
+            });
+            actions.setStudents(mapped);
+            return;
+          }
         }
+
+        console.log('No students in database or no courses, seeding with mock data for', currentUser?.codigo);
+        actions.setStudents(getStudentsForTeacher(currentUser?.codigo));
       } catch (err) {
         console.error('Error fetching students, falling back to mock data:', err);
-        actions.setStudents(STUDENTS_INITIAL);
+        actions.setStudents(getStudentsForTeacher(currentUser?.codigo));
       } finally {
         setLoading(false);
       }
     };
 
     fetchStudents();
-  }, []);
+  }, [currentUser?.codigo, courses]);
 
   return (
     <div className="min-h-screen bg-slate-100 text-slate-900 pb-12">

@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useReducer, useCallback } from 'react';
-import { STUDENTS_INITIAL, COURSES_INITIAL, TEACHER, enrichStudentData } from '../data/dataset.js';
+import { STUDENTS_INITIAL, COURSES_INITIAL, TEACHER, enrichStudentData, getCoursesForTeacher } from '../data/dataset.js';
 import { calcPromedio, notaVisual, calcRiesgo, notaNecesariaPC4 } from '../services/metrics.service.js';
 
 // ============================================================
@@ -23,7 +23,7 @@ const initialState = {
 
   // Data
   students: [],
-  courses: COURSES_INITIAL,
+  courses: [],
   teacher: { codigo: '', nombre: 'Cargando...', email: '', cargo: '', departamento: '', avatar: null },
 
   // UI
@@ -43,6 +43,7 @@ function reducer(state, action) {
         authState: 'authenticated',
         currentUser: profile,
         teacher: profile,
+        courses: getCoursesForTeacher(profile.codigo),
       };
     }
 
@@ -56,6 +57,7 @@ function reducer(state, action) {
       return {
         ...initialState,
         students: [],
+        courses: [],
       };
 
     // NAVIGATION

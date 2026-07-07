@@ -47,10 +47,21 @@ export function useAuth() {
         console.warn('Advertencia al consultar perfil:', profileError.message);
       }
 
+      const teacherCode = email.split('@')[0].toUpperCase();
+      let defaultNombre = 'Dr. Docente UTP';
+      if (teacherCode === 'C13007') {
+        defaultNombre = 'Mg. Andrea Salazar Rojas';
+      } else if (teacherCode === 'C13005') {
+        defaultNombre = 'Dr. Carlos Mendoza Paredes';
+      }
+
       // Robust fallback if profile table is empty or lacks record
-      const teacherProfile = profile || {
-        codigo: email.split('@')[0].toUpperCase(),
-        nombre: user.user_metadata?.nombre || 'Dr. Docente UTP',
+      const teacherProfile = profile ? {
+        ...profile,
+        nombre: (!profile.nombre || profile.nombre === 'Dr. Docente UTP') ? defaultNombre : profile.nombre
+      } : {
+        codigo: teacherCode,
+        nombre: user.user_metadata?.nombre || defaultNombre,
         email: email,
         cargo: 'Docente Titular',
         departamento: 'Ing. de Sistemas',
