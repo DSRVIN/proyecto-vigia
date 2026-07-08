@@ -1,41 +1,29 @@
 import React, { createContext, useContext, useReducer, useCallback } from 'react';
 import { STUDENTS_INITIAL, COURSES_INITIAL, TEACHER, enrichStudentData, getCoursesForTeacher } from '../data/dataset.js';
-import { calcPromedio, notaVisual, calcRiesgo, notaNecesariaPC4 } from '../services/metrics.service.js';
-
-// ============================================================
-// Global Application State with useReducer
-// ============================================================
+import { calcPromedio, notaVisual, calcRiesgo, calcNotaNecesaria, getEvalConfig } from '../services/metrics.service.js';
 
 const AppContext = createContext(null);
 
 const initialState = {
-  // Auth
-  authState: 'login', // 'login' | 'recovery' | 'authenticated'
+  authState: 'login',
   currentUser: null,
   loginAttempts: 0,
   accountLocked: false,
   recoveryCode: null,
   recoveryEmail: null,
-
-  // Navigation
-  currentView: 'dashboard', // 'dashboard' | 'section' | 'admin' | 'callcenter'
+  currentView: 'dashboard',
   selectedCourse: null,
-
-  // Data
   students: [],
   courses: [],
   teacher: { codigo: '', nombre: 'Cargando...', email: '', cargo: '', departamento: '', avatar: null },
-
-  // UI
-  adminTab: 'students', // 'students' | 'courses' | 'grades'
+  adminTab: 'students',
   isNotificationsOpen: false,
-  kpiFilter: null, // 'CRITICO' | 'ALTO' | 'ABANDONO' | 'APROBADOS' | 'ALL'
+  kpiFilter: null,
 };
 
 function reducer(state, action) {
   switch (action.type) {
 
-    // AUTH
     case 'LOGIN_SUCCESS': {
       const { profile } = action.payload;
       return {
@@ -60,7 +48,6 @@ function reducer(state, action) {
         courses: [],
       };
 
-    // NAVIGATION
     case 'SELECT_COURSE':
       return { ...state, selectedCourse: action.payload, currentView: 'section' };
 
@@ -82,19 +69,27 @@ function reducer(state, action) {
     case 'SET_KPI_FILTER':
       return { ...state, kpiFilter: action.payload, currentView: 'kpi_students', selectedCourse: null };
 
-    // STUDENT CRUD
     case 'ADD_STUDENT': {
       const s = action.payload;
-      const grades = { PC1: s.PC1 || 0, PC2: s.PC2 || 0, PC3: s.PC3 || 0, PC4: s.PC4 || 0 };
-      const promedio = calcPromedio(grades);
+      const evals = getEvalConfig(s.cursoId || state.courses[0]?.id);
+      const grades = {};
+      evals.forEach(e => {
+        grades[e.key] = +(s[e.key] || 0);
+      });
+      const promedio = calcPromedio(grades, evals);
       const riesgo = calcRiesgo(promedio, s.asistencia || 0, s.actividadDias || 0);
+      const necesita = calcNotaNecesaria(grades, evals);
+      const ultimaEval = evals[evals.length - 1];
       const newStudent = {
         ...s,
         grades,
         promedio,
         notaFinal: notaVisual(promedio),
         riesgo,
-        necesitaPC4: notaNecesariaPC4(grades),
+        notaNecesaria: necesita,
+        notaNecesariaLabel: ultimaEval.label,
+        notaNecesariaKey: ultimaEval.key,
+        notaNecesariaWeight: ultimaEval.weight,
         actividadMensual: [
           { mes: 'Feb', accesos: 20 }, { mes: 'Mar', accesos: 18 },
           { mes: 'Abr', accesos: 15 }, { mes: 'May', accesos: 10 },
@@ -109,8 +104,11 @@ function reducer(state, action) {
       const updated = state.students.map(st => {
         if (st.codigo !== action.payload.codigo) return st;
         const grades = { ...st.grades, ...action.payload.changes };
-        const promedio = calcPromedio(grades);
+        const evals = getEvalConfig(st.cursoId || state.courses[0]?.id);
+        const promedio = calcPromedio(grades, evals);
         const riesgo = calcRiesgo(promedio, st.asistencia, st.actividadDias);
+        const necesita = calcNotaNecesaria(grades, evals);
+        const ultimaEval = evals[evals.length - 1];
         const updatedStudent = {
           ...st,
           ...action.payload.changes,
@@ -118,7 +116,10 @@ function reducer(state, action) {
           promedio,
           notaFinal: notaVisual(promedio),
           riesgo,
-          necesitaPC4: notaNecesariaPC4(grades),
+          notaNecesaria: necesita,
+          notaNecesariaLabel: ultimaEval.label,
+          notaNecesariaKey: ultimaEval.key,
+          notaNecesariaWeight: ultimaEval.weight,
         };
         return enrichStudentData(updatedStudent, true);
       });
@@ -136,7 +137,6 @@ function reducer(state, action) {
         ),
       };
 
-    // COURSE CRUD
     case 'ADD_COURSE':
       return { ...state, courses: [...state.courses, action.payload] };
 

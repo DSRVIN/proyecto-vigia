@@ -3,7 +3,7 @@ import { BookOpen, Users, Clock, AlertTriangle, TrendingUp, Star, ChevronRight, 
 import { useApp } from '../context/AppContext.jsx';
 import RiskBadge from '../components/ui/RiskBadge.jsx';
 import { supabase } from '../supabaseClient';
-import { STUDENTS_INITIAL, enrichStudentData, getStudentsForTeacher } from '../data/dataset.js';
+import { STUDENTS_INITIAL, enrichStudentData, getStudentsForTeacher, getEvalConfig } from '../data/dataset.js';
 
 // Componente de píldora de estadísticas
 function StatPill({ icon: Icon, label, value, color }) {
@@ -202,16 +202,16 @@ export default function DashboardPage() {
 
           if (data && data.length > 0) {
             const mapped = data.map(st => {
-              const rawGrades = Array.isArray(st.grades) ? st.grades[0] : st.grades;
-              const cleanGrades = {
-                PC1: rawGrades?.pc1 ?? 0,
-                PC2: rawGrades?.pc2 ?? 0,
-                PC3: rawGrades?.pc3 ?? 0,
-                PC4: rawGrades?.pc4 ?? 0,
-              };
+              const rawGrades = Array.isArray(st.grades) ? st.grades[0] : st.grades || {};
+              const cursoId = st.curso_id || 'SIST101';
+              const evals = getEvalConfig(cursoId);
+              const cleanGrades = {};
+              evals.forEach(e => {
+                cleanGrades[e.key] = rawGrades?.[e.key] ?? rawGrades?.[e.key] ?? 0;
+              });
               const baseStudent = {
                 ...st,
-                cursoId: st.curso_id,
+                cursoId,
                 promedio: rawGrades?.promedio ?? 0,
                 notaFinal: rawGrades?.nota_final ?? 0,
                 riesgo: rawGrades?.riesgo ?? 'BAJO',
@@ -225,7 +225,10 @@ export default function DashboardPage() {
                   { mes: 'Abr', accesos: 15 },
                   { mes: 'May', accesos: 10 },
                 ],
-                necesitaPC4: rawGrades?.necesita_pc4 ?? null,
+                notaNecesaria: rawGrades?.nota_necesaria ?? rawGrades?.necesita_pc4 ?? null,
+                notaNecesariaLabel: evals[evals.length - 1]?.label || 'Evaluación Final',
+                notaNecesariaKey: evals[evals.length - 1]?.key || null,
+                notaNecesariaWeight: evals[evals.length - 1]?.weight || 0,
               };
               return enrichStudentData(baseStudent);
             });

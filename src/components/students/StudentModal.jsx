@@ -8,18 +8,18 @@ import {
 } from 'recharts';
 import { useApp } from '../../context/AppContext.jsx';
 import RiskBadge from '../ui/RiskBadge.jsx';
-import { notaNecesariaPC4, ROUND_THRESHOLD, MIN_APPROVAL } from '../../data/dataset.js';
+import { getEvalConfig, ROUND_THRESHOLD, MIN_APPROVAL } from '../../data/dataset.js';
 import { generarMensajeIntervencion, obtenerIntervencionFallback } from '../../services/ia.service.js';
 import { enviarCorreoEstudiante } from '../../services/messaging.service.js';
 
-// AI Recommendations based on risk level
 function getAIRecommendations(student) {
   if (!student) return [];
   const nombreCorto = student.nombre ? student.nombre.split(' ')[0] : 'El estudiante';
   const actividadDias = student.actividadDias ?? 0;
   const asistencia = student.asistencia ?? 0;
   const promedio = student.promedio ?? 0;
-  const necesitaPC4Val = student.necesitaPC4 ?? 0;
+  const necesitaVal = student.notaNecesaria ?? 0;
+  const necesitaLabel = student.notaNecesariaLabel || 'la evaluación final';
 
   const recs = {
     CRITICO: [
@@ -37,7 +37,7 @@ function getAIRecommendations(student) {
         color: 'text-amber-600',
         bg: 'bg-amber-50 border-amber-200',
         border: 'border-amber-200',
-        texto: `Para recuperar la situación académica, el estudiante necesita obtener ${necesitaPC4Val ? necesitaPC4Val.toFixed(1) : 'N/A'} en la PC4. Proponer sesiones de tutoría individualizadas y refuerzo en los temas de mayor dificultad.`,
+        texto: `Para recuperar la situación académica, el estudiante necesita obtener ${necesitaVal ? necesitaVal.toFixed(1) : 'N/A'} en ${necesitaLabel}. Proponer sesiones de tutoría individualizadas y refuerzo en los temas de mayor dificultad.`,
       },
       {
         tipo: 'Análisis Predictivo IA',
@@ -55,7 +55,7 @@ function getAIRecommendations(student) {
         color: 'text-amber-600',
         bg: 'bg-amber-50 border-amber-200',
         border: 'border-amber-200',
-        texto: `Promedio actual ${promedio.toFixed(1)} está por debajo del mínimo aprobatorio. Asistencia del ${asistencia}% es recuperable. Recomendar plan de estudio intensivo para la PC4.`,
+        texto: `Promedio actual ${promedio.toFixed(1)} está por debajo del mínimo aprobatorio. Asistencia del ${asistencia}% es recuperable. Recomendar plan de estudio intensivo para ${necesitaLabel}.`,
       },
       {
         tipo: 'Análisis Predictivo IA',
@@ -73,7 +73,7 @@ function getAIRecommendations(student) {
         color: 'text-yellow-600',
         bg: 'bg-yellow-50 border-yellow-200',
         border: 'border-yellow-200',
-        texto: `El rendimiento está en zona de alerta. Con ${necesitaPC4Val ? necesitaPC4Val.toFixed(1) : 'menos de 12'} en la PC4 puede aprobar el curso. Motivar la participación activa en las sesiones de práctica.`,
+        texto: `El rendimiento está en zona de alerta. Con ${necesitaVal !== null ? necesitaVal.toFixed(1) : 'menos de 12'} en ${necesitaLabel} puede aprobar el curso. Motivar la participación activa en las sesiones de práctica.`,
       },
     ],
     BAJO: [
@@ -90,13 +90,13 @@ function getAIRecommendations(student) {
   return recs[student.riesgo] || recs.BAJO;
 }
 
-function GradeBar({ label, value, max = 20 }) {
+function GradeBar({ label, value, weight, max = 20 }) {
   const pct = (value / max) * 100;
   const color = value >= 12 ? 'from-emerald-500 to-teal-400' : value >= 10 ? 'from-amber-500 to-yellow-400' : 'from-red-600 to-red-400';
   return (
     <div className="space-y-1">
       <div className="flex justify-between text-xs">
-        <span className="text-slate-500 font-bold">{label}</span>
+        <span className="text-slate-500 font-bold">{label} ({(weight * 100).toFixed(0)}%)</span>
         <span className={`font-bold font-mono ${value >= 12 ? 'text-emerald-600' : value >= 10 ? 'text-amber-600' : 'text-red-500'}`}>
           {value.toFixed(1)}
         </span>
@@ -125,10 +125,9 @@ const CustomTooltip = ({ active, payload, label }) => {
 
 export default function StudentModal({ student, onClose }) {
   const { actions } = useApp();
-  
+
   if (!student) return null;
 
-  // Local States for AI generation
   const [isLoadingAI, setIsLoadingAI] = useState(false);
   const [isSendingEmail, setIsSendingEmail] = useState(false);
   const [aiComment, setAiComment] = useState('');
@@ -186,11 +185,14 @@ export default function StudentModal({ student, onClose }) {
     }
   };
 
+  const evals = getEvalConfig(student.cursoId);
   const recs = getAIRecommendations(student);
-  const grades = student.grades || { PC1: 0, PC2: 0, PC3: 0, PC4: 0 };
+  const grades = student.grades || {};
   const promedio = student.promedio ?? 0;
   const needsRounding = promedio >= ROUND_THRESHOLD && promedio < MIN_APPROVAL;
-  const pc4Needed = notaNecesariaPC4(grades);
+  const necesitaProyeccion = student.notaNecesaria;
+  const necesitaLabel = student.notaNecesariaLabel || evals[evals.length - 1]?.label || 'Evaluación Final';
+  const necesitaWeight = student.notaNecesariaWeight || evals[evals.length - 1]?.weight || 0;
 
   return (
     <div className="modal-backdrop fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-fade-in" onClick={onClose}>
@@ -234,46 +236,45 @@ export default function StudentModal({ student, onClose }) {
             ))}
           </div>
 
-          {/* PC4 Projection */}
-          {pc4Needed !== null && pc4Needed > 0 && (
+          {/* Projection for last evaluation */}
+          {necesitaProyeccion !== null && necesitaProyeccion > 0 && (
             <div className="bg-blue-50 border border-blue-100 rounded-xl p-4 shadow-sm">
               <div className="flex items-center gap-2 mb-2">
                 <BarChart2 size={15} className="text-blue-600" />
-                <span className="text-xs font-black text-blue-800 uppercase tracking-wider">Proyección PC4 — Motor UTP</span>
+                <span className="text-xs font-black text-blue-800 uppercase tracking-wider">Proyección — Motor UTP</span>
               </div>
               <p className="text-xs text-blue-950 font-medium">
                 Para alcanzar el <strong className="text-blue-900">11.5 acumulado</strong> (mínimo aprobatorio con redondeo),
                 el estudiante necesita obtener al menos{' '}
-                <strong className={`text-base font-black ${pc4Needed > 15 ? 'text-red-600' : pc4Needed > 12 ? 'text-amber-600' : 'text-emerald-600'}`}>
-                  {pc4Needed.toFixed(1)}
+                <strong className={`text-base font-black ${necesitaProyeccion > 15 ? 'text-red-600' : necesitaProyeccion > 12 ? 'text-amber-600' : 'text-emerald-600'}`}>
+                  {necesitaProyeccion.toFixed(1)}
                 </strong>
-                {' '}en la PC4 (peso: 40%).
+                {' '}en {necesitaLabel} (peso: {(necesitaWeight * 100).toFixed(0)}%).
               </p>
-              {pc4Needed > 18 && (
+              {necesitaProyeccion > 18 && (
                 <p className="text-[11px] text-red-600 font-bold mt-1.5">⚠ La nota requerida supera el 18/20 — recuperación muy difícil.</p>
               )}
             </div>
           )}
-          {pc4Needed === null && (
+          {necesitaProyeccion === null && (
             <div className="bg-red-50 border border-red-100 rounded-xl p-3 shadow-sm">
               <p className="text-xs text-red-700 font-bold flex items-center gap-1.5">
-                ⛔ <strong>Matemáticamente imposible aprobar:</strong> Incluso con 20/20 en PC4, no alcanzaría el mínimo de 11.5.
+                ⛔ <strong>Matemáticamente imposible aprobar:</strong> Incluso con 20/20 en {necesitaLabel}, no alcanzaría el mínimo de 11.5.
               </p>
             </div>
           )}
 
-          {/* Grades breakdown */}
+          {/* Dynamic grades breakdown */}
           <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-3 shadow-sm">
             <h3 className="text-xs font-black text-slate-700 flex items-center gap-1.5 uppercase tracking-wider">
-              <Award size={14} className="text-violet-600" /> Detalle de Notas (Pesos UTP)
+              <Award size={14} className="text-violet-600" /> Detalle de Notas — {student.cursoId}
             </h3>
-            <GradeBar label="PC1 (20%)" value={grades.PC1} />
-            <GradeBar label="PC2 (20%)" value={grades.PC2} />
-            <GradeBar label="PC3 (20%)" value={grades.PC3} />
-            <GradeBar label="PC4 (40%) — Pendiente" value={grades.PC4 || 0} />
+            {evals.map(e => (
+              <GradeBar key={e.key} label={e.label} value={grades[e.key] || 0} weight={e.weight} />
+            ))}
           </div>
 
-          {/* Academic & Financial Breakdown - Theme Claro, SIN scrollbars */}
+          {/* Academic & Financial Breakdown */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Financial Status */}
             <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-3 shadow-sm">
@@ -310,7 +311,7 @@ export default function StudentModal({ student, onClose }) {
               </div>
             </div>
 
-            {/* Critical Courses - SIN scrollbars */}
+            {/* Critical Courses */}
             {student.academic && (
               <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-3 shadow-sm">
                 <h3 className="text-xs font-black text-slate-700 flex items-center gap-1.5 uppercase tracking-wider">
@@ -358,7 +359,7 @@ export default function StudentModal({ student, onClose }) {
             </ResponsiveContainer>
           </div>
 
-          {/* AI INTERVENTION GENERATOR INTEGRATION (NEW) */}
+          {/* AI INTERVENTION GENERATOR INTEGRATION */}
           <div className="border-t border-slate-200/80 pt-4 space-y-4">
             {!showAIEditor ? (
               <button
@@ -375,7 +376,6 @@ export default function StudentModal({ student, onClose }) {
               </div>
             ) : (
               <div className="space-y-4 animate-fade-in">
-                {/* Diagnóstico IA */}
                 <div className="bg-violet-50 border border-violet-100 rounded-xl p-4 space-y-1.5 shadow-sm">
                   <div className="flex items-center gap-1.5">
                     <Zap size={14} className="text-violet-600" />
@@ -386,29 +386,26 @@ export default function StudentModal({ student, onClose }) {
                   </p>
                 </div>
 
-                {/* Asunto Editable */}
                 <div className="space-y-1">
                   <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest block">Asunto del Correo de Retención</label>
-                  <input 
-                    type="text" 
-                    value={emailSubject} 
+                  <input
+                    type="text"
+                    value={emailSubject}
                     onChange={(e) => setEmailSubject(e.target.value)}
                     className="w-full bg-slate-50 border border-slate-200 focus:border-blue-500 focus:bg-white rounded-xl px-3 py-2 text-xs text-slate-900 font-semibold outline-none transition-all shadow-inner"
                   />
                 </div>
 
-                {/* Cuerpo Editable */}
                 <div className="space-y-1">
                   <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest block">Cuerpo del Correo (Editable)</label>
-                  <textarea 
-                    value={emailBody} 
+                  <textarea
+                    value={emailBody}
                     onChange={(e) => setEmailBody(e.target.value)}
                     rows={8}
                     className="w-full bg-slate-50 border border-slate-200 focus:border-blue-500 focus:bg-white rounded-xl px-3 py-2 text-xs text-slate-900 font-medium leading-relaxed outline-none transition-all shadow-inner resize-y font-mono"
                   />
                 </div>
 
-                {/* Envío e Cancelación */}
                 <div className="flex gap-2">
                   <button
                     onClick={() => setShowAIEditor(false)}
@@ -438,7 +435,7 @@ export default function StudentModal({ student, onClose }) {
             )}
           </div>
 
-          {/* AI Static Recommendations (Re-styled to Light Theme) */}
+          {/* AI Static Recommendations */}
           <div className="space-y-3">
             <h3 className="text-xs font-black text-slate-700 flex items-center gap-1.5 uppercase tracking-wider">
               <Brain size={14} className="text-violet-600" /> Alertas Predictivas de Riesgo
@@ -454,7 +451,7 @@ export default function StudentModal({ student, onClose }) {
             ))}
           </div>
 
-          {/* Action buttons (Email directo y Cerrar) */}
+          {/* Action buttons */}
           {!showAIEditor && (
             <div className="flex gap-2 pt-2 border-t border-slate-200/60">
               <button
@@ -475,7 +472,7 @@ export default function StudentModal({ student, onClose }) {
         </div>
       </div>
 
-      {/* Floating Success/Error Toast */}
+      {/* Floating Toast */}
       {toast && (
         <div className="fixed bottom-5 right-5 z-[100] bg-slate-900 border border-slate-700/50 text-white rounded-2xl px-5 py-4 shadow-2xl flex items-center gap-3 animate-slide-in">
           <div className={`p-1.5 rounded-lg ${toast.type === 'success' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-red-500/20 text-red-400'}`}>
