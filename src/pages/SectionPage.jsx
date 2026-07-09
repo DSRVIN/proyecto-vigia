@@ -10,10 +10,10 @@ import {
 import { useApp } from '../context/AppContext.jsx';
 import RiskBadge, { RISK_CONFIG } from '../components/ui/RiskBadge.jsx';
 import { SkeletonStudentRow, SkeletonKPI } from '../components/ui/Skeleton.jsx';
+import { getEvalConfig } from '../data/dataset.js';
 
 const StudentModal = lazy(() => import('../components/students/StudentModal.jsx'));
 
-// ── KPI Card Adaptado al Estilo Claro ─────────────────────────
 function KPICard({ label, value, icon: Icon, color, sub }) {
   return (
     <div className="bg-white rounded-xl p-5 border border-slate-200 shadow-sm animate-fade-in flex flex-col justify-between">
@@ -31,7 +31,6 @@ function KPICard({ label, value, icon: Icon, color, sub }) {
   );
 }
 
-// ── Recharts Custom Tooltip Claro ────────────────────────────
 const CustomTooltip = ({ active, payload, label }) => {
   if (active && payload?.length) {
     return (
@@ -44,7 +43,6 @@ const CustomTooltip = ({ active, payload, label }) => {
   return null;
 };
 
-// ── Charts Panel Adaptado ─────────────────────────────────────
 function ChartsPanel({ students }) {
   const riskDist = useMemo(() => {
     const counts = { CRITICO: 0, ALTO: 0, MEDIO: 0, BAJO: 0 };
@@ -83,7 +81,6 @@ function ChartsPanel({ students }) {
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-8">
-      {/* Risk distribution donut */}
       <div className="bg-white rounded-xl p-5 border border-slate-200 shadow-sm">
         <h3 className="text-xs font-black uppercase tracking-wider text-slate-700 mb-4 flex items-center gap-2">
           <AlertTriangle size={14} className="text-amber-500" /> Distribución de Riesgo
@@ -110,7 +107,6 @@ function ChartsPanel({ students }) {
         </div>
       </div>
 
-      {/* Grade distribution bars */}
       <div className="bg-white rounded-xl p-5 border border-slate-200 shadow-sm">
         <h3 className="text-xs font-black uppercase tracking-wider text-slate-700 mb-4 flex items-center gap-2">
           <BarChart2 size={14} className="text-blue-600" /> Distribución de Promedios
@@ -130,7 +126,6 @@ function ChartsPanel({ students }) {
         </ResponsiveContainer>
       </div>
 
-      {/* Attendance radial */}
       <div className="bg-white rounded-xl p-5 border border-slate-200 shadow-sm flex flex-col items-center justify-center">
         <h3 className="text-xs font-black uppercase tracking-wider text-slate-700 mb-2 self-start flex items-center gap-2">
           <Activity size={14} className="text-violet-600" /> Asistencia Promedio
@@ -156,7 +151,6 @@ function ChartsPanel({ students }) {
   );
 }
 
-// ── Top 5 Critical Adaptado ───────────────────────────────────
 function Top5Critical({ students, onSelect }) {
   const top5 = useMemo(() =>
     [...students]
@@ -201,9 +195,11 @@ function Top5Critical({ students, onSelect }) {
   );
 }
 
-// ── Student Row Adaptado ──────────────────────────────────────
 function StudentRow({ student, onSelect, index }) {
   const isAbandono = student.actividadDias > 14;
+  const evals = getEvalConfig(student.cursoId);
+  const firstEvals = evals.slice(0, -1);
+
   return (
     <div
       className={`flex items-center gap-3 p-4 rounded-xl border transition-all cursor-pointer group hover:-translate-y-0.5 shadow-sm
@@ -214,7 +210,6 @@ function StudentRow({ student, onSelect, index }) {
       style={{ animationDelay: `${index * 30}ms` }}
       onClick={() => onSelect(student)}
     >
-      {/* Avatar */}
       <div className={`h-9 w-9 rounded-full flex items-center justify-center text-white text-xs font-black flex-shrink-0 shadow-sm
         ${student.riesgo === 'CRITICO' ? 'bg-gradient-to-br from-[#d32f2f] to-red-700' :
           student.riesgo === 'ALTO' ? 'bg-gradient-to-br from-amber-500 to-orange-600' :
@@ -224,7 +219,6 @@ function StudentRow({ student, onSelect, index }) {
         {student.nombre.split(' ').map(n => n[0]).slice(0, 2).join('')}
       </div>
 
-      {/* Name + code */}
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
           <p className="text-sm font-black text-slate-800 group-hover:text-slate-900 truncate">{student.nombre}</p>
@@ -242,24 +236,21 @@ function StudentRow({ student, onSelect, index }) {
         <p className="text-xs font-mono font-bold text-slate-400">{student.codigo}</p>
       </div>
 
-      {/* Risk */}
       <div className="hidden sm:block flex-shrink-0">
         <RiskBadge level={student.riesgo} size="xs" pulse={student.riesgo === 'CRITICO'} />
       </div>
 
-      {/* PC grades */}
       <div className="hidden md:flex items-center gap-1 flex-shrink-0">
-        {['PC1', 'PC2', 'PC3'].map(pc => (
-          <div key={pc} className="text-center w-10">
-            <p className={`text-xs font-black font-mono ${student.grades[pc] >= 12 ? 'text-emerald-600' : student.grades[pc] >= 10 ? 'text-amber-600' : 'text-[#d32f2f]'}`}>
-              {student.grades[pc]}
+        {firstEvals.map(e => (
+          <div key={e.key} className="text-center w-10">
+            <p className={`text-xs font-black font-mono ${student.grades[e.key] >= 12 ? 'text-emerald-600' : student.grades[e.key] >= 10 ? 'text-amber-600' : 'text-[#d32f2f]'}`}>
+              {student.grades[e.key]}
             </p>
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wide">{pc}</p>
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wide truncate max-w-[40px]">{e.label}</p>
           </div>
         ))}
       </div>
 
-      {/* Promedio */}
       <div className="text-right flex-shrink-0 w-16">
         <p className={`text-base font-black font-mono leading-tight ${student.notaFinal >= 12 ? 'text-emerald-600' : student.notaFinal >= 10 ? 'text-amber-600' : 'text-[#d32f2f]'}`}>
           {student.notaFinal}
@@ -267,7 +258,6 @@ function StudentRow({ student, onSelect, index }) {
         <p className="text-[11px] font-black text-slate-400 uppercase tracking-wider">promedio</p>
       </div>
 
-      {/* Attendance */}
       <div className="hidden lg:block text-right flex-shrink-0 w-14">
         <p className={`text-sm font-black font-mono leading-tight ${student.asistencia >= 75 ? 'text-emerald-600' : student.asistencia >= 65 ? 'text-amber-600' : 'text-[#d32f2f]'}`}>
           {student.asistencia}%
@@ -278,7 +268,6 @@ function StudentRow({ student, onSelect, index }) {
   );
 }
 
-// ── Main Section Page ─────────────────────────────────────────
 export default function SectionPage() {
   const { state, actions } = useApp();
   const { selectedCourse, students } = state;
@@ -288,8 +277,7 @@ export default function SectionPage() {
   const [sortField, setSortField] = useState('riesgo');
   const [sortAsc, setSortAsc] = useState(true);
   const [selectedStudent, setSelectedStudent] = useState(null);
-  
-  // Lazy loading states
+
   const [showList, setShowList] = useState(false);
   const [isListLoading, setIsListLoading] = useState(false);
 
@@ -361,7 +349,6 @@ export default function SectionPage() {
 
   return (
     <div className="min-h-screen bg-slate-100 max-w-screen-2xl mx-auto px-4 sm:px-6 py-8 text-slate-900">
-      {/* Back + title */}
       <div className="flex items-start justify-between mb-6 animate-fade-in">
         <div>
           <button
@@ -381,7 +368,6 @@ export default function SectionPage() {
         </div>
       </div>
 
-      {/* KPI row */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mb-8">
         <KPICard label="Alumnos" value={kpis.total} icon={Users} color="text-blue-600" sub="matriculados" />
         <KPICard label="Críticos" value={kpis.criticos} icon={AlertTriangle} color="text-[#d32f2f]" sub="intervención urgente" />
@@ -391,15 +377,11 @@ export default function SectionPage() {
         <KPICard label="Promedio" value={kpis.promedio} icon={BarChart2} color="text-blue-500" sub="grupo" />
       </div>
 
-      {/* Charts */}
       <ChartsPanel students={courseStudents} />
 
-      {/* Top 5 Critical */}
       <Top5Critical students={courseStudents} onSelect={setSelectedStudent} />
 
-      {/* Student list */}
       <div className="bg-white rounded-2xl border border-slate-200 shadow-xl overflow-hidden">
-        {/* List header */}
         <div className="p-5 border-b border-slate-200 bg-slate-50/50">
           <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
             <h2 className="text-base font-black uppercase tracking-wide text-slate-800 flex items-center gap-2">
@@ -408,7 +390,6 @@ export default function SectionPage() {
               <span className="text-sm font-bold text-slate-400">({filtered.length} de {courseStudents.length})</span>
             </h2>
 
-            {/* Filters */}
             <div className="flex items-center gap-2 flex-wrap">
               <div className="flex items-center gap-1">
                 {['ALL', 'CRITICO', 'ALTO', 'MEDIO', 'BAJO'].map(r => (
@@ -428,7 +409,6 @@ export default function SectionPage() {
             </div>
           </div>
 
-          {/* Search */}
           {showList && (
             <div className="relative mt-4 animate-fade-in">
               <Search size={16} className="absolute left-3 top-3 text-slate-400" />
@@ -447,7 +427,6 @@ export default function SectionPage() {
             </div>
           )}
 
-          {/* Sort buttons */}
           {showList && (
             <div className="flex items-center gap-2 mt-3.5 animate-fade-in">
               <span className="text-xs font-black text-slate-400 uppercase tracking-wider mr-1">Ordenar:</span>
@@ -456,8 +435,8 @@ export default function SectionPage() {
                   key={field}
                   onClick={() => toggleSort(field)}
                   className={`flex items-center gap-1 text-xs font-black uppercase tracking-wider px-3 py-1.5 rounded-lg transition-all border ${
-                    sortField === field 
-                      ? 'text-blue-600 bg-blue-50 border-blue-200' 
+                    sortField === field
+                      ? 'text-blue-600 bg-blue-50 border-blue-200'
                       : 'text-slate-600 border-slate-200 bg-white hover:bg-slate-50 shadow-sm'
                   }`}
                 >
@@ -468,7 +447,6 @@ export default function SectionPage() {
           )}
         </div>
 
-        {/* List body */}
         <div className="p-4 space-y-2 max-h-[600px] overflow-y-auto custom-scrollbar bg-slate-50/30 min-h-[300px] flex flex-col justify-center">
           {!showList ? (
             <div className="text-center py-10 flex-1 flex flex-col items-center justify-center">
@@ -479,7 +457,7 @@ export default function SectionPage() {
               <p className="text-sm font-bold text-slate-600 mb-6 max-w-sm mx-auto leading-relaxed">
                 Para optimizar el rendimiento, la lista completa de {courseStudents.length} alumnos se carga bajo demanda.
               </p>
-              <button 
+              <button
                 onClick={handleToggleList}
                 className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-black uppercase tracking-wider rounded-xl transition-all hover:scale-[1.01] active:scale-95 shadow-md"
               >
@@ -499,7 +477,7 @@ export default function SectionPage() {
           ) : (
             <>
               <div className="flex justify-end mb-1 px-1">
-                <button 
+                <button
                   onClick={handleToggleList}
                   className="text-xs text-slate-400 hover:text-blue-600 transition-colors flex items-center gap-1 font-black uppercase tracking-wider"
                 >
@@ -514,7 +492,6 @@ export default function SectionPage() {
         </div>
       </div>
 
-      {/* Student modal */}
       {selectedStudent && (
         <Suspense fallback={null}>
           <StudentModal student={selectedStudent} onClose={() => setSelectedStudent(null)} />

@@ -1,13 +1,7 @@
-// ============================================================
-// VIGÍA - Dataset de prueba: 30 estudiantes con datos variados
-// Motor de cálculo académico UTP
-// ============================================================
+import { calcPromedio, notaVisual, calcRiesgo, calcNotaNecesaria, getEvalConfig, ROUND_THRESHOLD, MIN_APPROVAL } from '../services/metrics.service.js';
 
-import { calcPromedio, notaVisual, calcRiesgo, notaNecesariaPC4, ROUND_THRESHOLD, MIN_APPROVAL } from '../services/metrics.service.js';
+export { ROUND_THRESHOLD, MIN_APPROVAL, getEvalConfig };
 
-export { notaNecesariaPC4, ROUND_THRESHOLD, MIN_APPROVAL };
-
-// Génera historial de actividad mensual
 function genActividad(base) {
   return [
     { mes: 'Feb', accesos: base + Math.floor(Math.random() * 10) },
@@ -17,7 +11,6 @@ function genActividad(base) {
   ];
 }
 
-// Generación dinámica de estudiantes para balancear datos realistas
 const firstNames = ['Valentina', 'Andrés', 'Sofía', 'Diego', 'Camila', 'Rodrigo', 'Luciana', 'Sebastián', 'Isabella', 'Emiliano', 'Daniela', 'Matías', 'Valeria', 'Nicolás', 'Natalia', 'Tomás', 'Renata', 'Felipe', 'Ariana', 'Santiago', 'Mariana', 'Alejandro', 'Gabriela', 'Joaquín', 'Catalina', 'Maximiliano', 'Fernanda', 'Ignacio', 'Bruno', 'Ximena', 'Mateo', 'Emma', 'Lucas', 'Martina', 'Leonardo', 'Mia', 'Hugo', 'Zoe', 'Martín', 'Alma'];
 const lastNames = ['Quispe', 'Rojas', 'Mamani', 'Condori', 'Huanca', 'Pilco', 'Torres', 'Alvarez', 'Salazar', 'Flores', 'Vargas', 'Medina', 'Paz', 'Mendoza', 'Chávez', 'Ramos', 'Morales', 'Cabrera', 'Cáceres', 'Paredes', 'Romero', 'Sánchez', 'Herrera', 'Gutiérrez', 'Reyes', 'Castillo', 'Peña', 'Villanueva', 'Cruz', 'López', 'Vega', 'Espinoza', 'Acosta', 'Mendívil', 'Aguilar', 'Toro', 'Delgado', 'Montoya', 'Fuentes', 'Ríos'];
 const careers = ['Ingeniería de Sistemas', 'Administración', 'Contabilidad', 'Derecho', 'Ingeniería Civil', 'Psicología', 'Marketing'];
@@ -27,46 +20,51 @@ function generateStudent(courseId, profile) {
   const nombre = `${firstNames[Math.floor(Math.random() * firstNames.length)]} ${lastNames[Math.floor(Math.random() * lastNames.length)]} ${lastNames[Math.floor(Math.random() * lastNames.length)]}`;
   const carrera = careers[Math.floor(Math.random() * careers.length)];
   const ciclo = ['2do', '4to', '6to', '8vo'][Math.floor(Math.random() * 4)];
-  
-  let PC1, PC2, PC3, asistencia, actividadDias;
+
+  const evals = getEvalConfig(courseId);
+  const grades = {};
+
+  evals.forEach(e => {
+    let base;
+    if (profile === 'good') {
+      base = 14 + Math.floor(Math.random() * 7);
+    } else if (profile === 'average') {
+      base = 11 + Math.floor(Math.random() * 4);
+    } else if (profile === 'risk_attendance') {
+      base = 12 + Math.floor(Math.random() * 6);
+    } else if (profile === 'risk_grades') {
+      base = 5 + Math.floor(Math.random() * 5);
+    } else {
+      base = 0 + Math.floor(Math.random() * 6);
+    }
+    grades[e.key] = Math.min(20, Math.max(0, base));
+  });
+
+  // La última evaluación está pendiente (aún no realizada)
+  const lastKey = evals[evals.length - 1].key;
+  grades[lastKey] = null;
+
+  let asistencia, actividadDias;
   if (profile === 'good') {
-    PC1 = 14 + Math.floor(Math.random() * 7);
-    PC2 = 14 + Math.floor(Math.random() * 7);
-    PC3 = 14 + Math.floor(Math.random() * 7);
     asistencia = 85 + Math.floor(Math.random() * 16);
     actividadDias = 1 + Math.floor(Math.random() * 4);
   } else if (profile === 'average') {
-    PC1 = 11 + Math.floor(Math.random() * 4);
-    PC2 = 11 + Math.floor(Math.random() * 4);
-    PC3 = 11 + Math.floor(Math.random() * 4);
     asistencia = 75 + Math.floor(Math.random() * 11);
     actividadDias = 3 + Math.floor(Math.random() * 5);
   } else if (profile === 'risk_attendance') {
-    PC1 = 12 + Math.floor(Math.random() * 6);
-    PC2 = 12 + Math.floor(Math.random() * 6);
-    PC3 = 12 + Math.floor(Math.random() * 6);
     asistencia = 50 + Math.floor(Math.random() * 15);
     actividadDias = 5 + Math.floor(Math.random() * 8);
   } else if (profile === 'risk_grades') {
-    PC1 = 5 + Math.floor(Math.random() * 5);
-    PC2 = 5 + Math.floor(Math.random() * 5);
-    PC3 = 5 + Math.floor(Math.random() * 5);
     asistencia = 70 + Math.floor(Math.random() * 20);
     actividadDias = 5 + Math.floor(Math.random() * 10);
-  } else { // critical_abandonment
-    PC1 = 0 + Math.floor(Math.random() * 6);
-    PC2 = 0 + Math.floor(Math.random() * 6);
-    PC3 = 0 + Math.floor(Math.random() * 6);
+  } else {
     asistencia = 20 + Math.floor(Math.random() * 30);
     actividadDias = 15 + Math.floor(Math.random() * 20);
   }
 
-  return { codigo: code, nombre, carrera, ciclo, PC1, PC2, PC3, PC4: null, asistencia, actividadDias, cursoId: courseId };
+  return { codigo: code, nombre, carrera, ciclo, grades, asistencia, actividadDias, cursoId: courseId };
 }
 
-// ============================================================
-// Perfiles de estudiantes por curso — Docente C13005
-// ============================================================
 const courseProfilesC13005 = [
   { id: 'SIST101', counts: { good: 10, average: 15, risk_attendance: 2, risk_grades: 4, critical_abandonment: 1 } },
   { id: 'SIST102', counts: { good: 5, average: 10, risk_attendance: 1, risk_grades: 12, critical_abandonment: 2 } },
@@ -79,9 +77,6 @@ const courseProfilesC13005 = [
   { id: 'SIST109', counts: { good: 11, average: 14, risk_attendance: 1, risk_grades: 3, critical_abandonment: 1 } },
 ];
 
-// ============================================================
-// Perfiles de estudiantes por curso — Docente C13007
-// ============================================================
 const courseProfilesC13007 = [
   { id: 'EDUC201', counts: { good: 8, average: 12, risk_attendance: 3, risk_grades: 5, critical_abandonment: 2 } },
   { id: 'EDUC202', counts: { good: 11, average: 9, risk_attendance: 2, risk_grades: 4, critical_abandonment: 1 } },
@@ -94,7 +89,6 @@ const courseProfilesC13007 = [
   { id: 'EDUC209', counts: { good: 5, average: 11, risk_attendance: 4, risk_grades: 7, critical_abandonment: 3 } },
 ];
 
-// Genera estudiantes a partir de perfiles de curso
 function generateStudentsFromProfiles(profiles) {
   const students = [];
   profiles.forEach(cp => {
@@ -110,17 +104,15 @@ function generateStudentsFromProfiles(profiles) {
 const rawStudentsC13005 = generateStudentsFromProfiles(courseProfilesC13005);
 const rawStudentsC13007 = generateStudentsFromProfiles(courseProfilesC13007);
 
-// Procesa y enriquece los datos
 export function enrichStudentData(student, forceRefresh = false) {
   if (student.academic && student.detalle_pagos && !forceRefresh) return student;
 
   const codeVal = parseInt(student.codigo?.replace(/\D/g, '') || '0', 10);
-  
-  // 1. Payment status and details (normalize to PENDIENTE or PAGADO)
-  const isPaid = student.estado_pago?.toUpperCase() === 'PAGADO' || 
+
+  const isPaid = student.estado_pago?.toUpperCase() === 'PAGADO' ||
                  student.estado_pago?.toUpperCase() === 'PAGO' ||
                  (student.estado_pago === undefined && codeVal % 3 !== 0);
-                 
+
   const normalizedEstadoPago = isPaid ? 'PAGADO' : 'PENDIENTE';
 
   const detalle_pagos = isPaid ? {
@@ -128,31 +120,29 @@ export function enrichStudentData(student, forceRefresh = false) {
     monto_pendiente: 0.00,
     proximo_vencimiento: '2026-07-30'
   } : {
-    cuotas_vencidas: (codeVal % 2) + 1, // 1 or 2 overdue cuotas
-    monto_pendiente: ((codeVal % 3) + 1) * 350.00, // 350, 700, or 1050
+    cuotas_vencidas: (codeVal % 2) + 1,
+    monto_pendiente: ((codeVal % 3) + 1) * 350.00,
     proximo_vencimiento: '2026-06-30'
   };
 
-  // 2. Academic general statistics
   const asistVal = student.asistencia ?? 75;
   const asistencia_global = Number((asistVal / 100).toFixed(2));
-  
+
   const inactividadDias = student.actividadDias ?? 5;
   const actividad_campus = inactividadDias > 14 ? 'Baja' : inactividadDias > 7 ? 'Media' : 'Alta';
 
-  // 3. Courses selection depending on student's career
   const career = student.carrera || 'Ingeniería de Sistemas';
   let academicCursos = [];
-  
+
   const avg = student.promedio ?? 11.5;
-  
+
   const generateCourseGrade = (courseName) => {
     let grade = avg + (Math.random() * 4 - 2);
     grade = Math.max(0, Math.min(20, Number(grade.toFixed(1))));
-    
+
     let courseAsist = asistencia_global + (Math.random() * 0.1 - 0.05);
     courseAsist = Math.max(0, Math.min(1.0, Number(courseAsist.toFixed(2))));
-    
+
     const actLevels = ['Baja', 'Media', 'Alta'];
     let actIndex = actLevels.indexOf(actividad_campus);
     if (Math.random() > 0.7) {
@@ -202,20 +192,29 @@ export function enrichStudentData(student, forceRefresh = false) {
   };
 }
 
-// Función para enriquecer un array de raw students
 function enrichRawStudents(rawStudents) {
   return rawStudents.map(s => {
-    const grades = { PC1: s.PC1, PC2: s.PC2, PC3: s.PC3, PC4: s.PC4 ?? 0 };
-    const promedio = calcPromedio({ ...grades, PC4: grades.PC4 });
+    const evals = getEvalConfig(s.cursoId);
+    const currentGrades = {};
+    evals.forEach(e => {
+      currentGrades[e.key] = s.grades[e.key] ?? 0;
+    });
+
+    const promedio = calcPromedio(currentGrades, evals);
+    const necesita = calcNotaNecesaria(currentGrades, evals);
     const riesgo = calcRiesgo(promedio, s.asistencia, s.actividadDias);
-    
+    const ultimaEval = evals[evals.length - 1];
+
     return enrichStudentData({
       ...s,
-      grades,
+      grades: currentGrades,
       promedio,
       notaFinal: notaVisual(promedio),
       riesgo,
-      necesitaPC4: notaNecesariaPC4({ PC1: s.PC1, PC2: s.PC2, PC3: s.PC3 }),
+      notaNecesaria: necesita,
+      notaNecesariaLabel: necesita !== null ? ultimaEval.label : ultimaEval.label,
+      notaNecesariaKey: ultimaEval.key,
+      notaNecesariaWeight: ultimaEval.weight,
       actividadMensual: genActividad(Math.floor(30 - s.actividadDias * 0.8)),
       email: `${s.codigo.toLowerCase()}@utp.edu.pe`,
       foto: null,
@@ -225,13 +224,9 @@ function enrichRawStudents(rawStudents) {
   });
 }
 
-// Estudiantes enriquecidos por docente (retrocompatibilidad)
 export const STUDENTS_INITIAL = enrichRawStudents(rawStudentsC13005);
 const STUDENTS_C13007 = enrichRawStudents(rawStudentsC13007);
 
-// ============================================================
-// Cursos del docente C13005 (15 cursos)
-// ============================================================
 export const COURSES_INITIAL = [
   { id: 'SIST101', nombre: 'Algoritmos y Estructuras de Datos', codigo: 'SIST101', seccion: 'G01', ciclo: '2026-I', horario: 'Lun/Mié 08:00-10:00', aula: 'H-201', alumnos: 32, creditos: 4 },
   { id: 'SIST102', nombre: 'Ingeniería de Software I', codigo: 'SIST102', seccion: 'G02', ciclo: '2026-I', horario: 'Mar/Jue 10:00-12:00', aula: 'H-305', alumnos: 30, creditos: 3 },
@@ -244,9 +239,6 @@ export const COURSES_INITIAL = [
   { id: 'SIST109', nombre: 'Hojas de Estilo en Cascada Avanzada', codigo: 'SIST109', seccion: 'G04', ciclo: '2026-I', horario: 'Lun/Mié 14:00-16:00', aula: 'Lab-105', alumnos: 30, creditos: 3 },
 ];
 
-// ============================================================
-// Cursos de la docente C13007 — Mg. Andrea Salazar Rojas (9 cursos)
-// ============================================================
 const COURSES_C13007 = [
   { id: 'EDUC201', nombre: 'Metodología de la Investigación Científica', codigo: 'EDUC201', seccion: 'G01', ciclo: '2026-I', horario: 'Lun/Mié 08:00-10:00', aula: 'H-101', alumnos: 30, creditos: 4 },
   { id: 'EDUC202', nombre: 'Estadística Aplicada a la Educación', codigo: 'EDUC202', seccion: 'G02', ciclo: '2026-I', horario: 'Mar/Jue 10:00-12:00', aula: 'H-203', alumnos: 27, creditos: 3 },
@@ -259,9 +251,6 @@ const COURSES_C13007 = [
   { id: 'EDUC209', nombre: 'Ética y Responsabilidad Social Universitaria', codigo: 'EDUC209', seccion: 'G04', ciclo: '2026-I', horario: 'Lun/Mié 14:00-16:00', aula: 'H-202', alumnos: 30, creditos: 3 },
 ];
 
-// ============================================================
-// Docentes
-// ============================================================
 export const TEACHER = {
   codigo: 'C13005',
   nombre: 'Dr. Carlos Mendoza Paredes',
@@ -280,20 +269,14 @@ const TEACHER_C13007 = {
   avatar: null,
 };
 
-// ============================================================
-// Funciones dinámicas por docente autenticado
-// ============================================================
-
-/** Devuelve los cursos asignados al docente según su código */
 export function getCoursesForTeacher(codigo) {
   const code = (codigo || '').toUpperCase();
   if (code === 'C13007') return COURSES_C13007;
-  return COURSES_INITIAL; // Default: C13005
+  return COURSES_INITIAL;
 }
 
-/** Devuelve los estudiantes mock enriquecidos del docente según su código */
 export function getStudentsForTeacher(codigo) {
   const code = (codigo || '').toUpperCase();
   if (code === 'C13007') return STUDENTS_C13007;
-  return STUDENTS_INITIAL; // Default: C13005
+  return STUDENTS_INITIAL;
 }

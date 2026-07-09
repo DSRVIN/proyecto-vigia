@@ -5,15 +5,15 @@ import {
 } from 'lucide-react';
 import { useApp } from '../context/AppContext.jsx';
 import RiskBadge from '../components/ui/RiskBadge.jsx';
+import { getEvalConfig } from '../data/dataset.js';
 
-// ── Tab button (Botones estilizados sobre fondo gris) ────────────────────────
 function TabBtn({ active, onClick, icon: Icon, label, count }) {
   return (
     <button
       onClick={onClick}
       className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-extrabold transition-all uppercase tracking-wider border ${
         active
-          ? 'bg-[#d32f2f] border-[#b71c1c] text-white shadow-lg shadow-red-200' 
+          ? 'bg-[#d32f2f] border-[#b71c1c] text-white shadow-lg shadow-red-200'
           : 'text-slate-600 border-transparent hover:text-[#d32f2f] hover:bg-white transition-all'
       }`}
     >
@@ -28,7 +28,6 @@ function TabBtn({ active, onClick, icon: Icon, label, count }) {
   );
 }
 
-// ── Input field helper ──────────────────────────────────────────────────────
 function Field({ label, children }) {
   return (
     <div className="space-y-1">
@@ -38,16 +37,15 @@ function Field({ label, children }) {
   );
 }
 
-// Inputs integrados (Gris claro para contrastar dentro de los recuadros blancos)
 const inputCls = "w-full bg-slate-50 border border-slate-200 focus:border-[#d32f2f] focus:bg-white rounded-xl px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400 outline-none transition-all shadow-inner";
 
-// ── Students Tab ────────────────────────────────────────────────────────────
 function StudentsTab() {
   const { state, actions } = useApp();
   const [search, setSearch] = useState('');
   const [editing, setEditing] = useState(null);
   const [showAdd, setShowAdd] = useState(false);
-  const [form, setForm] = useState({ codigo: '', nombre: '', carrera: '', ciclo: '', asistencia: 75, actividadDias: 5, PC1: 0, PC2: 0, PC3: 0, PC4: 0, cursoId: state.courses[0]?.id || '' });
+  const [formCourse, setFormCourse] = useState(state.courses[0]?.id || '');
+  const [form, setForm] = useState({ codigo: '', nombre: '', carrera: '', ciclo: '', asistencia: 75, actividadDias: 5, cursoId: state.courses[0]?.id || '' });
 
   const filtered = useMemo(() => {
     const q = search.toLowerCase().trim();
@@ -56,11 +54,20 @@ function StudentsTab() {
     );
   }, [state.students, search]);
 
+  const evals = useMemo(() => getEvalConfig(formCourse), [formCourse]);
+
+  const handleCourseChange = (courseId) => {
+    setFormCourse(courseId);
+    setForm(p => ({ ...p, cursoId: courseId }));
+  };
+
   const handleAdd = () => {
     if (!form.codigo || !form.nombre) return;
-    actions.addStudent({ ...form, PC1: +form.PC1, PC2: +form.PC2, PC3: +form.PC3, PC4: +form.PC4, asistencia: +form.asistencia, actividadDias: +form.actividadDias });
+    actions.addStudent({ ...form, asistencia: +form.asistencia, actividadDias: +form.actividadDias, cursoId: formCourse });
     setShowAdd(false);
-    setForm({ codigo: '', nombre: '', carrera: '', ciclo: '', asistencia: 75, actividadDias: 5, PC1: 0, PC2: 0, PC3: 0, PC4: 0, cursoId: state.courses[0]?.id || '' });
+    const initialEvals = {};
+    evals.forEach(e => { initialEvals[e.key] = 0; });
+    setForm({ codigo: '', nombre: '', carrera: '', ciclo: '', asistencia: 75, actividadDias: 5, cursoId: state.courses[0]?.id || '', ...initialEvals });
   };
 
   return (
@@ -79,21 +86,22 @@ function StudentsTab() {
         <div className="bg-white rounded-2xl p-5 border border-red-200 shadow-xl animate-fade-in space-y-4">
           <h3 className="text-xs font-black text-[#d32f2f] uppercase tracking-widest flex items-center gap-2"><Plus size={14} /> Nuevo Estudiante</h3>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+            <Field label="Curso">
+              <select value={formCourse} onChange={e => handleCourseChange(e.target.value)} className={`${inputCls} bg-slate-50`}>
+                {state.courses.map(c => <option key={c.id} value={c.id}>{c.nombre}</option>)}
+              </select>
+            </Field>
             <Field label="Código U"><input value={form.codigo} onChange={e => setForm(p => ({ ...p, codigo: e.target.value.toUpperCase() }))} placeholder="U23123456" className={inputCls} /></Field>
             <Field label="Nombre completo"><input value={form.nombre} onChange={e => setForm(p => ({ ...p, nombre: e.target.value }))} placeholder="Nombre Apellido" className={inputCls} /></Field>
             <Field label="Carrera"><input value={form.carrera} onChange={e => setForm(p => ({ ...p, carrera: e.target.value }))} placeholder="Ingeniería de Sistemas" className={inputCls} /></Field>
             <Field label="Ciclo"><input value={form.ciclo} onChange={e => setForm(p => ({ ...p, ciclo: e.target.value }))} placeholder="2do" className={inputCls} /></Field>
             <Field label="Asistencia %"><input type="number" min="0" max="100" value={form.asistencia} onChange={e => setForm(p => ({ ...p, asistencia: e.target.value }))} className={inputCls} /></Field>
             <Field label="Días inactivo"><input type="number" min="0" value={form.actividadDias} onChange={e => setForm(p => ({ ...p, actividadDias: e.target.value }))} className={inputCls} /></Field>
-            <Field label="PC1"><input type="number" min="0" max="20" value={form.PC1} onChange={e => setForm(p => ({ ...p, PC1: e.target.value }))} className={inputCls} /></Field>
-            <Field label="PC2"><input type="number" min="0" max="20" value={form.PC2} onChange={e => setForm(p => ({ ...p, PC2: e.target.value }))} className={inputCls} /></Field>
-            <Field label="PC3"><input type="number" min="0" max="20" value={form.PC3} onChange={e => setForm(p => ({ ...p, PC3: e.target.value }))} className={inputCls} /></Field>
-            <Field label="PC4"><input type="number" min="0" max="20" value={form.PC4} onChange={e => setForm(p => ({ ...p, PC4: e.target.value }))} className={inputCls} /></Field>
-            <Field label="Curso">
-              <select value={form.cursoId} onChange={e => setForm(p => ({ ...p, cursoId: e.target.value }))} className={`${inputCls} bg-slate-50`}>
-                {state.courses.map(c => <option key={c.id} value={c.id}>{c.nombre}</option>)}
-              </select>
-            </Field>
+            {evals.map(e => (
+              <Field key={e.key} label={`${e.label} (${(e.weight * 100).toFixed(0)}%)`}>
+                <input type="number" min="0" max="20" step="0.5" value={form[e.key] ?? 0} onChange={e2 => setForm(p => ({ ...p, [e.key]: e2.target.value }))} className={inputCls} />
+              </Field>
+            ))}
           </div>
           <div className="flex gap-2 pt-2">
             <button onClick={handleAdd} className="flex items-center gap-1.5 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-black uppercase tracking-wider transition-all"><Save size={14} /> Guardar</button>
@@ -102,12 +110,11 @@ function StudentsTab() {
         </div>
       )}
 
-      {/* Recuadro de la Tabla Blanco sobre Fondo Gris */}
       <div className="overflow-x-auto rounded-2xl border border-slate-200 bg-white shadow-xl">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-slate-200 bg-slate-50">
-              {['Código', 'Nombre', 'Riesgo', 'PC1', 'PC2', 'PC3', 'PC4', 'Promedio', 'Asist.', 'Acciones'].map(h => (
+              {['Código', 'Nombre', 'Riesgo', 'Promedio', 'Asist.', 'Acciones'].map(h => (
                 <th key={h} className="text-left px-4 py-3.5 text-xs font-black text-slate-500 uppercase tracking-widest whitespace-nowrap">{h}</th>
               ))}
             </tr>
@@ -130,12 +137,17 @@ function StudentsTab() {
 
 function StudentRow({ student: s, editing, setEditing, actions }) {
   const isEditing = editing === s.codigo;
-  const [vals, setVals] = useState({ PC1: s.grades.PC1, PC2: s.grades.PC2, PC3: s.grades.PC3, PC4: s.grades.PC4, asistencia: s.asistencia, actividadDias: s.actividadDias });
+  const evals = getEvalConfig(s.cursoId);
+  const initialVals = {};
+  evals.forEach(e => { initialVals[e.key] = s.grades[e.key] ?? 0; });
+  const [vals, setVals] = useState({ ...initialVals, asistencia: s.asistencia, actividadDias: s.actividadDias });
 
   const handleSave = () => {
+    const gradeChanges = {};
+    evals.forEach(e => { gradeChanges[e.key] = +vals[e.key]; });
     actions.updateStudent(s.codigo, {
-      grades: { PC1: +vals.PC1, PC2: +vals.PC2, PC3: +vals.PC3, PC4: +vals.PC4 },
-      PC1: +vals.PC1, PC2: +vals.PC2, PC3: +vals.PC3, PC4: +vals.PC4,
+      grades: gradeChanges,
+      ...gradeChanges,
       asistencia: +vals.asistencia,
       actividadDias: +vals.actividadDias,
     });
@@ -144,7 +156,7 @@ function StudentRow({ student: s, editing, setEditing, actions }) {
 
   const miniInput = (field) => (
     <input
-      type="number" min="0" max={field === 'asistencia' ? 100 : 20}
+      type="number" min="0" max="20"
       value={vals[field]}
       onChange={e => setVals(p => ({ ...p, [field]: e.target.value }))}
       className="w-14 bg-white border border-red-300 focus:border-[#d32f2f] rounded px-2 py-1 text-xs text-slate-900 outline-none text-center font-bold font-mono shadow-inner"
@@ -156,10 +168,6 @@ function StudentRow({ student: s, editing, setEditing, actions }) {
       <td className="px-4 py-3.5 font-mono text-xs text-slate-600 font-bold">{s.codigo}</td>
       <td className="px-4 py-3.5 font-bold text-slate-900 whitespace-nowrap">{s.nombre.split(' ').slice(0, 3).join(' ')}</td>
       <td className="px-4 py-3.5"><RiskBadge level={s.riesgo} size="xs" /></td>
-      <td className="px-4 py-3.5">{isEditing ? miniInput('PC1') : <span className={`font-black font-mono ${s.grades.PC1 >= 12 ? 'text-emerald-600' : 'text-red-600'}`}>{s.grades.PC1}</span>}</td>
-      <td className="px-4 py-3.5">{isEditing ? miniInput('PC2') : <span className={`font-black font-mono ${s.grades.PC2 >= 12 ? 'text-emerald-600' : 'text-red-600'}`}>{s.grades.PC2}</span>}</td>
-      <td className="px-4 py-3.5">{isEditing ? miniInput('PC3') : <span className={`font-black font-mono ${s.grades.PC3 >= 12 ? 'text-emerald-600' : 'text-red-600'}`}>{s.grades.PC3}</span>}</td>
-      <td className="px-4 py-3.5">{isEditing ? miniInput('PC4') : <span className={`font-black font-mono ${s.grades.PC4 >= 12 ? 'text-emerald-600' : 'text-slate-400'}`}>{s.grades.PC4 || '—'}</span>}</td>
       <td className="px-4 py-3.5 font-black font-mono text-sm">
         <span className={s.notaFinal >= 12 ? 'text-emerald-600' : s.notaFinal >= 10 ? 'text-amber-600' : 'text-red-600'}>{s.notaFinal}</span>
       </td>
@@ -183,7 +191,6 @@ function StudentRow({ student: s, editing, setEditing, actions }) {
   );
 }
 
-// ── Courses Tab ─────────────────────────────────────────────────────────────
 function CoursesTab() {
   const { state, actions } = useApp();
   const [showAdd, setShowAdd] = useState(false);
@@ -271,7 +278,6 @@ function CoursesTab() {
   );
 }
 
-// ── Grades Tab ──────────────────────────────────────────────────────────────
 function GradesTab() {
   const { state, actions } = useApp();
   const [selectedCourse, setSelectedCourse] = useState(state.courses[0]?.id || '');
@@ -282,12 +288,14 @@ function GradesTab() {
     [state.students, selectedCourse]
   );
 
-  const handleGradeChange = (codigo, pc, value) => {
+  const evals = useMemo(() => getEvalConfig(selectedCourse), [selectedCourse]);
+
+  const handleGradeChange = (codigo, key, value) => {
     const num = Math.min(20, Math.max(0, +value));
     const student = state.students.find(s => s.codigo === codigo);
     if (!student) return;
-    const newGrades = { ...student.grades, [pc]: num };
-    actions.updateStudent(codigo, { grades: newGrades, [pc]: num });
+    const newGrades = { ...student.grades, [key]: num };
+    actions.updateStudent(codigo, { grades: newGrades, [key]: num });
     setSaving(codigo);
     setTimeout(() => setSaving(null), 800);
   };
@@ -314,8 +322,8 @@ function GradesTab() {
             <tr className="bg-slate-50 border-b border-slate-200">
               <th className="text-left px-4 py-3.5 text-xs font-black text-slate-500 uppercase tracking-widest">Alumno</th>
               <th className="text-left px-4 py-3.5 text-xs font-black text-slate-500 uppercase tracking-widest">Código</th>
-              {['PC1 (20%)', 'PC2 (20%)', 'PC3 (20%)', 'PC4 (40%)'].map(h => (
-                <th key={h} className="text-center px-4 py-3.5 text-xs font-black text-[#d32f2f] uppercase tracking-widest">{h}</th>
+              {evals.map(e => (
+                <th key={e.key} className="text-center px-4 py-3.5 text-xs font-black text-[#d32f2f] uppercase tracking-widest">{e.label} ({(e.weight * 100).toFixed(0)}%)</th>
               ))}
               <th className="text-center px-4 py-3.5 text-xs font-black text-emerald-600 uppercase tracking-widest">Promedio</th>
               <th className="text-center px-4 py-3.5 text-xs font-black text-slate-500 uppercase tracking-widest">Riesgo</th>
@@ -326,15 +334,15 @@ function GradesTab() {
               <tr key={s.codigo} className={`transition-all ${saving === s.codigo ? 'bg-emerald-50' : 'hover:bg-slate-50/80'}`}>
                 <td className="px-4 py-3.5 font-bold text-slate-900 whitespace-nowrap">{s.nombre.split(' ').slice(0, 2).join(' ')}</td>
                 <td className="px-4 py-3.5 font-mono text-xs text-slate-600 font-bold">{s.codigo}</td>
-                {['PC1', 'PC2', 'PC3', 'PC4'].map(pc => (
-                  <td key={pc} className="px-3 py-2 text-center">
+                {evals.map(e => (
+                  <td key={e.key} className="px-3 py-2 text-center">
                     <input
                       type="number" min="0" max="20" step="0.5"
-                      defaultValue={s.grades[pc]}
-                      onBlur={e => handleGradeChange(s.codigo, pc, e.target.value)}
-                      onKeyDown={e => e.key === 'Enter' && handleGradeChange(s.codigo, pc, e.target.value)}
+                      defaultValue={s.grades[e.key]}
+                      onBlur={e2 => handleGradeChange(s.codigo, e.key, e2.target.value)}
+                      onKeyDown={e2 => e2.key === 'Enter' && handleGradeChange(s.codigo, e.key, e2.target.value)}
                       className={`w-16 text-center bg-slate-50 border rounded-xl px-2 py-1.5 text-sm font-mono font-black outline-none transition-all shadow-inner
-                        ${s.grades[pc] >= 12 ? 'border-emerald-200 text-emerald-600' : s.grades[pc] >= 10 ? 'border-amber-200 text-amber-600' : 'border-red-200 text-red-600'}
+                        ${s.grades[e.key] >= 12 ? 'border-emerald-200 text-emerald-600' : s.grades[e.key] >= 10 ? 'border-amber-200 text-amber-600' : 'border-red-200 text-red-600'}
                         focus:border-[#d32f2f] focus:bg-white`}
                     />
                   </td>
@@ -361,14 +369,12 @@ function GradesTab() {
   );
 }
 
-// ── Main Admin Page (Fondo Gris Suave con Recuadros Blancos) ─────────────────
 export default function AdminPage() {
   const { state, actions } = useApp();
   const { adminTab } = state;
 
   return (
     <div className="min-h-screen bg-slate-100 text-slate-900 max-w-screen-2xl mx-auto px-4 sm:px-6 py-8">
-      {/* Header */}
       <div className="mb-8 animate-fade-in">
         <button onClick={actions.goDashboard} className="flex items-center gap-1.5 text-xs font-black uppercase tracking-wider text-slate-600 hover:text-slate-900 mb-4 transition-colors bg-white border border-slate-200 px-3 py-2 rounded-xl w-fit shadow-sm">
           <ArrowLeft size={15} /> Volver al Dashboard
@@ -391,14 +397,12 @@ export default function AdminPage() {
         </div>
       </div>
 
-      {/* Tabs Contenedor (Blanco Sólido) */}
       <div className="flex items-center gap-2 mb-6 p-1.5 bg-white rounded-2xl border border-slate-200 w-fit shadow-lg">
         <TabBtn active={adminTab === 'students'} onClick={() => actions.setAdminTab('students')} icon={Users} label="Estudiantes" count={state.students.length} />
         <TabBtn active={adminTab === 'courses'} onClick={() => actions.setAdminTab('courses')} icon={BookOpen} label="Cursos" count={state.courses.length} />
         <TabBtn active={adminTab === 'grades'} onClick={() => actions.setAdminTab('grades')} icon={BarChart2} label="Notas en Vivo" />
       </div>
 
-      {/* Content */}
       <div className="animate-fade-in">
         {adminTab === 'students' && <StudentsTab />}
         {adminTab === 'courses' && <CoursesTab />}
