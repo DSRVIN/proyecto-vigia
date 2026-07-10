@@ -60,6 +60,9 @@ function reducer(state, action) {
     case 'GO_CALLCENTER':
       return { ...state, currentView: 'callcenter', selectedCourse: null, kpiFilter: null };
 
+    case 'GO_EJECUTIVO':
+      return { ...state, currentView: 'ejecutivo', selectedCourse: null, kpiFilter: null };
+
     case 'SET_ADMIN_TAB':
       return { ...state, adminTab: action.payload };
 
@@ -167,6 +170,7 @@ export function AppProvider({ children }) {
     goDashboard: () => dispatch({ type: 'GO_DASHBOARD' }),
     goAdmin: () => dispatch({ type: 'GO_ADMIN' }),
     goCallCenter: () => dispatch({ type: 'GO_CALLCENTER' }),
+    goEjecutivo:  () => dispatch({ type: 'GO_EJECUTIVO' }),
     setAdminTab: (tab) => dispatch({ type: 'SET_ADMIN_TAB', payload: tab }),
     toggleNotifications: () => dispatch({ type: 'TOGGLE_NOTIFICATIONS' }),
     setKPIFilter: (filter) => dispatch({ type: 'SET_KPI_FILTER', payload: filter }),

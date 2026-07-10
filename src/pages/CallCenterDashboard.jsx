@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useApp } from '../context/AppContext.jsx';
 import { Zap, Loader2, MessageCircle, Mail, X, Search, CheckCircle, FileSpreadsheet, AlertTriangle, BookOpen, Clock } from 'lucide-react';
 import RiskBadge from '../components/ui/RiskBadge.jsx';
@@ -7,6 +7,7 @@ import { enrichStudentData } from '../data/dataset.js';
 import { enviarCorreoEstudiante } from '../services/messaging.service.js';
 import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
+import { supabase } from '../supabaseClient.js';
 
 export default function CallCenterDashboard() {
   const { state } = useApp();
@@ -26,6 +27,72 @@ export default function CallCenterDashboard() {
   const [emailBody, setEmailBody] = useState('');
   const [toast, setToast] = useState(null);
   const [isSendingEmail, setIsSendingEmail] = useState(false);
+
+  // ── Supabase: sincronización silenciosa de estado_pago ────────────────────
+  /**
+   * Actualiza la columna estado_pago de un alumno en Supabase.
+   * Se usa async/await; los errores se manejan internamente sin romper la UI.
+   *
+   * @param {string} studentId  - Código único del alumno (PK en la tabla students)
+   * @param {'PENDIENTE'|'PAGADO'} status - Nuevo valor para estado_pago
+   */
+  const updateStudentPaymentStatus = async (studentId, status) => {
+    try {
+      const { data, error } = await supabase
+        .from('students')
+        .update({ estado_pago: status })
+        .eq('codigo', studentId)
+        .select('codigo, estado_pago');
+
+      if (error) {
+        console.error(`[VIGIA] Error al actualizar estado_pago para ${studentId}:`, error.message);
+        return;
+      }
+
+      console.log(`[VIGIA] estado_pago actualizado ✓ → alumno ${studentId} = ${status}`, data);
+    } catch (err) {
+      console.error(`[VIGIA] Excepción inesperada al sincronizar ${studentId}:`, err);
+    }
+  };
+
+  /**
+   * Guard de escritura: almacena los códigos de alumnos que ya fueron
+   * procesados en este montaje para evitar llamadas duplicadas a Supabase
+   * sin importar cuántas veces se re-renderice el componente.
+   */
+  const syncedIds = useRef(new Set());
+
+  /**
+   * useEffect de sincronización.
+   * - Depende sólo de `students` (el array que llega del contexto).
+   * - Para cada alumno cuyo estado_pago en DB sigue siendo 'PAGADO' pero
+   *   la lógica local detecta deuda, emite un UPDATE silencioso a Supabase.
+   * - El guard `syncedIds` garantiza que cada alumno se procese una sola
+   *   vez por sesión, eliminando cualquier riesgo de bucle infinito.
+   */
+  useEffect(() => {
+    if (!students || students.length === 0) return;
+
+    students.forEach((student) => {
+      // Misma lógica de detección de deuda que ya usa el componente
+      const tieneDeudaLocal =
+        student.estado_pago === 'PENDIENTE' ||
+        (!student.estado_pago &&
+          parseInt(student.codigo.replace(/\D/g, ''), 10) % 3 === 0);
+
+      const dbEstadoPago = student.estado_pago ?? 'PAGADO'; // default del schema
+      const necesitaActualizar =
+        tieneDeudaLocal &&
+        dbEstadoPago === 'PAGADO' &&
+        !syncedIds.current.has(student.codigo);
+
+      if (necesitaActualizar) {
+        syncedIds.current.add(student.codigo); // marcar antes de la llamada async
+        updateStudentPaymentStatus(student.codigo, 'PENDIENTE');
+      }
+    });
+  }, [students]); // eslint-disable-line react-hooks/exhaustive-deps
+  // ─────────────────────────────────────────────────────────────────────────
 
   const showToast = (message, type = 'success') => {
     setToast({ message, type });

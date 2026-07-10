@@ -1,6 +1,7 @@
 import React from 'react';
 import { Bell, LogOut, Settings, LayoutDashboard, ChevronRight, Headphones } from 'lucide-react';
 import { useApp } from '../../context/AppContext.jsx';
+import EjecutivoModule from './EjecutivoModule.jsx';
 
 export default function Header() {
   const { state, actions } = useApp();
@@ -16,6 +17,7 @@ export default function Header() {
     if (currentView === 'dashboard') return null;
     if (currentView === 'admin') return [{ label: 'Dashboard', action: actions.goDashboard }, { label: 'Panel Administrativo' }];
     if (currentView === 'callcenter') return [{ label: 'Dashboard', action: actions.goDashboard }, { label: 'Call Center' }];
+    if (currentView === 'ejecutivo') return [{ label: 'Dashboard', action: actions.goDashboard }, { label: 'Panel Ejecutivo' }];
     if (currentView === 'section' && selectedCourse) return [
       { label: 'Dashboard', action: actions.goDashboard },
       { label: selectedCourse.nombre }
@@ -64,6 +66,8 @@ export default function Header() {
               </button>
 
               <div className="h-6 w-px bg-slate-300" />
+
+              <EjecutivoModule />
 
               <button onClick={actions.goCallCenter} className="flex items-center gap-2 text-xs font-black uppercase tracking-wider px-3 py-1.5 rounded-lg text-slate-500 hover:bg-slate-100 hover:text-slate-900 transition-all border border-transparent hover:border-slate-200">
                 <Headphones size={14} />
