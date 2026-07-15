@@ -12,27 +12,40 @@ function StudentRow({ student, courseName, onSelect, index }) {
   return (
     <div
       className={`flex items-center gap-3 p-4 rounded-xl border transition-all cursor-pointer group hover:-translate-y-0.5 shadow-sm
-        ${student.riesgo === 'CRITICO'
-          ? 'border-red-300 hover:border-[#d32f2f] bg-red-50/50 hover:bg-red-50'
-          : 'border-slate-200 hover:border-slate-300 bg-white hover:bg-slate-50'
+        ${
+          student.riesgo === 'CRITICO'
+            ? 'border-red-300 hover:border-[#d32f2f] bg-red-50/50 hover:bg-red-50'
+            : 'border-slate-200 hover:border-slate-300 bg-white hover:bg-slate-50'
         } animate-fade-in`}
       style={{ animationDelay: `${index * 30}ms` }}
       onClick={() => onSelect(student)}
     >
       {/* Avatar */}
-      <div className={`h-9 w-9 rounded-full flex items-center justify-center text-white text-xs font-black flex-shrink-0 shadow-sm
-        ${student.riesgo === 'CRITICO' ? 'bg-gradient-to-br from-[#d32f2f] to-red-700' :
-          student.riesgo === 'ALTO' ? 'bg-gradient-to-br from-amber-500 to-orange-600' :
-          student.riesgo === 'MEDIO' ? 'bg-gradient-to-br from-blue-500 to-blue-700' :
-          'bg-gradient-to-br from-emerald-500 to-teal-600'}`}
+      <div
+        className={`h-9 w-9 rounded-full flex items-center justify-center text-white text-xs font-black flex-shrink-0 shadow-sm
+        ${
+          student.riesgo === 'CRITICO'
+            ? 'bg-gradient-to-br from-[#d32f2f] to-red-700'
+            : student.riesgo === 'ALTO'
+              ? 'bg-gradient-to-br from-amber-500 to-orange-600'
+              : student.riesgo === 'MEDIO'
+                ? 'bg-gradient-to-br from-blue-500 to-blue-700'
+                : 'bg-gradient-to-br from-emerald-500 to-teal-600'
+        }`}
       >
-        {student.nombre.split(' ').map(n => n[0]).slice(0, 2).join('')}
+        {student.nombre
+          .split(' ')
+          .map((n) => n[0])
+          .slice(0, 2)
+          .join('')}
       </div>
 
       {/* Name + code */}
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
-          <p className="text-sm font-black text-slate-800 group-hover:text-slate-900 truncate transition-colors">{student.nombre}</p>
+          <p className="text-sm font-black text-slate-800 group-hover:text-slate-900 truncate transition-colors">
+            {student.nombre}
+          </p>
           {isAbandono && (
             <span className="text-xs px-1.5 py-0.5 bg-violet-50 border border-violet-200 text-violet-700 rounded font-black uppercase tracking-wider flex-shrink-0">
               Abandono
@@ -58,7 +71,9 @@ function StudentRow({ student, courseName, onSelect, index }) {
 
       {/* Promedio */}
       <div className="text-right flex-shrink-0 w-16">
-        <p className={`text-base font-black font-mono leading-tight ${student.notaFinal >= 12 ? 'text-emerald-600' : student.notaFinal >= 10 ? 'text-amber-600' : 'text-[#d32f2f]'}`}>
+        <p
+          className={`text-base font-black font-mono leading-tight ${student.notaFinal >= 12 ? 'text-emerald-600' : student.notaFinal >= 10 ? 'text-amber-600' : 'text-[#d32f2f]'}`}
+        >
           {student.notaFinal}
         </p>
         <p className="text-[11px] font-black text-slate-400 uppercase tracking-wider">prom</p>
@@ -66,7 +81,9 @@ function StudentRow({ student, courseName, onSelect, index }) {
 
       {/* Attendance */}
       <div className="hidden lg:block text-right flex-shrink-0 w-14">
-        <p className={`text-sm font-black font-mono leading-tight ${student.asistencia >= 75 ? 'text-emerald-600' : student.asistencia >= 65 ? 'text-amber-600' : 'text-[#d32f2f]'}`}>
+        <p
+          className={`text-sm font-black font-mono leading-tight ${student.asistencia >= 75 ? 'text-emerald-600' : student.asistencia >= 65 ? 'text-amber-600' : 'text-[#d32f2f]'}`}
+        >
           {student.asistencia}%
         </p>
         <p className="text-[11px] font-black text-slate-400 uppercase tracking-wider">asist</p>
@@ -89,31 +106,41 @@ export default function KPIStudentsPage() {
   const [isListLoading, setIsListLoading] = useState(false);
 
   const kpiTitle = useMemo(() => {
-    switch(kpiFilter) {
-      case 'CRITICO': return 'Riesgo Crítico';
-      case 'ALTO': return 'Riesgo Alto';
-      case 'ABANDONO': return 'Posible Abandono';
-      case 'APROBADOS': return 'Estudiantes Aprobados';
-      default: return 'Todos los Estudiantes';
+    switch (kpiFilter) {
+      case 'CRITICO':
+        return 'Riesgo Crítico';
+      case 'ALTO':
+        return 'Riesgo Alto';
+      case 'ABANDONO':
+        return 'Posible Abandono';
+      case 'APROBADOS':
+        return 'Estudiantes Aprobados';
+      default:
+        return 'Todos los Estudiantes';
     }
   }, [kpiFilter]);
 
   const kpiDescription = useMemo(() => {
-    switch(kpiFilter) {
-      case 'CRITICO': return 'Alumnos con promedio menor a 12 o inactividad crítica detectada.';
-      case 'ALTO': return 'Alumnos con promedio en el umbral de riesgo o baja asistencia acumulada.';
-      case 'ABANDONO': return 'Alumnos sin actividad registrada en la plataforma por más de 14 días.';
-      case 'APROBADOS': return 'Alumnos con rendimiento académico satisfactorio.';
-      default: return 'Listado completo de estudiantes sin filtros específicos.';
+    switch (kpiFilter) {
+      case 'CRITICO':
+        return 'Alumnos con promedio menor a 12 o inactividad crítica detectada.';
+      case 'ALTO':
+        return 'Alumnos con promedio en el umbral de riesgo o baja asistencia acumulada.';
+      case 'ABANDONO':
+        return 'Alumnos sin actividad registrada en la plataforma por más de 14 días.';
+      case 'APROBADOS':
+        return 'Alumnos con rendimiento académico satisfactorio.';
+      default:
+        return 'Listado completo de estudiantes sin filtros específicos.';
     }
   }, [kpiFilter]);
 
   const baseFilteredStudents = useMemo(() => {
     let list = students;
-    if (kpiFilter === 'CRITICO') list = list.filter(s => s.riesgo === 'CRITICO');
-    else if (kpiFilter === 'ALTO') list = list.filter(s => s.riesgo === 'ALTO');
-    else if (kpiFilter === 'ABANDONO') list = list.filter(s => s.actividadDias > 14);
-    else if (kpiFilter === 'APROBADOS') list = list.filter(s => s.notaFinal >= 12);
+    if (kpiFilter === 'CRITICO') list = list.filter((s) => s.riesgo === 'CRITICO');
+    else if (kpiFilter === 'ALTO') list = list.filter((s) => s.riesgo === 'ALTO');
+    else if (kpiFilter === 'ABANDONO') list = list.filter((s) => s.actividadDias > 14);
+    else if (kpiFilter === 'APROBADOS') list = list.filter((s) => s.notaFinal >= 12);
     return list;
   }, [students, kpiFilter]);
 
@@ -122,20 +149,31 @@ export default function KPIStudentsPage() {
     let list = baseFilteredStudents;
 
     if (q) {
-      list = list.filter(s =>
-        s.nombre.toLowerCase().includes(q) ||
-        s.codigo.toLowerCase().includes(q)
+      list = list.filter(
+        (s) => s.nombre.toLowerCase().includes(q) || s.codigo.toLowerCase().includes(q)
       );
     }
 
     const riskOrder = { CRITICO: 0, ALTO: 1, MEDIO: 2, BAJO: 3 };
     list = [...list].sort((a, b) => {
       let va, vb;
-      if (sortField === 'riesgo') { va = riskOrder[a.riesgo]; vb = riskOrder[b.riesgo]; }
-      else if (sortField === 'nombre') { va = a.nombre; vb = b.nombre; return sortAsc ? va.localeCompare(vb) : vb.localeCompare(va); }
-      else if (sortField === 'promedio') { va = a.notaFinal; vb = b.notaFinal; }
-      else if (sortField === 'asistencia') { va = a.asistencia; vb = b.asistencia; }
-      else { va = 0; vb = 0; }
+      if (sortField === 'riesgo') {
+        va = riskOrder[a.riesgo];
+        vb = riskOrder[b.riesgo];
+      } else if (sortField === 'nombre') {
+        va = a.nombre;
+        vb = b.nombre;
+        return sortAsc ? va.localeCompare(vb) : vb.localeCompare(va);
+      } else if (sortField === 'promedio') {
+        va = a.notaFinal;
+        vb = b.notaFinal;
+      } else if (sortField === 'asistencia') {
+        va = a.asistencia;
+        vb = b.asistencia;
+      } else {
+        va = 0;
+        vb = 0;
+      }
       return sortAsc ? va - vb : vb - va;
     });
 
@@ -144,12 +182,22 @@ export default function KPIStudentsPage() {
 
   const toggleSort = (field) => {
     if (sortField === field) setSortAsc(!sortAsc);
-    else { setSortField(field); setSortAsc(true); }
+    else {
+      setSortField(field);
+      setSortAsc(true);
+    }
   };
 
-  const SortIcon = ({ field }) => sortField === field
-    ? (sortAsc ? <ChevronUp size={12} /> : <ChevronDown size={12} />)
-    : <SortAsc size={12} className="opacity-30" />;
+  const SortIcon = ({ field }) =>
+    sortField === field ? (
+      sortAsc ? (
+        <ChevronUp size={12} />
+      ) : (
+        <ChevronDown size={12} />
+      )
+    ) : (
+      <SortAsc size={12} className="opacity-30" />
+    );
 
   const handleToggleList = () => {
     if (!showList) {
@@ -162,7 +210,7 @@ export default function KPIStudentsPage() {
   };
 
   const getCourseName = (cursoId) => {
-    const c = courses.find(course => course.id === cursoId);
+    const c = courses.find((course) => course.id === cursoId);
     return c ? c.nombre : 'Desconocido';
   };
 
@@ -177,19 +225,19 @@ export default function KPIStudentsPage() {
           >
             <ArrowLeft size={15} /> Volver al Dashboard
           </button>
-          
+
           <div className="flex items-center gap-2 mb-1.5">
-            <span className="text-xs font-black bg-red-50 border border-red-200 text-[#d32f2f] px-2 py-0.5 rounded-md uppercase tracking-wider">Filtro VIGÍA</span>
+            <span className="text-xs font-black bg-red-50 border border-red-200 text-[#d32f2f] px-2 py-0.5 rounded-md uppercase tracking-wider">
+              Filtro VIGÍA
+            </span>
           </div>
-          
+
           <h1 className="text-2xl sm:text-3xl font-black text-slate-900 leading-tight tracking-tight">
             Métricas: {kpiTitle}
           </h1>
-          
+
           <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1.5">
-            <p className="text-sm font-bold text-slate-600">
-              {kpiDescription}
-            </p>
+            <p className="text-sm font-bold text-slate-600">{kpiDescription}</p>
             <div className="hidden sm:flex items-center gap-2 bg-red-50 border border-red-100 px-2.5 py-0.5 rounded-full shadow-sm">
               <span className="h-1.5 w-1.5 rounded-full bg-[#d32f2f] animate-pulse" />
               <p className="text-xs font-black text-[#d32f2f] uppercase tracking-wider">
@@ -220,12 +268,15 @@ export default function KPIStudentsPage() {
                 <input
                   type="text"
                   value={search}
-                  onChange={e => setSearch(e.target.value)}
+                  onChange={(e) => setSearch(e.target.value)}
                   placeholder="Buscar por nombre o código U..."
                   className="w-full bg-white border border-slate-200 focus:border-[#d32f2f]/60 rounded-xl pl-9 pr-8 py-2.5 text-sm text-slate-900 placeholder-slate-400 outline-none transition-all shadow-inner"
                 />
                 {search && (
-                  <button onClick={() => setSearch('')} className="absolute right-3 top-3 text-slate-400 hover:text-slate-600 text-xs font-bold transition-colors">
+                  <button
+                    onClick={() => setSearch('')}
+                    className="absolute right-3 top-3 text-slate-400 hover:text-slate-600 text-xs font-bold transition-colors"
+                  >
                     ✕
                   </button>
                 )}
@@ -233,14 +284,21 @@ export default function KPIStudentsPage() {
 
               {/* Sort controls aligned to red theme */}
               <div className="flex flex-wrap items-center gap-2">
-                <span className="text-xs font-black text-slate-400 uppercase tracking-wider mr-1">Ordenar:</span>
-                {[ ['riesgo', 'Riesgo'], ['promedio', 'Promedio'], ['asistencia', 'Asistencia'], ['nombre', 'Nombre'] ].map(([field, label]) => (
+                <span className="text-xs font-black text-slate-400 uppercase tracking-wider mr-1">
+                  Ordenar:
+                </span>
+                {[
+                  ['riesgo', 'Riesgo'],
+                  ['promedio', 'Promedio'],
+                  ['asistencia', 'Asistencia'],
+                  ['nombre', 'Nombre'],
+                ].map(([field, label]) => (
                   <button
                     key={field}
                     onClick={() => toggleSort(field)}
                     className={`flex items-center gap-1 text-xs font-black uppercase tracking-wider px-3 py-1.5 rounded-lg transition-all border ${
-                      sortField === field 
-                        ? 'text-[#d32f2f] bg-red-50 border-red-200 font-black' 
+                      sortField === field
+                        ? 'text-[#d32f2f] bg-red-50 border-red-200 font-black'
                         : 'text-slate-600 border-slate-200 bg-white hover:bg-slate-50 hover:text-slate-900 shadow-sm'
                     }`}
                   >
@@ -261,9 +319,13 @@ export default function KPIStudentsPage() {
               </div>
               <h3 className="text-xl font-black text-slate-900 mb-2.5">Vista Segura Activada</h3>
               <p className="text-sm font-bold text-slate-600 mb-6 max-w-md mx-auto leading-relaxed">
-                Para resguardar el rendimiento analítico, el reporte analítico de los <span className="text-[#d32f2f] font-black">{filteredAndSorted.length} alumnos</span> se procesa bajo demanda.
+                Para resguardar el rendimiento analítico, el reporte analítico de los{' '}
+                <span className="text-[#d32f2f] font-black">
+                  {filteredAndSorted.length} alumnos
+                </span>{' '}
+                se procesa bajo demanda.
               </p>
-              <button 
+              <button
                 onClick={handleToggleList}
                 className="group relative px-8 py-3 bg-[#d32f2f] hover:bg-red-700 text-white font-black uppercase tracking-wider text-xs rounded-xl transition-all hover:scale-[1.02] active:scale-95 shadow-md overflow-hidden"
               >
@@ -275,17 +337,21 @@ export default function KPIStudentsPage() {
             </div>
           ) : isListLoading ? (
             <div className="space-y-3 p-2">
-              {[...Array(5)].map((_, i) => <SkeletonStudentRow key={i} />)}
+              {[...Array(5)].map((_, i) => (
+                <SkeletonStudentRow key={i} />
+              ))}
             </div>
           ) : filteredAndSorted.length === 0 ? (
             <div className="text-center py-14 text-slate-500 flex-1 flex flex-col items-center justify-center">
               <Search size={32} className="mx-auto mb-3 opacity-30 text-slate-400" />
-              <p className="font-bold text-sm">No se encontraron alumnos con los filtros actuales</p>
+              <p className="font-bold text-sm">
+                No se encontraron alumnos con los filtros actuales
+              </p>
             </div>
           ) : (
             <>
               <div className="flex justify-end mb-1 px-2">
-                <button 
+                <button
                   onClick={handleToggleList}
                   className="text-xs text-slate-400 hover:text-[#d32f2f] transition-colors flex items-center gap-1.5 font-black uppercase tracking-wider"
                 >
@@ -293,12 +359,12 @@ export default function KPIStudentsPage() {
                 </button>
               </div>
               {filteredAndSorted.map((s, i) => (
-                <StudentRow 
-                  key={s.codigo} 
-                  student={s} 
+                <StudentRow
+                  key={s.codigo}
+                  student={s}
                   courseName={getCourseName(s.cursoId)}
-                  onSelect={setSelectedStudent} 
-                  index={i} 
+                  onSelect={setSelectedStudent}
+                  index={i}
                 />
               ))}
             </>

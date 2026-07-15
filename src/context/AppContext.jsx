@@ -1,6 +1,18 @@
-import React, { createContext, useContext, useReducer, useCallback } from 'react';
-import { STUDENTS_INITIAL, COURSES_INITIAL, TEACHER, enrichStudentData, getCoursesForTeacher } from '../data/dataset.js';
-import { calcPromedio, notaVisual, calcRiesgo, calcNotaNecesaria, getEvalConfig } from '../services/metrics.service.js';
+import React, { createContext, useContext, useReducer, useMemo } from 'react';
+import {
+  STUDENTS_INITIAL,
+  COURSES_INITIAL,
+  TEACHER,
+  enrichStudentData,
+  getCoursesForTeacher,
+} from '../data/dataset.js';
+import {
+  calcPromedio,
+  notaVisual,
+  calcRiesgo,
+  calcNotaNecesaria,
+  getEvalConfig,
+} from '../services/metrics.service.js';
 
 const AppContext = createContext(null);
 
@@ -15,7 +27,14 @@ const initialState = {
   selectedCourse: null,
   students: [],
   courses: [],
-  teacher: { codigo: '', nombre: 'Cargando...', email: '', cargo: '', departamento: '', avatar: null },
+  teacher: {
+    codigo: '',
+    nombre: 'Cargando...',
+    email: '',
+    cargo: '',
+    departamento: '',
+    avatar: null,
+  },
   adminTab: 'students',
   isNotificationsOpen: false,
   kpiFilter: null,
@@ -23,7 +42,6 @@ const initialState = {
 
 function reducer(state, action) {
   switch (action.type) {
-
     case 'LOGIN_SUCCESS': {
       const { profile } = action.payload;
       return {
@@ -70,13 +88,18 @@ function reducer(state, action) {
       return { ...state, isNotificationsOpen: !state.isNotificationsOpen };
 
     case 'SET_KPI_FILTER':
-      return { ...state, kpiFilter: action.payload, currentView: 'kpi_students', selectedCourse: null };
+      return {
+        ...state,
+        kpiFilter: action.payload,
+        currentView: 'kpi_students',
+        selectedCourse: null,
+      };
 
     case 'ADD_STUDENT': {
       const s = action.payload;
       const evals = getEvalConfig(s.cursoId || state.courses[0]?.id);
       const grades = {};
-      evals.forEach(e => {
+      evals.forEach((e) => {
         grades[e.key] = +(s[e.key] || 0);
       });
       const promedio = calcPromedio(grades, evals);
@@ -94,8 +117,10 @@ function reducer(state, action) {
         notaNecesariaKey: ultimaEval.key,
         notaNecesariaWeight: ultimaEval.weight,
         actividadMensual: [
-          { mes: 'Feb', accesos: 20 }, { mes: 'Mar', accesos: 18 },
-          { mes: 'Abr', accesos: 15 }, { mes: 'May', accesos: 10 },
+          { mes: 'Feb', accesos: 20 },
+          { mes: 'Mar', accesos: 18 },
+          { mes: 'Abr', accesos: 15 },
+          { mes: 'May', accesos: 10 },
         ],
         email: `${s.codigo.toLowerCase()}@utp.edu.pe`,
         intervenido: false,
@@ -104,7 +129,7 @@ function reducer(state, action) {
     }
 
     case 'UPDATE_STUDENT': {
-      const updated = state.students.map(st => {
+      const updated = state.students.map((st) => {
         if (st.codigo !== action.payload.codigo) return st;
         const grades = { ...st.grades, ...action.payload.changes };
         const evals = getEvalConfig(st.cursoId || state.courses[0]?.id);
@@ -130,12 +155,12 @@ function reducer(state, action) {
     }
 
     case 'DELETE_STUDENT':
-      return { ...state, students: state.students.filter(s => s.codigo !== action.payload) };
+      return { ...state, students: state.students.filter((s) => s.codigo !== action.payload) };
 
     case 'MARK_INTERVENED':
       return {
         ...state,
-        students: state.students.map(s =>
+        students: state.students.map((s) =>
           s.codigo === action.payload ? { ...s, intervenido: true } : s
         ),
       };
@@ -146,13 +171,13 @@ function reducer(state, action) {
     case 'UPDATE_COURSE':
       return {
         ...state,
-        courses: state.courses.map(c =>
+        courses: state.courses.map((c) =>
           c.id === action.payload.id ? { ...c, ...action.payload.changes } : c
         ),
       };
 
     case 'DELETE_COURSE':
-      return { ...state, courses: state.courses.filter(c => c.id !== action.payload) };
+      return { ...state, courses: state.courses.filter((c) => c.id !== action.payload) };
 
     default:
       return state;
@@ -162,32 +187,36 @@ function reducer(state, action) {
 export function AppProvider({ children }) {
   const [state, dispatch] = useReducer(reducer, initialState);
 
-  const actions = {
-    loginSuccess: (user, profile) => dispatch({ type: 'LOGIN_SUCCESS', payload: { user, profile } }),
-    setStudents: (students) => dispatch({ type: 'SET_STUDENTS', payload: students }),
-    logout: () => dispatch({ type: 'LOGOUT' }),
-    selectCourse: (course) => dispatch({ type: 'SELECT_COURSE', payload: course }),
-    goDashboard: () => dispatch({ type: 'GO_DASHBOARD' }),
-    goAdmin: () => dispatch({ type: 'GO_ADMIN' }),
-    goCallCenter: () => dispatch({ type: 'GO_CALLCENTER' }),
-    goEjecutivo:  () => dispatch({ type: 'GO_EJECUTIVO' }),
-    setAdminTab: (tab) => dispatch({ type: 'SET_ADMIN_TAB', payload: tab }),
-    toggleNotifications: () => dispatch({ type: 'TOGGLE_NOTIFICATIONS' }),
-    setKPIFilter: (filter) => dispatch({ type: 'SET_KPI_FILTER', payload: filter }),
-    addStudent: (student) => dispatch({ type: 'ADD_STUDENT', payload: student }),
-    updateStudent: (codigo, changes) => dispatch({ type: 'UPDATE_STUDENT', payload: { codigo, changes } }),
-    deleteStudent: (codigo) => dispatch({ type: 'DELETE_STUDENT', payload: codigo }),
-    markIntervened: (codigo) => dispatch({ type: 'MARK_INTERVENED', payload: codigo }),
-    addCourse: (course) => dispatch({ type: 'ADD_COURSE', payload: course }),
-    updateCourse: (id, changes) => dispatch({ type: 'UPDATE_COURSE', payload: { id, changes } }),
-    deleteCourse: (id) => dispatch({ type: 'DELETE_COURSE', payload: id }),
-  };
-
-  return (
-    <AppContext.Provider value={{ state, actions }}>
-      {children}
-    </AppContext.Provider>
+  // dispatch es estable entre renders, por lo que actions solo se crea una vez
+  const actions = useMemo(
+    () => ({
+      loginSuccess: (user, profile) =>
+        dispatch({ type: 'LOGIN_SUCCESS', payload: { user, profile } }),
+      setStudents: (students) => dispatch({ type: 'SET_STUDENTS', payload: students }),
+      logout: () => dispatch({ type: 'LOGOUT' }),
+      selectCourse: (course) => dispatch({ type: 'SELECT_COURSE', payload: course }),
+      goDashboard: () => dispatch({ type: 'GO_DASHBOARD' }),
+      goAdmin: () => dispatch({ type: 'GO_ADMIN' }),
+      goCallCenter: () => dispatch({ type: 'GO_CALLCENTER' }),
+      goEjecutivo: () => dispatch({ type: 'GO_EJECUTIVO' }),
+      setAdminTab: (tab) => dispatch({ type: 'SET_ADMIN_TAB', payload: tab }),
+      toggleNotifications: () => dispatch({ type: 'TOGGLE_NOTIFICATIONS' }),
+      setKPIFilter: (filter) => dispatch({ type: 'SET_KPI_FILTER', payload: filter }),
+      addStudent: (student) => dispatch({ type: 'ADD_STUDENT', payload: student }),
+      updateStudent: (codigo, changes) =>
+        dispatch({ type: 'UPDATE_STUDENT', payload: { codigo, changes } }),
+      deleteStudent: (codigo) => dispatch({ type: 'DELETE_STUDENT', payload: codigo }),
+      markIntervened: (codigo) => dispatch({ type: 'MARK_INTERVENED', payload: codigo }),
+      addCourse: (course) => dispatch({ type: 'ADD_COURSE', payload: course }),
+      updateCourse: (id, changes) => dispatch({ type: 'UPDATE_COURSE', payload: { id, changes } }),
+      deleteCourse: (id) => dispatch({ type: 'DELETE_COURSE', payload: id }),
+    }),
+    []
   );
+
+  const value = useMemo(() => ({ state, actions }), [state, actions]);
+
+  return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
 }
 
 export function useApp() {

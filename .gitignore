@@ -25,3 +25,8 @@ dist-ssr
 # Variables de entorno críticas
 .env
 .env.*
+# Permitir la plantilla de variables de entorno
+!.env.example
+
+# Reportes de cobertura de tests
+coverage

@@ -1,11 +1,32 @@
 import React, { useState, useMemo, lazy, Suspense } from 'react';
 import {
-  Search, Filter, Users, AlertTriangle, Clock, TrendingUp, Award,
-  ArrowLeft, BarChart2, Activity, ChevronUp, ChevronDown, SortAsc
+  Search,
+  Filter,
+  Users,
+  AlertTriangle,
+  Clock,
+  TrendingUp,
+  Award,
+  ArrowLeft,
+  BarChart2,
+  Activity,
+  ChevronUp,
+  ChevronDown,
+  SortAsc,
 } from 'lucide-react';
 import {
-  RadialBarChart, RadialBar, ResponsiveContainer, PieChart, Pie, Cell,
-  BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid
+  RadialBarChart,
+  RadialBar,
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  CartesianGrid,
 } from 'recharts';
 import { useApp } from '../context/AppContext.jsx';
 import RiskBadge, { RISK_CONFIG } from '../components/ui/RiskBadge.jsx';
@@ -20,11 +41,17 @@ function KPICard({ label, value, icon: Icon, color, sub }) {
       <div>
         <div className="flex items-center justify-between mb-3">
           <p className="text-xs font-black text-slate-400 uppercase tracking-wider">{label}</p>
-          <div className={`p-2 rounded-lg ${color.replace('text-', 'bg-').replace('400', '50/70').replace('300', '50/70')}`}>
+          <div
+            className={`p-2 rounded-lg ${color.replace('text-', 'bg-').replace('400', '50/70').replace('300', '50/70')}`}
+          >
             <Icon size={16} className={color.includes('blue-300') ? 'text-blue-600' : color} />
           </div>
         </div>
-        <p className={`text-3xl font-black ${color.includes('blue-300') ? 'text-blue-600' : color}`}>{value}</p>
+        <p
+          className={`text-3xl font-black ${color.includes('blue-300') ? 'text-blue-600' : color}`}
+        >
+          {value}
+        </p>
       </div>
       {sub && <p className="text-xs text-slate-500 font-medium mt-1.5">{sub}</p>}
     </div>
@@ -46,7 +73,9 @@ const CustomTooltip = ({ active, payload, label }) => {
 function ChartsPanel({ students }) {
   const riskDist = useMemo(() => {
     const counts = { CRITICO: 0, ALTO: 0, MEDIO: 0, BAJO: 0 };
-    students.forEach(s => { counts[s.riesgo] = (counts[s.riesgo] || 0) + 1; });
+    students.forEach((s) => {
+      counts[s.riesgo] = (counts[s.riesgo] || 0) + 1;
+    });
     return [
       { name: 'Crítico', value: counts.CRITICO, fill: '#d32f2f' },
       { name: 'Alto', value: counts.ALTO, fill: '#f59e0b' },
@@ -57,11 +86,14 @@ function ChartsPanel({ students }) {
 
   const gradeDist = useMemo(() => {
     const buckets = [
-      { rango: '0-5', count: 0 }, { rango: '6-8', count: 0 },
-      { rango: '9-11', count: 0 }, { rango: '12-14', count: 0 },
-      { rango: '15-17', count: 0 }, { rango: '18-20', count: 0 },
+      { rango: '0-5', count: 0 },
+      { rango: '6-8', count: 0 },
+      { rango: '9-11', count: 0 },
+      { rango: '12-14', count: 0 },
+      { rango: '15-17', count: 0 },
+      { rango: '18-20', count: 0 },
     ];
-    students.forEach(s => {
+    students.forEach((s) => {
       const p = s.promedio;
       if (p <= 5) buckets[0].count++;
       else if (p <= 8) buckets[1].count++;
@@ -73,11 +105,18 @@ function ChartsPanel({ students }) {
     return buckets;
   }, [students]);
 
-  const avgAsistencia = students.length > 0
-    ? Math.round(students.reduce((a, s) => a + s.asistencia, 0) / students.length)
-    : 0;
+  const avgAsistencia =
+    students.length > 0
+      ? Math.round(students.reduce((a, s) => a + s.asistencia, 0) / students.length)
+      : 0;
 
-  const asistenciaData = [{ name: 'Asistencia', value: avgAsistencia, fill: avgAsistencia >= 75 ? '#22c55e' : avgAsistencia >= 65 ? '#f59e0b' : '#d32f2f' }];
+  const asistenciaData = [
+    {
+      name: 'Asistencia',
+      value: avgAsistencia,
+      fill: avgAsistencia >= 75 ? '#22c55e' : avgAsistencia >= 65 ? '#f59e0b' : '#d32f2f',
+    },
+  ];
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-8">
@@ -88,13 +127,23 @@ function ChartsPanel({ students }) {
         <div className="flex items-center gap-4">
           <ResponsiveContainer width={120} height={120}>
             <PieChart>
-              <Pie data={riskDist} cx="50%" cy="50%" innerRadius={35} outerRadius={55} dataKey="value" paddingAngle={2}>
-                {riskDist.map((entry, i) => <Cell key={i} fill={entry.fill} />)}
+              <Pie
+                data={riskDist}
+                cx="50%"
+                cy="50%"
+                innerRadius={35}
+                outerRadius={55}
+                dataKey="value"
+                paddingAngle={2}
+              >
+                {riskDist.map((entry, i) => (
+                  <Cell key={i} fill={entry.fill} />
+                ))}
               </Pie>
             </PieChart>
           </ResponsiveContainer>
           <div className="space-y-1.5 flex-1">
-            {riskDist.map(r => (
+            {riskDist.map((r) => (
               <div key={r.name} className="flex items-center justify-between text-xs">
                 <div className="flex items-center gap-1.5">
                   <div className="h-2 w-2 rounded-full" style={{ background: r.fill }} />
@@ -114,12 +163,31 @@ function ChartsPanel({ students }) {
         <ResponsiveContainer width="100%" height={110}>
           <BarChart data={gradeDist} barSize={14}>
             <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" vertical={false} />
-            <XAxis dataKey="rango" tick={{ fill: '#64748b', fontSize: 10, fontWeight: 600 }} axisLine={false} tickLine={false} />
-            <YAxis tick={{ fill: '#64748b', fontSize: 10, fontWeight: 600 }} axisLine={false} tickLine={false} width={20} />
+            <XAxis
+              dataKey="rango"
+              tick={{ fill: '#64748b', fontSize: 10, fontWeight: 600 }}
+              axisLine={false}
+              tickLine={false}
+            />
+            <YAxis
+              tick={{ fill: '#64748b', fontSize: 10, fontWeight: 600 }}
+              axisLine={false}
+              tickLine={false}
+              width={20}
+            />
             <Tooltip content={<CustomTooltip />} />
             <Bar dataKey="count" fill="#3b82f6" radius={[3, 3, 0, 0]}>
               {gradeDist.map((entry, i) => (
-                <Cell key={i} fill={entry.rango.startsWith('12') || entry.rango.startsWith('15') || entry.rango.startsWith('18') ? '#22c55e' : '#3b82f6'} />
+                <Cell
+                  key={i}
+                  fill={
+                    entry.rango.startsWith('12') ||
+                    entry.rango.startsWith('15') ||
+                    entry.rango.startsWith('18')
+                      ? '#22c55e'
+                      : '#3b82f6'
+                  }
+                />
               ))}
             </Bar>
           </BarChart>
@@ -132,19 +200,35 @@ function ChartsPanel({ students }) {
         </h3>
         <div className="relative">
           <ResponsiveContainer width={130} height={130}>
-            <RadialBarChart cx="50%" cy="50%" innerRadius="55%" outerRadius="80%" startAngle={90} endAngle={-270} data={asistenciaData}>
+            <RadialBarChart
+              cx="50%"
+              cy="50%"
+              innerRadius="55%"
+              outerRadius="80%"
+              startAngle={90}
+              endAngle={-270}
+              data={asistenciaData}
+            >
               <RadialBar dataKey="value" cornerRadius={8} background={{ fill: '#f1f5f9' }} />
             </RadialBarChart>
           </ResponsiveContainer>
           <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <span className={`text-2xl font-black ${avgAsistencia >= 75 ? 'text-emerald-600' : avgAsistencia >= 65 ? 'text-amber-600' : 'text-[#d32f2f]'}`}>
+            <span
+              className={`text-2xl font-black ${avgAsistencia >= 75 ? 'text-emerald-600' : avgAsistencia >= 65 ? 'text-amber-600' : 'text-[#d32f2f]'}`}
+            >
               {avgAsistencia}%
             </span>
-            <span className="text-xs text-slate-400 font-bold uppercase tracking-wide">del aula</span>
+            <span className="text-xs text-slate-400 font-bold uppercase tracking-wide">
+              del aula
+            </span>
           </div>
         </div>
         <p className="text-xs text-center font-bold text-slate-500 mt-1">
-          {avgAsistencia >= 75 ? '✓ Asistencia saludable' : avgAsistencia >= 65 ? '⚠ Asistencia en riesgo' : '⛔ Asistencia crítica'}
+          {avgAsistencia >= 75
+            ? '✓ Asistencia saludable'
+            : avgAsistencia >= 65
+              ? '⚠ Asistencia en riesgo'
+              : '⛔ Asistencia crítica'}
         </p>
       </div>
     </div>
@@ -152,11 +236,12 @@ function ChartsPanel({ students }) {
 }
 
 function Top5Critical({ students, onSelect }) {
-  const top5 = useMemo(() =>
-    [...students]
-      .filter(s => s.riesgo === 'CRITICO' || s.riesgo === 'ALTO')
-      .sort((a, b) => a.promedio - b.promedio)
-      .slice(0, 5),
+  const top5 = useMemo(
+    () =>
+      [...students]
+        .filter((s) => s.riesgo === 'CRITICO' || s.riesgo === 'ALTO')
+        .sort((a, b) => a.promedio - b.promedio)
+        .slice(0, 5),
     [students]
   );
 
@@ -186,7 +271,9 @@ function Top5Critical({ students, onSelect }) {
             <p className="text-xs font-mono font-bold text-slate-400">{s.codigo}</p>
             <div className="mt-3 pt-2 border-t border-slate-100">
               <p className="text-lg font-black text-[#d32f2f] font-mono">{s.promedio.toFixed(1)}</p>
-              <p className="text-[11px] font-black text-slate-400 uppercase tracking-wider">promedio</p>
+              <p className="text-[11px] font-black text-slate-400 uppercase tracking-wider">
+                promedio
+              </p>
             </div>
           </button>
         ))}
@@ -203,25 +290,38 @@ function StudentRow({ student, onSelect, index }) {
   return (
     <div
       className={`flex items-center gap-3 p-4 rounded-xl border transition-all cursor-pointer group hover:-translate-y-0.5 shadow-sm
-        ${student.riesgo === 'CRITICO'
-          ? 'border-red-200 hover:border-[#d32f2f] bg-red-50/40 hover:bg-red-50'
-          : 'border-slate-200 hover:border-slate-300 bg-white hover:bg-slate-50'
+        ${
+          student.riesgo === 'CRITICO'
+            ? 'border-red-200 hover:border-[#d32f2f] bg-red-50/40 hover:bg-red-50'
+            : 'border-slate-200 hover:border-slate-300 bg-white hover:bg-slate-50'
         } animate-fade-in`}
       style={{ animationDelay: `${index * 30}ms` }}
       onClick={() => onSelect(student)}
     >
-      <div className={`h-9 w-9 rounded-full flex items-center justify-center text-white text-xs font-black flex-shrink-0 shadow-sm
-        ${student.riesgo === 'CRITICO' ? 'bg-gradient-to-br from-[#d32f2f] to-red-700' :
-          student.riesgo === 'ALTO' ? 'bg-gradient-to-br from-amber-500 to-orange-600' :
-          student.riesgo === 'MEDIO' ? 'bg-gradient-to-br from-blue-500 to-blue-700' :
-          'bg-gradient-to-br from-emerald-500 to-teal-600'}`}
+      <div
+        className={`h-9 w-9 rounded-full flex items-center justify-center text-white text-xs font-black flex-shrink-0 shadow-sm
+        ${
+          student.riesgo === 'CRITICO'
+            ? 'bg-gradient-to-br from-[#d32f2f] to-red-700'
+            : student.riesgo === 'ALTO'
+              ? 'bg-gradient-to-br from-amber-500 to-orange-600'
+              : student.riesgo === 'MEDIO'
+                ? 'bg-gradient-to-br from-blue-500 to-blue-700'
+                : 'bg-gradient-to-br from-emerald-500 to-teal-600'
+        }`}
       >
-        {student.nombre.split(' ').map(n => n[0]).slice(0, 2).join('')}
+        {student.nombre
+          .split(' ')
+          .map((n) => n[0])
+          .slice(0, 2)
+          .join('')}
       </div>
 
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
-          <p className="text-sm font-black text-slate-800 group-hover:text-slate-900 truncate">{student.nombre}</p>
+          <p className="text-sm font-black text-slate-800 group-hover:text-slate-900 truncate">
+            {student.nombre}
+          </p>
           {isAbandono && (
             <span className="text-xs px-1.5 py-0.5 bg-violet-50 border border-violet-200 text-violet-700 rounded font-black uppercase tracking-wider flex-shrink-0">
               Abandono
@@ -241,25 +341,33 @@ function StudentRow({ student, onSelect, index }) {
       </div>
 
       <div className="hidden md:flex items-center gap-1 flex-shrink-0">
-        {firstEvals.map(e => (
+        {firstEvals.map((e) => (
           <div key={e.key} className="text-center w-10">
-            <p className={`text-xs font-black font-mono ${student.grades[e.key] >= 12 ? 'text-emerald-600' : student.grades[e.key] >= 10 ? 'text-amber-600' : 'text-[#d32f2f]'}`}>
+            <p
+              className={`text-xs font-black font-mono ${student.grades[e.key] >= 12 ? 'text-emerald-600' : student.grades[e.key] >= 10 ? 'text-amber-600' : 'text-[#d32f2f]'}`}
+            >
               {student.grades[e.key]}
             </p>
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wide truncate max-w-[40px]">{e.label}</p>
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wide truncate max-w-[40px]">
+              {e.label}
+            </p>
           </div>
         ))}
       </div>
 
       <div className="text-right flex-shrink-0 w-16">
-        <p className={`text-base font-black font-mono leading-tight ${student.notaFinal >= 12 ? 'text-emerald-600' : student.notaFinal >= 10 ? 'text-amber-600' : 'text-[#d32f2f]'}`}>
+        <p
+          className={`text-base font-black font-mono leading-tight ${student.notaFinal >= 12 ? 'text-emerald-600' : student.notaFinal >= 10 ? 'text-amber-600' : 'text-[#d32f2f]'}`}
+        >
           {student.notaFinal}
         </p>
         <p className="text-[11px] font-black text-slate-400 uppercase tracking-wider">promedio</p>
       </div>
 
       <div className="hidden lg:block text-right flex-shrink-0 w-14">
-        <p className={`text-sm font-black font-mono leading-tight ${student.asistencia >= 75 ? 'text-emerald-600' : student.asistencia >= 65 ? 'text-amber-600' : 'text-[#d32f2f]'}`}>
+        <p
+          className={`text-sm font-black font-mono leading-tight ${student.asistencia >= 75 ? 'text-emerald-600' : student.asistencia >= 65 ? 'text-amber-600' : 'text-[#d32f2f]'}`}
+        >
           {student.asistencia}%
         </p>
         <p className="text-[11px] font-black text-slate-400 uppercase tracking-wider">asist.</p>
@@ -282,7 +390,7 @@ export default function SectionPage() {
   const [isListLoading, setIsListLoading] = useState(false);
 
   const courseStudents = useMemo(
-    () => students.filter(s => s.cursoId === selectedCourse?.id),
+    () => students.filter((s) => s.cursoId === selectedCourse?.id),
     [students, selectedCourse]
   );
 
@@ -291,49 +399,74 @@ export default function SectionPage() {
     let list = courseStudents;
 
     if (q) {
-      list = list.filter(s =>
-        s.nombre.toLowerCase().includes(q) ||
-        s.codigo.toLowerCase().includes(q)
+      list = list.filter(
+        (s) => s.nombre.toLowerCase().includes(q) || s.codigo.toLowerCase().includes(q)
       );
     }
 
     if (filterRisk !== 'ALL') {
-      list = list.filter(s => s.riesgo === filterRisk);
+      list = list.filter((s) => s.riesgo === filterRisk);
     }
 
     const riskOrder = { CRITICO: 0, ALTO: 1, MEDIO: 2, BAJO: 3 };
     list = [...list].sort((a, b) => {
       let va, vb;
-      if (sortField === 'riesgo') { va = riskOrder[a.riesgo]; vb = riskOrder[b.riesgo]; }
-      else if (sortField === 'nombre') { va = a.nombre; vb = b.nombre; return sortAsc ? va.localeCompare(vb) : vb.localeCompare(va); }
-      else if (sortField === 'promedio') { va = a.promedio; vb = b.promedio; }
-      else if (sortField === 'asistencia') { va = a.asistencia; vb = b.asistencia; }
-      else { va = 0; vb = 0; }
+      if (sortField === 'riesgo') {
+        va = riskOrder[a.riesgo];
+        vb = riskOrder[b.riesgo];
+      } else if (sortField === 'nombre') {
+        va = a.nombre;
+        vb = b.nombre;
+        return sortAsc ? va.localeCompare(vb) : vb.localeCompare(va);
+      } else if (sortField === 'promedio') {
+        va = a.promedio;
+        vb = b.promedio;
+      } else if (sortField === 'asistencia') {
+        va = a.asistencia;
+        vb = b.asistencia;
+      } else {
+        va = 0;
+        vb = 0;
+      }
       return sortAsc ? va - vb : vb - va;
     });
 
     return list;
   }, [courseStudents, search, filterRisk, sortField, sortAsc]);
 
-  const kpis = useMemo(() => ({
-    total: courseStudents.length,
-    criticos: courseStudents.filter(s => s.riesgo === 'CRITICO').length,
-    altos: courseStudents.filter(s => s.riesgo === 'ALTO').length,
-    abandono: courseStudents.filter(s => s.actividadDias > 14).length,
-    aprobados: courseStudents.filter(s => s.notaFinal >= 12).length,
-    promedio: courseStudents.length > 0
-      ? (courseStudents.reduce((a, s) => a + s.promedio, 0) / courseStudents.length).toFixed(1)
-      : '—',
-  }), [courseStudents]);
+  const kpis = useMemo(
+    () => ({
+      total: courseStudents.length,
+      criticos: courseStudents.filter((s) => s.riesgo === 'CRITICO').length,
+      altos: courseStudents.filter((s) => s.riesgo === 'ALTO').length,
+      abandono: courseStudents.filter((s) => s.actividadDias > 14).length,
+      aprobados: courseStudents.filter((s) => s.notaFinal >= 12).length,
+      promedio:
+        courseStudents.length > 0
+          ? (courseStudents.reduce((a, s) => a + s.promedio, 0) / courseStudents.length).toFixed(1)
+          : '—',
+    }),
+    [courseStudents]
+  );
 
   const toggleSort = (field) => {
     if (sortField === field) setSortAsc(!sortAsc);
-    else { setSortField(field); setSortAsc(true); }
+    else {
+      setSortField(field);
+      setSortAsc(true);
+    }
   };
 
-  const SortIcon = ({ field }) => sortField === field
-    ? (sortAsc ? <ChevronUp size={12} /> : <ChevronDown size={12} />)
-    : <SortAsc size={12} className="opacity-30" />;
+  const SortIcon = ({ field }) =>
+    sortField === field ? (
+      sortAsc ? (
+        <ChevronUp size={12} />
+      ) : (
+        <ChevronDown size={12} />
+      )
+    ) : (
+      <SortAsc size={12} className="opacity-30" />
+    );
 
   const handleToggleList = () => {
     if (!showList) {
@@ -357,7 +490,9 @@ export default function SectionPage() {
           >
             <ArrowLeft size={15} /> Volver al Dashboard
           </button>
-          <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">{selectedCourse.nombre}</h1>
+          <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
+            {selectedCourse.nombre}
+          </h1>
           <p className="text-sm font-bold text-slate-500 mt-0.5">
             {selectedCourse.codigo} · Sección {selectedCourse.seccion} · {selectedCourse.ciclo}
             <span className="mx-2 text-slate-300">·</span>
@@ -369,12 +504,48 @@ export default function SectionPage() {
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mb-8">
-        <KPICard label="Alumnos" value={kpis.total} icon={Users} color="text-blue-600" sub="matriculados" />
-        <KPICard label="Críticos" value={kpis.criticos} icon={AlertTriangle} color="text-[#d32f2f]" sub="intervención urgente" />
-        <KPICard label="Riesgo Alto" value={kpis.altos} icon={TrendingUp} color="text-amber-500" sub="seguimiento activo" />
-        <KPICard label="Abandono" value={kpis.abandono} icon={Clock} color="text-violet-600" sub="+14 días inactivos" />
-        <KPICard label="Aprobados" value={kpis.aprobados} icon={Award} color="text-emerald-600" sub="nota ≥ 12" />
-        <KPICard label="Promedio" value={kpis.promedio} icon={BarChart2} color="text-blue-500" sub="grupo" />
+        <KPICard
+          label="Alumnos"
+          value={kpis.total}
+          icon={Users}
+          color="text-blue-600"
+          sub="matriculados"
+        />
+        <KPICard
+          label="Críticos"
+          value={kpis.criticos}
+          icon={AlertTriangle}
+          color="text-[#d32f2f]"
+          sub="intervención urgente"
+        />
+        <KPICard
+          label="Riesgo Alto"
+          value={kpis.altos}
+          icon={TrendingUp}
+          color="text-amber-500"
+          sub="seguimiento activo"
+        />
+        <KPICard
+          label="Abandono"
+          value={kpis.abandono}
+          icon={Clock}
+          color="text-violet-600"
+          sub="+14 días inactivos"
+        />
+        <KPICard
+          label="Aprobados"
+          value={kpis.aprobados}
+          icon={Award}
+          color="text-emerald-600"
+          sub="nota ≥ 12"
+        />
+        <KPICard
+          label="Promedio"
+          value={kpis.promedio}
+          icon={BarChart2}
+          color="text-blue-500"
+          sub="grupo"
+        />
       </div>
 
       <ChartsPanel students={courseStudents} />
@@ -387,12 +558,14 @@ export default function SectionPage() {
             <h2 className="text-base font-black uppercase tracking-wide text-slate-800 flex items-center gap-2">
               <Users size={16} className="text-blue-600" />
               Lista Completa de Alumnos
-              <span className="text-sm font-bold text-slate-400">({filtered.length} de {courseStudents.length})</span>
+              <span className="text-sm font-bold text-slate-400">
+                ({filtered.length} de {courseStudents.length})
+              </span>
             </h2>
 
             <div className="flex items-center gap-2 flex-wrap">
               <div className="flex items-center gap-1">
-                {['ALL', 'CRITICO', 'ALTO', 'MEDIO', 'BAJO'].map(r => (
+                {['ALL', 'CRITICO', 'ALTO', 'MEDIO', 'BAJO'].map((r) => (
                   <button
                     key={r}
                     onClick={() => setFilterRisk(r)}
@@ -415,12 +588,15 @@ export default function SectionPage() {
               <input
                 type="text"
                 value={search}
-                onChange={e => setSearch(e.target.value)}
+                onChange={(e) => setSearch(e.target.value)}
                 placeholder="Buscar por nombre o código U (ej. U21317697)..."
                 className="w-full bg-white border border-slate-200 focus:border-blue-500/60 rounded-xl pl-9 pr-8 py-2.5 text-sm text-slate-900 placeholder-slate-400 outline-none transition-all shadow-inner"
               />
               {search && (
-                <button onClick={() => setSearch('')} className="absolute right-3 top-3 text-slate-400 hover:text-slate-600 text-xs font-bold transition-colors">
+                <button
+                  onClick={() => setSearch('')}
+                  className="absolute right-3 top-3 text-slate-400 hover:text-slate-600 text-xs font-bold transition-colors"
+                >
                   ✕
                 </button>
               )}
@@ -429,8 +605,15 @@ export default function SectionPage() {
 
           {showList && (
             <div className="flex items-center gap-2 mt-3.5 animate-fade-in">
-              <span className="text-xs font-black text-slate-400 uppercase tracking-wider mr-1">Ordenar:</span>
-              {[['riesgo', 'Riesgo'], ['promedio', 'Promedio'], ['asistencia', 'Asistencia'], ['nombre', 'Nombre']].map(([field, label]) => (
+              <span className="text-xs font-black text-slate-400 uppercase tracking-wider mr-1">
+                Ordenar:
+              </span>
+              {[
+                ['riesgo', 'Riesgo'],
+                ['promedio', 'Promedio'],
+                ['asistencia', 'Asistencia'],
+                ['nombre', 'Nombre'],
+              ].map(([field, label]) => (
                 <button
                   key={field}
                   onClick={() => toggleSort(field)}
@@ -455,7 +638,8 @@ export default function SectionPage() {
               </div>
               <h3 className="text-lg font-black text-slate-900 mb-2">Lista de Alumnos Oculta</h3>
               <p className="text-sm font-bold text-slate-600 mb-6 max-w-sm mx-auto leading-relaxed">
-                Para optimizar el rendimiento, la lista completa de {courseStudents.length} alumnos se carga bajo demanda.
+                Para optimizar el rendimiento, la lista completa de {courseStudents.length} alumnos
+                se carga bajo demanda.
               </p>
               <button
                 onClick={handleToggleList}
@@ -466,13 +650,17 @@ export default function SectionPage() {
             </div>
           ) : isListLoading ? (
             <div className="space-y-3 p-2">
-              {[...Array(6)].map((_, i) => <SkeletonStudentRow key={i} />)}
+              {[...Array(6)].map((_, i) => (
+                <SkeletonStudentRow key={i} />
+              ))}
             </div>
           ) : filtered.length === 0 ? (
             <div className="text-center py-12 text-slate-500 flex-1 flex flex-col items-center justify-center">
               <Search size={32} className="mx-auto mb-3 opacity-30 text-slate-400" />
               <p className="font-bold text-sm">No se encontraron alumnos</p>
-              <p className="text-xs text-slate-400 mt-0.5 font-medium">Intente con otro término de búsqueda</p>
+              <p className="text-xs text-slate-400 mt-0.5 font-medium">
+                Intente con otro término de búsqueda
+              </p>
             </div>
           ) : (
             <>

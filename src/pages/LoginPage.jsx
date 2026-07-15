@@ -1,5 +1,16 @@
-import React, { useState, useEffect } from 'react';
-import { Eye, EyeOff, Shield, Lock, AlertTriangle, Mail, ArrowRight, RefreshCw, CheckCircle2, XCircle } from 'lucide-react';
+import React, { useState } from 'react';
+import {
+  Eye,
+  EyeOff,
+  Shield,
+  Lock,
+  AlertTriangle,
+  Mail,
+  ArrowRight,
+  RefreshCw,
+  CheckCircle2,
+  XCircle,
+} from 'lucide-react';
 import { useApp } from '../context/AppContext.jsx';
 import { useAuth } from '../hooks/useAuth.js';
 
@@ -27,7 +38,10 @@ function LoginForm() {
   const [codeError, setCodeError] = useState('');
 
   const validateCode = (val) => {
-    if (!val) { setCodeError(''); return; }
+    if (!val) {
+      setCodeError('');
+      return;
+    }
     if (val.includes('@')) {
       if (!val.endsWith('@utp.edu.pe')) {
         setCodeError('El correo institucional debe terminar en @utp.edu.pe');
@@ -35,8 +49,10 @@ function LoginForm() {
         setCodeError('');
       }
     } else {
-      if (!/^C/.test(val)) setCodeError('Solo identificadores con prefijo "C" o correos @utp.edu.pe son autorizados.');
-      else if (!/^C\d{1,5}$/.test(val)) setCodeError('Formato: C seguido de 5 dígitos (ej. C13005)');
+      if (!/^C/.test(val))
+        setCodeError('Solo identificadores con prefijo "C" o correos @utp.edu.pe son autorizados.');
+      else if (!/^C\d{1,5}$/.test(val))
+        setCodeError('Formato: C seguido de 5 dígitos (ej. C13005)');
       else setCodeError('');
     }
   };
@@ -66,7 +82,8 @@ function LoginForm() {
       <div className="flex items-start gap-2.5 bg-blue-500/10 border border-blue-500/20 rounded-xl p-3.5">
         <Shield size={16} className="text-blue-700 flex-shrink-0 mt-0.5" />
         <p className="text-xs text-slate-700 leading-relaxed">
-          <strong>Información importante:</strong> Use su código docente con prefijo "C" o su correo institucional.
+          <strong>Información importante:</strong> Use su código docente con prefijo "C" o su correo
+          institucional.
         </p>
       </div>
 
@@ -94,12 +111,12 @@ function LoginForm() {
               font-mono text-sm tracking-wider outline-none transition-all
               ${codeError ? 'border-red-500! focus:border-red-600!' : ''}`}
           />
-          {codigo && !codeError && (codigo.includes('@') ? codigo.endsWith('@utp.edu.pe') : /^C\d{5}$/.test(codigo)) && (
-            <CheckCircle2 size={16} className="absolute right-4 top-4 text-emerald-600" />
-          )}
-          {codeError && (
-            <XCircle size={16} className="absolute right-4 top-4 text-red-500" />
-          )}
+          {codigo &&
+            !codeError &&
+            (codigo.includes('@') ? codigo.endsWith('@utp.edu.pe') : /^C\d{5}$/.test(codigo)) && (
+              <CheckCircle2 size={16} className="absolute right-4 top-4 text-emerald-600" />
+            )}
+          {codeError && <XCircle size={16} className="absolute right-4 top-4 text-red-500" />}
         </div>
         {codeError && <p className="text-xs text-red-600 font-medium mt-1">{codeError}</p>}
       </div>
@@ -113,7 +130,7 @@ function LoginForm() {
           <input
             type={showPass ? 'text' : 'password'}
             value={password}
-            onChange={e => setPassword(e.target.value)}
+            onChange={(e) => setPassword(e.target.value)}
             disabled={loading}
             placeholder="••••••••"
             className="input-glow w-full rounded-xl px-4 py-3.5 pr-12 text-sm outline-none transition-all"
@@ -136,11 +153,7 @@ function LoginForm() {
           disabled:opacity-40 disabled:cursor-not-allowed text-white font-semibold text-sm transition-all
           flex items-center justify-center gap-2 shadow-md shadow-red-900/10 mt-2 active:scale-[0.99]"
       >
-        {loading ? (
-          <RefreshCw size={16} className="animate-spin" />
-        ) : (
-          <Shield size={16} />
-        )}
+        {loading ? <RefreshCw size={16} className="animate-spin" /> : <Shield size={16} />}
         {loading ? 'Autenticando...' : 'Acceder al Sistema VIGÍA'}
         {!loading && <ArrowRight size={16} />}
       </button>
@@ -148,7 +161,18 @@ function LoginForm() {
       {/* Demo hint */}
       <div className="text-center pt-2">
         <p className="text-xs text-slate-500">
-          Demo: <span className="text-slate-800 font-mono bg-slate-200/60 px-1.5 py-0.5 rounded">C13005</span> o <span className="text-slate-800 font-mono bg-slate-200/60 px-1.5 py-0.5 rounded">C13007</span> / <span className="text-slate-800 font-mono bg-slate-200/60 px-1.5 py-0.5 rounded">Utp2026#</span>
+          Demo:{' '}
+          <span className="text-slate-800 font-mono bg-slate-200/60 px-1.5 py-0.5 rounded">
+            C13005
+          </span>{' '}
+          o{' '}
+          <span className="text-slate-800 font-mono bg-slate-200/60 px-1.5 py-0.5 rounded">
+            C13007
+          </span>{' '}
+          /{' '}
+          <span className="text-slate-800 font-mono bg-slate-200/60 px-1.5 py-0.5 rounded">
+            Utp2026#
+          </span>
         </p>
       </div>
     </form>
@@ -195,7 +219,9 @@ function RecoveryForm() {
             {copied ? '✓ Copiado' : 'Copiar'}
           </button>
         </div>
-        <p className="text-[11px] text-slate-400 mt-2">Válido por 10 minutos · UTP Sistema Académico</p>
+        <p className="text-[11px] text-slate-400 mt-2">
+          Válido por 10 minutos · UTP Sistema Académico
+        </p>
       </div>
 
       <div className="space-y-2">
@@ -205,7 +231,7 @@ function RecoveryForm() {
         <input
           type="text"
           value={code}
-          onChange={e => setCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+          onChange={(e) => setCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
           placeholder="• • • • • •"
           maxLength={6}
           className="input-glow w-full rounded-xl px-4 py-3 font-mono text-xl tracking-widest text-center outline-none transition-all"
@@ -239,14 +265,12 @@ export default function LoginPage() {
       <Particles />
 
       <div className="relative w-full max-w-[420px] animate-fade-in">
-        
         {/* Cuadro del Formulario Blanco / Hueso */}
         <div className="glass-card rounded-3xl p-7 sm:p-8">
-
           {/* Header Corporativo Actualizado */}
           <div className="text-center mb-7">
             <EyeLogoBig />
-            
+
             {/* Nuevo diseño de UTP + VIGÍA */}
             <div className="flex items-center justify-center gap-1 mt-5">
               {/* Contenedores independientes para U T P */}
@@ -263,21 +287,21 @@ export default function LoginPage() {
               </div>
 
               {/* El signo + en Rojo */}
-              <span className="text-red-600 font-black text-2xl mx-1.5">
-                +
-              </span>
+              <span className="text-red-600 font-black text-2xl mx-1.5">+</span>
 
               {/* VIGÍA en Negro */}
-              <span className="text-black font-black text-2xl tracking-tight">
-                VIGÍA
-              </span>
+              <span className="text-black font-black text-2xl tracking-tight">VIGÍA</span>
             </div>
 
-            <p className="text-slate-500 text-xs mt-2 font-medium">Sistema de Alerta Temprana Académica</p>
-            
+            <p className="text-slate-500 text-xs mt-2 font-medium">
+              Sistema de Alerta Temprana Académica
+            </p>
+
             <div className="flex items-center justify-center gap-2 mt-4">
               <div className="h-px w-10 bg-slate-200" />
-              <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">UTP · 2026-I</span>
+              <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">
+                UTP · 2026-I
+              </span>
               <div className="h-px w-10 bg-slate-200" />
             </div>
           </div>

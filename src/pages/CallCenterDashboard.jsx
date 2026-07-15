@@ -1,11 +1,22 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useApp } from '../context/AppContext.jsx';
-import { Zap, Loader2, MessageCircle, Mail, X, Search, CheckCircle, FileSpreadsheet, AlertTriangle, BookOpen, Clock } from 'lucide-react';
+import {
+  Zap,
+  Loader2,
+  MessageCircle,
+  Mail,
+  X,
+  Search,
+  CheckCircle,
+  FileSpreadsheet,
+  AlertTriangle,
+  BookOpen,
+  Clock,
+} from 'lucide-react';
 import RiskBadge from '../components/ui/RiskBadge.jsx';
 import { generarMensajeIntervencion } from '../services/ia.service.js';
 import { enrichStudentData } from '../data/dataset.js';
 import { enviarCorreoEstudiante } from '../services/messaging.service.js';
-import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
 import { supabase } from '../supabaseClient.js';
 
@@ -77,21 +88,18 @@ export default function CallCenterDashboard() {
       // Misma lógica de detección de deuda que ya usa el componente
       const tieneDeudaLocal =
         student.estado_pago === 'PENDIENTE' ||
-        (!student.estado_pago &&
-          parseInt(student.codigo.replace(/\D/g, ''), 10) % 3 === 0);
+        (!student.estado_pago && parseInt(student.codigo.replace(/\D/g, ''), 10) % 3 === 0);
 
       const dbEstadoPago = student.estado_pago ?? 'PAGADO'; // default del schema
       const necesitaActualizar =
-        tieneDeudaLocal &&
-        dbEstadoPago === 'PAGADO' &&
-        !syncedIds.current.has(student.codigo);
+        tieneDeudaLocal && dbEstadoPago === 'PAGADO' && !syncedIds.current.has(student.codigo);
 
       if (necesitaActualizar) {
         syncedIds.current.add(student.codigo); // marcar antes de la llamada async
         updateStudentPaymentStatus(student.codigo, 'PENDIENTE');
       }
     });
-  }, [students]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [students]);
   // ─────────────────────────────────────────────────────────────────────────
 
   const showToast = (message, type = 'success') => {
@@ -100,12 +108,20 @@ export default function CallCenterDashboard() {
   };
 
   const totalStudents = students?.length || 0;
-  const pendingPayments = students?.filter(s => s.estado_pago === 'PENDIENTE' || (!s.estado_pago && parseInt(s.codigo.replace(/\D/g, ''), 10) % 3 === 0)).length || 0;
-  const criticalRisk = students?.filter(s => s.riesgo === 'CRITICO' || s.riesgo === 'ALTO').length || 0;
+  const pendingPayments =
+    students?.filter(
+      (s) =>
+        s.estado_pago === 'PENDIENTE' ||
+        (!s.estado_pago && parseInt(s.codigo.replace(/\D/g, ''), 10) % 3 === 0)
+    ).length || 0;
+  const criticalRisk =
+    students?.filter((s) => s.riesgo === 'CRITICO' || s.riesgo === 'ALTO').length || 0;
 
   const filteredStudents = (students || [])
-    .filter(student => {
-      const estadoPago = student.estado_pago || (parseInt(student.codigo.replace(/\D/g, ''), 10) % 3 === 0 ? 'PENDIENTE' : 'PAGADO');
+    .filter((student) => {
+      const estadoPago =
+        student.estado_pago ||
+        (parseInt(student.codigo.replace(/\D/g, ''), 10) % 3 === 0 ? 'PENDIENTE' : 'PAGADO');
       if (activeFilter === 'DEBT') {
         return estadoPago === 'PENDIENTE';
       }
@@ -114,12 +130,15 @@ export default function CallCenterDashboard() {
       }
       return true;
     })
-    .filter(s =>
-      s.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      s.codigo.toLowerCase().includes(searchTerm.toLowerCase())
+    .filter(
+      (s) =>
+        s.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        s.codigo.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
   const exportarExcel = async () => {
+    // Carga diferida: ExcelJS (~940 KB) solo se descarga al exportar
+    const { default: ExcelJS } = await import('exceljs');
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet('Reporte VIGIA');
 
@@ -131,7 +150,7 @@ export default function CallCenterDashboard() {
       { header: 'Asistencia', key: 'asistencia', width: 15 },
       { header: 'Riesgo', key: 'riesgo', width: 15 },
       { header: 'Pago', key: 'pago', width: 15 },
-      { header: 'Estado de Gestión', key: 'gestion', width: 20 }
+      { header: 'Estado de Gestión', key: 'gestion', width: 20 },
     ];
 
     const headerRow = worksheet.getRow(1);
@@ -139,29 +158,34 @@ export default function CallCenterDashboard() {
       cell.fill = {
         type: 'pattern',
         pattern: 'solid',
-        fgColor: { argb: 'FFD32F2F' }
+        fgColor: { argb: 'FFD32F2F' },
       };
       cell.font = {
         name: 'Segoe UI',
         bold: true,
-        color: { argb: 'FFFFFFFF' }
+        color: { argb: 'FFFFFFFF' },
       };
       cell.alignment = { vertical: 'middle', horizontal: 'center' };
     });
 
     filteredStudents.forEach((student) => {
-      const estadoPago = student.estado_pago || (parseInt(student.codigo.replace(/\D/g, ''), 10) % 3 === 0 ? 'PENDIENTE' : 'PAGADO');
+      const estadoPago =
+        student.estado_pago ||
+        (parseInt(student.codigo.replace(/\D/g, ''), 10) % 3 === 0 ? 'PENDIENTE' : 'PAGADO');
       const estadoGestion = intervenedIds.has(student.codigo) ? 'Gestionado' : 'Pendiente';
-      
+
       worksheet.addRow({
         codigo: student.codigo,
         nombre: student.nombre,
         ciclo: student.ciclo || '2026-I',
-        promedio: typeof student.promedio === 'number' ? Math.round(student.promedio * 100) / 100 : student.promedio,
+        promedio:
+          typeof student.promedio === 'number'
+            ? Math.round(student.promedio * 100) / 100
+            : student.promedio,
         asistencia: `${student.asistencia}%`,
         riesgo: student.riesgo,
         pago: estadoPago,
-        gestion: estadoGestion
+        gestion: estadoGestion,
       });
     });
 
@@ -172,7 +196,7 @@ export default function CallCenterDashboard() {
             top: { style: 'thin', color: { argb: 'FFD1D5DB' } },
             left: { style: 'thin', color: { argb: 'FFD1D5DB' } },
             bottom: { style: 'thin', color: { argb: 'FFD1D5DB' } },
-            right: { style: 'thin', color: { argb: 'FFD1D5DB' } }
+            right: { style: 'thin', color: { argb: 'FFD1D5DB' } },
           };
           cell.font = { name: 'Segoe UI', size: 10 };
           cell.alignment = { vertical: 'middle' };
@@ -187,14 +211,14 @@ export default function CallCenterDashboard() {
   const handleIntervene = async (student) => {
     // Enrich student details from DB or INITIAL dataset
     const enriched = enrichStudentData(student);
-    
+
     setSelectedStudent(enriched);
     setIsModalOpen(true);
     setIsLoadingAI(true);
     setAiComment('');
     setEmailSubject('');
     setEmailBody('');
- 
+
     try {
       const result = await generarMensajeIntervencion(enriched);
       setAiComment(result.comentario || 'Diagnóstico no disponible.');
@@ -215,9 +239,9 @@ export default function CallCenterDashboard() {
       await enviarCorreoEstudiante({
         student: selectedStudent,
         asunto: emailSubject,
-        cuerpo: emailBody
+        cuerpo: emailBody,
       });
-      setIntervenedIds(prev => {
+      setIntervenedIds((prev) => {
         const next = new Set(prev);
         next.add(selectedStudent.codigo);
         return next;
@@ -238,10 +262,12 @@ export default function CallCenterDashboard() {
     console.log('--- ENVÍO DE ALERTA WHATSAPP ---');
     console.log(`Fecha/Hora: ${new Date().toLocaleString()}`);
     console.log(`Destinatario: ${selectedStudent.nombre} (${selectedStudent.codigo})`);
-    console.log(`Mensaje Corto: Hola ${selectedStudent.nombre.split(' ')[0]}, te enviamos tu plan académico personalizado al correo institucional.`);
+    console.log(
+      `Mensaje Corto: Hola ${selectedStudent.nombre.split(' ')[0]}, te enviamos tu plan académico personalizado al correo institucional.`
+    );
     console.log('--------------------------------');
 
-    setIntervenedIds(prev => {
+    setIntervenedIds((prev) => {
       const next = new Set(prev);
       next.add(selectedStudent.codigo);
       return next;
@@ -253,7 +279,6 @@ export default function CallCenterDashboard() {
   return (
     <div className="min-h-screen bg-slate-100 text-slate-900 pb-12">
       <main className="max-w-screen-2xl mx-auto px-4 sm:px-6 py-8">
-        
         {/* Header Section */}
         <div className="mb-8 animate-fade-in flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
@@ -264,7 +289,8 @@ export default function CallCenterDashboard() {
               Panel Administrativo - Seguimiento de Retención
             </h1>
             <p className="text-slate-600 text-xs mt-1.5 font-bold bg-white border border-slate-200 px-3 py-1.5 rounded-lg w-fit shadow-sm">
-              Gestión de llamadas y compromisos de pago <span className="text-slate-300">·</span> <span className="text-[#d32f2f] font-black">Ciclo 2026-I</span>
+              Gestión de llamadas y compromisos de pago <span className="text-slate-300">·</span>{' '}
+              <span className="text-[#d32f2f] font-black">Ciclo 2026-I</span>
             </p>
           </div>
           <div>
@@ -281,15 +307,21 @@ export default function CallCenterDashboard() {
         {/* Bloque A: Tarjetas KPI */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
           <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
-            <p className="text-xs text-slate-500 font-black uppercase tracking-wider">Total Asignados</p>
+            <p className="text-xs text-slate-500 font-black uppercase tracking-wider">
+              Total Asignados
+            </p>
             <p className="text-2xl font-black text-slate-900 mt-1">{totalStudents}</p>
           </div>
           <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
-            <p className="text-xs text-slate-500 font-black uppercase tracking-wider">Pendientes de Pago</p>
+            <p className="text-xs text-slate-500 font-black uppercase tracking-wider">
+              Pendientes de Pago
+            </p>
             <p className="text-2xl font-black text-blue-600 mt-1">{pendingPayments}</p>
           </div>
           <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
-            <p className="text-xs text-slate-500 font-black uppercase tracking-wider">Riesgo Crítico / Alto</p>
+            <p className="text-xs text-slate-500 font-black uppercase tracking-wider">
+              Riesgo Crítico / Alto
+            </p>
             <p className="text-2xl font-black text-[#d32f2f] mt-1">{criticalRisk}</p>
           </div>
         </div>
@@ -347,25 +379,72 @@ export default function CallCenterDashboard() {
             <table className="min-w-full divide-y divide-slate-200 text-left">
               <thead className="bg-slate-50">
                 <tr>
-                  <th scope="col" className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Código</th>
-                  <th scope="col" className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Nombre</th>
-                  <th scope="col" className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Ciclo</th>
-                  <th scope="col" className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Promedio</th>
-                  <th scope="col" className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Asistencia</th>
-                  <th scope="col" className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Riesgo</th>
-                  <th scope="col" className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Estado Pago</th>
-                  <th scope="col" className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider text-right">Acciones</th>
+                  <th
+                    scope="col"
+                    className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider"
+                  >
+                    Código
+                  </th>
+                  <th
+                    scope="col"
+                    className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider"
+                  >
+                    Nombre
+                  </th>
+                  <th
+                    scope="col"
+                    className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider"
+                  >
+                    Ciclo
+                  </th>
+                  <th
+                    scope="col"
+                    className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider"
+                  >
+                    Promedio
+                  </th>
+                  <th
+                    scope="col"
+                    className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider"
+                  >
+                    Asistencia
+                  </th>
+                  <th
+                    scope="col"
+                    className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider"
+                  >
+                    Riesgo
+                  </th>
+                  <th
+                    scope="col"
+                    className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider"
+                  >
+                    Estado Pago
+                  </th>
+                  <th
+                    scope="col"
+                    className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider text-right"
+                  >
+                    Acciones
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-200 bg-white">
                 {filteredStudents && filteredStudents.length > 0 ? (
                   filteredStudents.map((student) => {
-                    const estadoPago = student.estado_pago || (parseInt(student.codigo.replace(/\D/g, ''), 10) % 3 === 0 ? 'PENDIENTE' : 'PAGADO');
+                    const estadoPago =
+                      student.estado_pago ||
+                      (parseInt(student.codigo.replace(/\D/g, ''), 10) % 3 === 0
+                        ? 'PENDIENTE'
+                        : 'PAGADO');
                     const isPagado = estadoPago === 'PAGADO';
                     const isIntervened = intervenedIds.has(student.codigo);
 
                     return (
-                      <tr key={student.codigo} className={`transition-colors ${isIntervened ? 'bg-slate-50 opacity-80' : 'hover:bg-slate-50/80'}`}>
+                      <tr
+                        key={student.codigo}
+                        className={`transition-colors ${isIntervened ? 'bg-slate-50 opacity-80' : 'hover:bg-slate-50/80'}`}
+                      >
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-mono font-bold text-slate-700">
                           {student.codigo}
                         </td>
@@ -377,8 +456,12 @@ export default function CallCenterDashboard() {
                           {student.ciclo || '2026-I'}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <span className={`text-sm font-black ${student.promedio >= 12 ? 'text-emerald-600' : 'text-[#d32f2f]'}`}>
-                            {typeof student.promedio === 'number' ? Math.round(student.promedio * 100) / 100 : student.promedio}
+                          <span
+                            className={`text-sm font-black ${student.promedio >= 12 ? 'text-emerald-600' : 'text-[#d32f2f]'}`}
+                          >
+                            {typeof student.promedio === 'number'
+                              ? Math.round(student.promedio * 100) / 100
+                              : student.promedio}
                           </span>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-600 font-semibold">
@@ -388,11 +471,13 @@ export default function CallCenterDashboard() {
                           <RiskBadge level={student.riesgo} size="sm" />
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <span className={`px-2.5 py-1 rounded-full text-xs font-black tracking-wide border uppercase inline-flex items-center ${
-                            isPagado 
-                              ? 'bg-emerald-50 text-emerald-700 border-emerald-200' 
-                              : 'bg-orange-50 text-orange-700 border-orange-200'
-                          }`}>
+                          <span
+                            className={`px-2.5 py-1 rounded-full text-xs font-black tracking-wide border uppercase inline-flex items-center ${
+                              isPagado
+                                ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                                : 'bg-orange-50 text-orange-700 border-orange-200'
+                            }`}
+                          >
                             {estadoPago}
                           </span>
                         </td>
@@ -429,7 +514,6 @@ export default function CallCenterDashboard() {
             </table>
           </div>
         </div>
-
       </main>
 
       {/* Modal for AI Intervention Message */}
@@ -439,14 +523,17 @@ export default function CallCenterDashboard() {
             {/* Modal Header */}
             <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-slate-50">
               <div>
-                <h3 className="font-black text-slate-900 text-base">Propuesta de Intervención Inteligente</h3>
+                <h3 className="font-black text-slate-900 text-base">
+                  Propuesta de Intervención Inteligente
+                </h3>
                 {selectedStudent && (
                   <p className="text-xs text-slate-500 font-bold">
-                    Estudiante: {selectedStudent.nombre} ({selectedStudent.codigo}) · {selectedStudent.carrera}
+                    Estudiante: {selectedStudent.nombre} ({selectedStudent.codigo}) ·{' '}
+                    {selectedStudent.carrera}
                   </p>
                 )}
               </div>
-              <button 
+              <button
                 onClick={() => setIsModalOpen(false)}
                 className="p-1 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors"
               >
@@ -459,7 +546,9 @@ export default function CallCenterDashboard() {
               {isLoadingAI ? (
                 <div className="flex flex-col items-center justify-center py-12 gap-3">
                   <Loader2 size={36} className="text-[#d32f2f] animate-spin" />
-                  <p className="text-sm text-slate-600 font-black uppercase tracking-wider animate-pulse">Generando propuesta con Gemini 2.5 Flash...</p>
+                  <p className="text-sm text-slate-600 font-black uppercase tracking-wider animate-pulse">
+                    Generando propuesta con Gemini 2.5 Flash...
+                  </p>
                 </div>
               ) : (
                 <div className="space-y-4">
@@ -474,16 +563,35 @@ export default function CallCenterDashboard() {
                           </h4>
                           <div className="grid grid-cols-3 gap-1 text-center">
                             <div className="bg-white p-1.5 rounded-lg border border-slate-200 shadow-sm">
-                              <span className="text-[9px] text-slate-400 font-bold block">Promedio</span>
-                              <span className={`text-xs font-black ${selectedStudent.promedio >= 12 ? 'text-emerald-600' : 'text-red-600'}`}>{typeof selectedStudent.promedio === 'number' ? Math.round(selectedStudent.promedio * 100) / 100 : selectedStudent.promedio}</span>
+                              <span className="text-[9px] text-slate-400 font-bold block">
+                                Promedio
+                              </span>
+                              <span
+                                className={`text-xs font-black ${selectedStudent.promedio >= 12 ? 'text-emerald-600' : 'text-red-600'}`}
+                              >
+                                {typeof selectedStudent.promedio === 'number'
+                                  ? Math.round(selectedStudent.promedio * 100) / 100
+                                  : selectedStudent.promedio}
+                              </span>
                             </div>
                             <div className="bg-white p-1.5 rounded-lg border border-slate-200 shadow-sm">
-                              <span className="text-[9px] text-slate-400 font-bold block">Asistencia</span>
-                              <span className="text-xs font-black text-slate-800 font-mono">{Math.round((selectedStudent.academic?.asistencia_global ?? 0.75) * 100)}%</span>
+                              <span className="text-[9px] text-slate-400 font-bold block">
+                                Asistencia
+                              </span>
+                              <span className="text-xs font-black text-slate-800 font-mono">
+                                {Math.round(
+                                  (selectedStudent.academic?.asistencia_global ?? 0.75) * 100
+                                )}
+                                %
+                              </span>
                             </div>
                             <div className="bg-white p-1.5 rounded-lg border border-slate-200 shadow-sm">
-                              <span className="text-[9px] text-slate-400 font-bold block">Canvas</span>
-                              <span className="text-xs font-black text-slate-800">{selectedStudent.academic?.actividad_campus || 'Media'}</span>
+                              <span className="text-[9px] text-slate-400 font-bold block">
+                                Canvas
+                              </span>
+                              <span className="text-xs font-black text-slate-800">
+                                {selectedStudent.academic?.actividad_campus || 'Media'}
+                              </span>
                             </div>
                           </div>
                         </div>
@@ -495,18 +603,30 @@ export default function CallCenterDashboard() {
                           </h4>
                           <div className="grid grid-cols-3 gap-1 text-center">
                             <div className="bg-white p-1.5 rounded-lg border border-slate-200 shadow-sm">
-                              <span className="text-[9px] text-slate-400 font-bold block">Estado</span>
-                              <span className={`text-xs font-black uppercase ${selectedStudent.estado_pago === 'PAGADO' ? 'text-emerald-600' : 'text-orange-600'}`}>
+                              <span className="text-[9px] text-slate-400 font-bold block">
+                                Estado
+                              </span>
+                              <span
+                                className={`text-xs font-black uppercase ${selectedStudent.estado_pago === 'PAGADO' ? 'text-emerald-600' : 'text-orange-600'}`}
+                              >
                                 {selectedStudent.estado_pago}
                               </span>
                             </div>
                             <div className="bg-white p-1.5 rounded-lg border border-slate-200 shadow-sm">
-                              <span className="text-[9px] text-slate-400 font-bold block">Vencidas</span>
-                              <span className="text-xs font-black text-slate-800 font-mono">{selectedStudent.detalle_pagos?.cuotas_vencidas ?? 0}</span>
+                              <span className="text-[9px] text-slate-400 font-bold block">
+                                Vencidas
+                              </span>
+                              <span className="text-xs font-black text-slate-800 font-mono">
+                                {selectedStudent.detalle_pagos?.cuotas_vencidas ?? 0}
+                              </span>
                             </div>
                             <div className="bg-white p-1.5 rounded-lg border border-slate-200 shadow-sm">
-                              <span className="text-[9px] text-slate-400 font-bold block">Pendiente</span>
-                              <span className="text-xs font-black text-slate-800 font-mono">S/.{selectedStudent.detalle_pagos?.monto_pendiente ?? 0}</span>
+                              <span className="text-[9px] text-slate-400 font-bold block">
+                                Pendiente
+                              </span>
+                              <span className="text-xs font-black text-slate-800 font-mono">
+                                S/.{selectedStudent.detalle_pagos?.monto_pendiente ?? 0}
+                              </span>
                             </div>
                           </div>
                         </div>
@@ -518,7 +638,9 @@ export default function CallCenterDashboard() {
                   <div className="bg-violet-50 border border-violet-100 rounded-xl p-4 space-y-1.5">
                     <div className="flex items-center gap-1.5">
                       <Zap size={14} className="text-violet-600" />
-                      <h4 className="text-xs font-black text-violet-800 uppercase tracking-wider">Diagnóstico IA del Asesor</h4>
+                      <h4 className="text-xs font-black text-violet-800 uppercase tracking-wider">
+                        Diagnóstico IA del Asesor
+                      </h4>
                     </div>
                     <p className="text-xs text-violet-950 font-medium leading-relaxed">
                       {aiComment}
@@ -527,10 +649,12 @@ export default function CallCenterDashboard() {
 
                   {/* Asunto Editable */}
                   <div className="space-y-1">
-                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest block">Asunto del Correo</label>
-                    <input 
-                      type="text" 
-                      value={emailSubject} 
+                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest block">
+                      Asunto del Correo
+                    </label>
+                    <input
+                      type="text"
+                      value={emailSubject}
                       onChange={(e) => setEmailSubject(e.target.value)}
                       className="w-full bg-slate-50 border border-slate-200 focus:border-blue-500 focus:bg-white rounded-xl px-3 py-2 text-sm text-slate-900 font-semibold outline-none transition-all shadow-inner"
                     />
@@ -538,9 +662,11 @@ export default function CallCenterDashboard() {
 
                   {/* Cuerpo del Correo Editable */}
                   <div className="space-y-1">
-                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest block">Cuerpo del Mensaje (Editable)</label>
-                    <textarea 
-                      value={emailBody} 
+                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest block">
+                      Cuerpo del Mensaje (Editable)
+                    </label>
+                    <textarea
+                      value={emailBody}
                       onChange={(e) => setEmailBody(e.target.value)}
                       rows={9}
                       className="w-full bg-slate-50 border border-slate-200 focus:border-blue-500 focus:bg-white rounded-xl px-3 py-2 text-xs text-slate-900 font-medium leading-relaxed outline-none transition-all shadow-inner resize-y font-mono animate-fade-in"
@@ -592,14 +718,23 @@ export default function CallCenterDashboard() {
       {/* Toast Notification */}
       {toast && (
         <div className="fixed bottom-5 right-5 z-[100] bg-slate-900 border border-slate-700/50 text-white rounded-2xl px-5 py-4 shadow-2xl flex items-center gap-3 animate-slide-in">
-          <div className={`p-1.5 rounded-lg ${toast.type === 'success' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-red-500/20 text-red-400'}`}>
+          <div
+            className={`p-1.5 rounded-lg ${toast.type === 'success' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-red-500/20 text-red-400'}`}
+          >
             {toast.type === 'success' ? <CheckCircle size={16} /> : <AlertTriangle size={16} />}
           </div>
           <div className="min-w-[200px]">
-            <p className="text-xs font-black uppercase tracking-wider text-slate-400">Notificación</p>
+            <p className="text-xs font-black uppercase tracking-wider text-slate-400">
+              Notificación
+            </p>
             <p className="text-sm font-bold text-slate-100">{toast.message}</p>
           </div>
-          <button onClick={() => setToast(null)} className="ml-2 text-slate-400 hover:text-white transition-colors text-xs font-bold">✕</button>
+          <button
+            onClick={() => setToast(null)}
+            className="ml-2 text-slate-400 hover:text-white transition-colors text-xs font-bold"
+          >
+            ✕
+          </button>
         </div>
       )}
     </div>

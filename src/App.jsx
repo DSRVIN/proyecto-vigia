@@ -6,11 +6,11 @@ import LoginPage from './pages/LoginPage.jsx';
 
 // Lazy load pages for optimized loading
 const DashboardPage = lazy(() => import('./pages/DashboardPage.jsx'));
-const SectionPage   = lazy(() => import('./pages/SectionPage.jsx'));
-const AdminPage     = lazy(() => import('./pages/AdminPage.jsx'));
+const SectionPage = lazy(() => import('./pages/SectionPage.jsx'));
+const AdminPage = lazy(() => import('./pages/AdminPage.jsx'));
 const KPIStudentsPage = lazy(() => import('./pages/KPIStudentsPage.jsx'));
-const CallCenterDashboard  = lazy(() => import('./pages/CallCenterDashboard.jsx'));
-const EjecutivoDashboard   = lazy(() => import('./pages/EjecutivoDashboard.jsx'));
+const CallCenterDashboard = lazy(() => import('./pages/CallCenterDashboard.jsx'));
+const EjecutivoDashboard = lazy(() => import('./pages/EjecutivoDashboard.jsx'));
 
 function PageLoader() {
   return (
@@ -41,11 +41,11 @@ function AppRouter() {
       <main>
         <Suspense fallback={<PageLoader />}>
           {currentView === 'dashboard' && <DashboardPage />}
-          {currentView === 'section'   && <SectionPage />}
-          {currentView === 'admin'     && <AdminPage />}
+          {currentView === 'section' && <SectionPage />}
+          {currentView === 'admin' && <AdminPage />}
           {currentView === 'kpi_students' && <KPIStudentsPage />}
-          {currentView === 'callcenter'  && <CallCenterDashboard />}
-          {currentView === 'ejecutivo'   && <EjecutivoDashboard />}
+          {currentView === 'callcenter' && <CallCenterDashboard />}
+          {currentView === 'ejecutivo' && <EjecutivoDashboard />}
         </Suspense>
       </main>
 
@@ -68,7 +68,7 @@ function AppRouter() {
           </div>
         </div>
       </footer>
-      
+
       {/* Drawer */}
       <NotificationsDrawer />
     </div>

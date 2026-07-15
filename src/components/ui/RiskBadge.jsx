@@ -61,7 +61,9 @@ export default function RiskBadge({ level, size = 'sm', showIcon = false, pulse 
     >
       {pulse && (
         <span className="relative flex h-2 w-2">
-          <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${cfg.dot}`} />
+          <span
+            className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${cfg.dot}`}
+          />
           <span className={`relative inline-flex rounded-full h-2 w-2 ${cfg.dot}`} />
         </span>
       )}

@@ -9,15 +9,15 @@ export default function NotificationsDrawer() {
 
   const notifications = useMemo(() => {
     const alerts = [];
-    
+
     // Sort students by highest risk and lowest grades
     const sortedStudents = [...students].sort((a, b) => a.promedio - b.promedio);
 
     sortedStudents.forEach((student, index) => {
       // Find course name to add context
-      const course = courses.find(c => c.id === student.cursoId);
+      const course = courses.find((c) => c.id === student.cursoId);
       const courseName = course ? course.nombre : 'Curso Desconocido';
-      
+
       // Critical Risk Alert
       if (student.riesgo === 'CRITICO' && !student.intervenido) {
         alerts.push({
@@ -30,9 +30,9 @@ export default function NotificationsDrawer() {
           color: 'text-red-400',
           bg: 'bg-red-500/10',
           border: 'border-red-500/30',
-          time: `Hace ${index * 15 + 5} min`
+          time: `Hace ${index * 15 + 5} min`,
         });
-      } 
+      }
       // High Risk Alert
       else if (student.riesgo === 'ALTO' && !student.intervenido) {
         alerts.push({
@@ -45,7 +45,7 @@ export default function NotificationsDrawer() {
           color: 'text-amber-400',
           bg: 'bg-amber-500/10',
           border: 'border-amber-500/30',
-          time: `Hace ${index * 20 + 10} min`
+          time: `Hace ${index * 20 + 10} min`,
         });
       }
 
@@ -61,7 +61,7 @@ export default function NotificationsDrawer() {
           color: 'text-orange-400',
           bg: 'bg-orange-500/10',
           border: 'border-orange-500/30',
-          time: `Hace ${index * 12 + 2} min`
+          time: `Hace ${index * 12 + 2} min`,
         });
       }
     });
@@ -75,13 +75,13 @@ export default function NotificationsDrawer() {
   return (
     <>
       {/* Backdrop overlay */}
-      <div 
+      <div
         className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-50 transition-opacity animate-fade-in"
         onClick={actions.toggleNotifications}
       />
 
       {/* Side Panel Drawer */}
-      <div 
+      <div
         className="fixed inset-y-0 right-0 w-full sm:w-[400px] glass-panel border-l border-slate-700/50 shadow-2xl z-50 flex flex-col transform transition-transform duration-300 ease-in-out translate-x-0"
         style={{ animation: 'slideInRight 0.3s forwards' }}
       >
@@ -91,7 +91,7 @@ export default function NotificationsDrawer() {
             to { transform: translateX(0); }
           }
         `}</style>
-        
+
         {/* Header */}
         <div className="flex items-center justify-between p-5 border-b border-slate-700/50">
           <div>
@@ -103,7 +103,7 @@ export default function NotificationsDrawer() {
             </h2>
             <p className="text-xs text-slate-400 mt-1">Alertas en tiempo real del sistema VIGÍA</p>
           </div>
-          <button 
+          <button
             onClick={actions.toggleNotifications}
             className="p-2 rounded-xl hover:bg-slate-800 text-slate-400 hover:text-white transition-colors"
           >
@@ -123,7 +123,7 @@ export default function NotificationsDrawer() {
             </div>
           ) : (
             notifications.map((alert, i) => (
-              <div 
+              <div
                 key={alert.id}
                 className={`p-4 rounded-xl border ${alert.border} ${alert.bg} flex flex-col gap-3 animate-fade-in group hover:bg-slate-800/80 transition-colors`}
                 style={{ animationDelay: `${i * 50}ms` }}
@@ -158,13 +158,17 @@ export default function NotificationsDrawer() {
                 <div className="flex items-center gap-3 mt-1">
                   <div className="flex items-center gap-1.5 bg-slate-900/50 px-2 py-1 rounded text-xs">
                     <span className="text-slate-500">Promedio:</span>
-                    <span className={`font-bold ${alert.student.notaFinal < 12 ? 'text-red-400' : 'text-slate-300'}`}>
+                    <span
+                      className={`font-bold ${alert.student.notaFinal < 12 ? 'text-red-400' : 'text-slate-300'}`}
+                    >
                       {alert.student.notaFinal}
                     </span>
                   </div>
                   <div className="flex items-center gap-1.5 bg-slate-900/50 px-2 py-1 rounded text-xs">
                     <span className="text-slate-500">Asistencia:</span>
-                    <span className={`font-bold ${alert.student.asistencia < 70 ? 'text-amber-400' : 'text-slate-300'}`}>
+                    <span
+                      className={`font-bold ${alert.student.asistencia < 70 ? 'text-amber-400' : 'text-slate-300'}`}
+                    >
                       {alert.student.asistencia}%
                     </span>
                   </div>
@@ -172,12 +176,12 @@ export default function NotificationsDrawer() {
 
                 {/* Actions */}
                 <div className="flex items-center gap-2 mt-2 pt-3 border-t border-slate-700/30">
-                  <button 
+                  <button
                     onClick={() => {
                       actions.toggleNotifications();
                       // Assuming selecting a course goes to SectionPage, we can do that or we can implement a KPI list view.
                       // Ideally we'd open a student modal here. For now, navigate to their course section.
-                      const course = courses.find(c => c.id === alert.student.cursoId);
+                      const course = courses.find((c) => c.id === alert.student.cursoId);
                       if (course) {
                         actions.selectCourse(course);
                       }
@@ -186,7 +190,7 @@ export default function NotificationsDrawer() {
                   >
                     Ver detalle <ChevronRight size={14} />
                   </button>
-                  <button 
+                  <button
                     onClick={() => {
                       actions.markIntervened(alert.student.codigo);
                     }}

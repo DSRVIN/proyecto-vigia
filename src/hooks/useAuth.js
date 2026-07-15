@@ -11,7 +11,7 @@ export function useAuth() {
 
     try {
       let email = identifier.trim();
-      
+
       // If the identifier is a code (e.g. C13005), lowercase and append domain
       if (!email.includes('@')) {
         email = `${email.toLowerCase()}@utp.edu.pe`;
@@ -21,7 +21,9 @@ export function useAuth() {
 
       // Strict security filter: validate institutional domain
       if (!email.endsWith('@utp.edu.pe')) {
-        throw new Error('Acceso denegado: Solo el dominio institucional "@utp.edu.pe" está autorizado.');
+        throw new Error(
+          'Acceso denegado: Solo el dominio institucional "@utp.edu.pe" está autorizado.'
+        );
       }
 
       // Supabase Authenticate
@@ -56,17 +58,22 @@ export function useAuth() {
       }
 
       // Robust fallback if profile table is empty or lacks record
-      const teacherProfile = profile ? {
-        ...profile,
-        nombre: (!profile.nombre || profile.nombre === 'Dr. Docente UTP') ? defaultNombre : profile.nombre
-      } : {
-        codigo: teacherCode,
-        nombre: user.user_metadata?.nombre || defaultNombre,
-        email: email,
-        cargo: 'Docente Titular',
-        departamento: 'Ing. de Sistemas',
-        avatar: null
-      };
+      const teacherProfile = profile
+        ? {
+            ...profile,
+            nombre:
+              !profile.nombre || profile.nombre === 'Dr. Docente UTP'
+                ? defaultNombre
+                : profile.nombre,
+          }
+        : {
+            codigo: teacherCode,
+            nombre: user.user_metadata?.nombre || defaultNombre,
+            email: email,
+            cargo: 'Docente Titular',
+            departamento: 'Ing. de Sistemas',
+            avatar: null,
+          };
 
       setLoading(false);
       return { user, profile: teacherProfile };

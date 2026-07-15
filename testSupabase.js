@@ -26,10 +26,7 @@ const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 async function test() {
   try {
-    const { data, error } = await supabase
-      .from('students')
-      .select('*, grades(*)')
-      .limit(1);
+    const { data, error } = await supabase.from('students').select('*, grades(*)').limit(1);
 
     if (error) {
       console.error('Supabase Error:', error);
