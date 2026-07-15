@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Users,
   BookOpen,
@@ -13,9 +14,9 @@ import {
   ArrowLeft,
   Search,
 } from 'lucide-react';
-import { useApp } from '../context/AppContext.jsx';
-import RiskBadge from '../components/ui/RiskBadge.jsx';
-import { getEvalConfig } from '../data/dataset.js';
+import { useApp } from '../../context/AppContext.jsx';
+import RiskBadge from '../../components/ui/RiskBadge.jsx';
+import { getEvalConfig } from '../../data/dataset.js';
 
 function TabBtn({ active, onClick, icon: Icon, label, count }) {
   return (
@@ -706,16 +707,17 @@ function GradesTab() {
 
 export default function AdminPage() {
   const { state, actions } = useApp();
+  const navigate = useNavigate();
   const { adminTab } = state;
 
   return (
     <div className="min-h-screen bg-slate-100 text-slate-900 max-w-screen-2xl mx-auto px-4 sm:px-6 py-8">
       <div className="mb-8 animate-fade-in">
         <button
-          onClick={actions.goDashboard}
+          onClick={() => navigate('/docente')}
           className="flex items-center gap-1.5 text-xs font-black uppercase tracking-wider text-slate-600 hover:text-slate-900 mb-4 transition-colors bg-white border border-slate-200 px-3 py-2 rounded-xl w-fit shadow-sm"
         >
-          <ArrowLeft size={15} /> Volver al Dashboard
+          <ArrowLeft size={15} /> Vista Docente
         </button>
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>

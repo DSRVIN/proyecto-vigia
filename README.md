@@ -41,19 +41,36 @@ npm run dev            # http://localhost:5173
 | `npm run test:watch`    | Tests en modo watch                                |
 | `npm run test:coverage` | Tests con reporte de cobertura (umbral 60%)        |
 
+## Roles y control de acceso (RBAC)
+
+El rol de cada usuario vive en la columna `role` de la tabla `profiles` (migración [002_roles.sql](supabase/migrations/002_roles.sql)) y define su módulo:
+
+| Rol          | Módulo                         | Usuario demo |
+| ------------ | ------------------------------ | ------------ |
+| `DOCENTE`    | `/docente` (cursos, KPIs)      | `C13005` / `C13007` |
+| `CALLCENTER` | `/callcenter` (retención)      | `C20001`     |
+| `ADMIN`      | Todos + `/admin` y `/admin/ejecutivo` | `C30001` |
+
+Las rutas están protegidas con guards de React Router (`RequireAuth`, `RequireRole`); un rol sin permiso es redirigido a su módulo de inicio. La capa de seguridad real son las políticas RLS de Supabase.
+
 ## Estructura del proyecto
 
 ```
 src/
-├── components/     # Componentes de UI (layout, students, ui)
-├── context/        # Estado global (AppContext, useReducer)
+├── app/            # App, router (rutas + guards por rol) y layout general
+├── features/
+│   ├── auth/       # LoginPage, useAuth, roles.js, ProtectedRoute
+│   ├── docente/    # DashboardPage, SectionPage, KPIStudentsPage
+│   ├── callcenter/ # CallCenterDashboard
+│   ├── admin/      # AdminPage, EjecutivoDashboard
+│   └── students/   # StudentModal (compartido entre módulos)
+├── components/     # UI compartida (layout, ui)
+├── context/        # Estado global de datos (AppContext, useReducer)
 ├── data/           # Dataset de demostración
-├── hooks/          # useAuth (Supabase Auth)
 ├── lib/            # clasificarRiesgo — reglas de negocio del documento APF1
-├── pages/          # Login, Dashboard, Admin, CallCenter, Ejecutivo, KPIs
 ├── services/       # metrics (cálculo de riesgo), ia (Gemini), messaging
 └── supabaseClient.js
-tests/              # Tests unitarios de la lógica de riesgo y métricas
+tests/              # Tests unitarios (riesgo, métricas, roles)
 ```
 
 ## Lógica de clasificación de riesgo

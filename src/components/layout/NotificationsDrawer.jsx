@@ -1,10 +1,15 @@
 import React, { useMemo } from 'react';
 import { X, AlertTriangle, TrendingDown, Clock, ChevronRight } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { useApp } from '../../context/AppContext.jsx';
+import { ROLES } from '../../features/auth/roles.js';
 import RiskBadge from '../ui/RiskBadge.jsx';
 
 export default function NotificationsDrawer() {
   const { state, actions } = useApp();
+  const navigate = useNavigate();
+  const role = state.currentUser?.role;
+  const canOpenCourse = role === ROLES.DOCENTE || role === ROLES.ADMIN;
   const { isNotificationsOpen, students, courses } = state;
 
   const notifications = useMemo(() => {
@@ -179,11 +184,9 @@ export default function NotificationsDrawer() {
                   <button
                     onClick={() => {
                       actions.toggleNotifications();
-                      // Assuming selecting a course goes to SectionPage, we can do that or we can implement a KPI list view.
-                      // Ideally we'd open a student modal here. For now, navigate to their course section.
                       const course = courses.find((c) => c.id === alert.student.cursoId);
-                      if (course) {
-                        actions.selectCourse(course);
+                      if (course && canOpenCourse) {
+                        navigate(`/docente/curso/${course.id}`);
                       }
                     }}
                     className="flex-1 py-1.5 bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 hover:text-blue-300 text-xs font-semibold rounded-lg transition-colors flex items-center justify-center gap-1"

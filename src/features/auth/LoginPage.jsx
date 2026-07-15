@@ -11,8 +11,10 @@ import {
   CheckCircle2,
   XCircle,
 } from 'lucide-react';
-import { useApp } from '../context/AppContext.jsx';
-import { useAuth } from '../hooks/useAuth.js';
+import { useNavigate, Navigate } from 'react-router-dom';
+import { useApp } from '../../context/AppContext.jsx';
+import { useAuth } from './useAuth.js';
+import { roleHome } from './roles.js';
 
 function Particles() {
   return null;
@@ -31,6 +33,7 @@ function EyeLogoBig() {
 // ── Login Form ────────────────────────────────────────────────
 function LoginForm() {
   const { actions } = useApp();
+  const navigate = useNavigate();
   const { signIn, loading, error: authError } = useAuth();
   const [codigo, setCodigo] = useState('');
   const [password, setPassword] = useState('');
@@ -71,6 +74,7 @@ function LoginForm() {
     try {
       const { user, profile } = await signIn(codigo, password);
       actions.loginSuccess(user, profile);
+      navigate(roleHome(profile.role), { replace: true });
     } catch (err) {
       console.error('Error de inicio de sesión:', err);
     }
@@ -159,19 +163,25 @@ function LoginForm() {
       </button>
 
       {/* Demo hint */}
-      <div className="text-center pt-2">
+      <div className="text-center pt-2 space-y-1">
         <p className="text-xs text-slate-500">
-          Demo:{' '}
+          Demo · contraseña{' '}
+          <span className="text-slate-800 font-mono bg-slate-200/60 px-1.5 py-0.5 rounded">
+            Utp2026#
+          </span>
+        </p>
+        <p className="text-xs text-slate-500">
+          Docente{' '}
           <span className="text-slate-800 font-mono bg-slate-200/60 px-1.5 py-0.5 rounded">
             C13005
           </span>{' '}
-          o{' '}
+          · Call Center{' '}
           <span className="text-slate-800 font-mono bg-slate-200/60 px-1.5 py-0.5 rounded">
-            C13007
+            C20001
           </span>{' '}
-          /{' '}
+          · Admin{' '}
           <span className="text-slate-800 font-mono bg-slate-200/60 px-1.5 py-0.5 rounded">
-            Utp2026#
+            C30001
           </span>
         </p>
       </div>
@@ -259,6 +269,11 @@ function RecoveryForm() {
 export default function LoginPage() {
   const { state } = useApp();
   const isRecovery = state.authState === 'recovery';
+
+  // Sesión ya iniciada → directo al módulo del rol
+  if (state.authState === 'authenticated') {
+    return <Navigate to={roleHome(state.currentUser?.role)} replace />;
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden">

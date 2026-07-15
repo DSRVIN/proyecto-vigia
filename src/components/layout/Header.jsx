@@ -1,38 +1,63 @@
 import React from 'react';
-import { Bell, LogOut, Settings, LayoutDashboard, ChevronRight, Headphones } from 'lucide-react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import {
+  Bell,
+  LogOut,
+  Settings,
+  LayoutDashboard,
+  ChevronRight,
+  Headphones,
+  Briefcase,
+} from 'lucide-react';
 import { useApp } from '../../context/AppContext.jsx';
-import EjecutivoModule from './EjecutivoModule.jsx';
+import { ROLES, roleHome } from '../../features/auth/roles.js';
+
+// Módulos navegables desde el header, restringidos por rol.
+// Solo el ADMIN ve la barra completa; docente y call center
+// operan dentro de su propio módulo.
+const NAV_LINKS = [
+  { to: '/docente', label: 'DOCENTE', icon: LayoutDashboard, roles: [ROLES.ADMIN] },
+  { to: '/callcenter', label: 'CALL CENTER', icon: Headphones, roles: [ROLES.ADMIN] },
+  { to: '/admin/ejecutivo', label: 'EJECUTIVO', icon: Briefcase, roles: [ROLES.ADMIN] },
+  { to: '/admin', label: 'ADMIN', icon: Settings, roles: [ROLES.ADMIN] },
+];
+
+const BREADCRUMB_LABELS = {
+  '/admin': 'Panel Administrativo',
+  '/admin/ejecutivo': 'Panel Ejecutivo',
+  '/callcenter': 'Call Center',
+};
 
 export default function Header() {
   const { state, actions } = useApp();
-  const { currentUser, currentView, selectedCourse } = state;
+  const { currentUser } = state;
+  const navigate = useNavigate();
+  const { pathname } = useLocation();
 
+  const role = currentUser?.role;
+  const home = roleHome(role);
   const criticalCount = state.students.filter((s) => s.riesgo === 'CRITICO').length;
 
-  const isDashboard = currentView === 'dashboard';
-  const toggleButtonLabel = isDashboard ? 'Vista Admin' : 'Volver al Dashboard';
-  const ToggleIcon = isDashboard ? Settings : LayoutDashboard;
+  const visibleLinks = NAV_LINKS.filter((l) => l.roles.includes(role));
 
   const getBreadcrumb = () => {
-    if (currentView === 'dashboard') return null;
-    if (currentView === 'admin')
-      return [
-        { label: 'Dashboard', action: actions.goDashboard },
-        { label: 'Panel Administrativo' },
-      ];
-    if (currentView === 'callcenter')
-      return [{ label: 'Dashboard', action: actions.goDashboard }, { label: 'Call Center' }];
-    if (currentView === 'ejecutivo')
-      return [{ label: 'Dashboard', action: actions.goDashboard }, { label: 'Panel Ejecutivo' }];
-    if (currentView === 'section' && selectedCourse)
-      return [
-        { label: 'Dashboard', action: actions.goDashboard },
-        { label: selectedCourse.nombre },
-      ];
+    if (pathname === home) return null;
+    if (BREADCRUMB_LABELS[pathname]) return [{ label: BREADCRUMB_LABELS[pathname] }];
+    if (pathname.startsWith('/docente/curso/')) {
+      const course = state.courses.find((c) => c.id === pathname.split('/').pop());
+      return [{ label: course?.nombre || 'Curso' }];
+    }
+    if (pathname.startsWith('/docente/kpi/')) return [{ label: 'Indicadores' }];
+    if (pathname === '/docente') return [{ label: 'Módulo Docente' }];
     return null;
   };
 
   const breadcrumb = getBreadcrumb();
+
+  const handleLogout = () => {
+    actions.logout();
+    navigate('/login', { replace: true });
+  };
 
   return (
     <header className="sticky top-0 z-50 bg-white border-b border-slate-200 shadow-sm">
@@ -41,7 +66,7 @@ export default function Header() {
           <div className="flex items-center gap-4">
             <div
               className="flex items-center gap-1 cursor-pointer select-none"
-              onClick={actions.goDashboard}
+              onClick={() => navigate(home)}
             >
               <div className="flex gap-0.5">
                 <span className="bg-slate-900 text-white w-7 h-7 flex items-center justify-center rounded-sm font-black text-sm border border-slate-950">
@@ -60,19 +85,16 @@ export default function Header() {
 
             {breadcrumb && (
               <div className="hidden md:flex items-center gap-2 ml-4 text-sm font-bold text-slate-400 border-l border-slate-200 pl-4">
+                <button
+                  onClick={() => navigate(home)}
+                  className="hover:text-blue-600 transition-colors"
+                >
+                  Inicio
+                </button>
                 {breadcrumb.map((crumb, i) => (
                   <React.Fragment key={i}>
-                    {i > 0 && <ChevronRight size={14} className="text-slate-300" />}
-                    {crumb.action ? (
-                      <button
-                        onClick={crumb.action}
-                        className="hover:text-blue-600 transition-colors"
-                      >
-                        {crumb.label}
-                      </button>
-                    ) : (
-                      <span className="text-slate-700">{crumb.label}</span>
-                    )}
+                    <ChevronRight size={14} className="text-slate-300" />
+                    <span className="text-slate-700">{crumb.label}</span>
                   </React.Fragment>
                 ))}
               </div>
@@ -93,38 +115,37 @@ export default function Header() {
                 )}
               </button>
 
-              <div className="h-6 w-px bg-slate-300" />
+              {visibleLinks.length > 0 && <div className="h-6 w-px bg-slate-300" />}
 
-              <EjecutivoModule />
-
-              <button
-                onClick={actions.goCallCenter}
-                className="flex items-center gap-2 text-xs font-black uppercase tracking-wider px-3 py-1.5 rounded-lg text-slate-500 hover:bg-slate-100 hover:text-slate-900 transition-all border border-transparent hover:border-slate-200"
-              >
-                <Headphones size={14} />
-                CALL CENTER
-              </button>
-
-              <button
-                onClick={isDashboard ? actions.goAdmin : actions.goDashboard}
-                className="flex items-center gap-2 text-xs font-black uppercase tracking-wider px-3 py-1.5 rounded-lg text-slate-500 hover:bg-slate-100 hover:text-slate-900 transition-all border border-transparent hover:border-slate-200"
-              >
-                <ToggleIcon size={14} />
-                {toggleButtonLabel}
-              </button>
+              {visibleLinks.map(({ to, label, icon: Icon }) => {
+                const active = pathname === to;
+                return (
+                  <button
+                    key={to}
+                    onClick={() => navigate(to)}
+                    className={`flex items-center gap-2 text-xs font-black uppercase tracking-wider px-3 py-1.5 rounded-lg transition-all border ${
+                      active
+                        ? 'bg-slate-900 text-white border-slate-900'
+                        : 'text-slate-500 hover:bg-slate-100 hover:text-slate-900 border-transparent hover:border-slate-200'
+                    }`}
+                  >
+                    <Icon size={14} />
+                    {label}
+                  </button>
+                );
+              })}
 
               <div className="flex items-center gap-3 pl-3 border-l border-slate-200">
                 <div className="text-right hidden lg:block">
-                  {/* AQUÍ TOMA EL NOMBRE REAL DEL USUARIO */}
                   <p className="text-xs font-black text-slate-900">
                     {currentUser.nombre || 'Usuario'}
                   </p>
                   <p className="text-[10px] text-slate-400 font-mono font-bold">
-                    {currentUser.codigo}
+                    {currentUser.codigo} · {role}
                   </p>
                 </div>
                 <button
-                  onClick={actions.logout}
+                  onClick={handleLogout}
                   className="p-2 text-slate-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                 >
                   <LogOut size={16} />

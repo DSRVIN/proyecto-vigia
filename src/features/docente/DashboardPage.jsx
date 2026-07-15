@@ -1,4 +1,5 @@
 import React, { useMemo, useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   BookOpen,
   Users,
@@ -10,15 +11,15 @@ import {
   Calendar,
   Award,
 } from 'lucide-react';
-import { useApp } from '../context/AppContext.jsx';
-import RiskBadge from '../components/ui/RiskBadge.jsx';
-import { supabase } from '../supabaseClient';
+import { useApp } from '../../context/AppContext.jsx';
+import RiskBadge from '../../components/ui/RiskBadge.jsx';
+import { supabase } from '../../supabaseClient';
 import {
   STUDENTS_INITIAL,
   enrichStudentData,
   getStudentsForTeacher,
   getEvalConfig,
-} from '../data/dataset.js';
+} from '../../data/dataset.js';
 
 // Componente de píldora de estadísticas
 function StatPill({ icon: Icon, label, value, color }) {
@@ -182,7 +183,8 @@ function CourseCard({ course, onClick }) {
 
 // Banners de KPIs Globales
 function GlobalKPIs() {
-  const { state, actions } = useApp();
+  const { state } = useApp();
+  const navigate = useNavigate();
 
   const stats = useMemo(() => {
     const total = state.students.length;
@@ -241,7 +243,7 @@ function GlobalKPIs() {
       {kpis.map((kpi, i) => (
         <div
           key={kpi.label}
-          onClick={() => actions.setKPIFilter(kpi.filterId)}
+          onClick={() => navigate(`/docente/kpi/${kpi.filterId}`)}
           className="rounded-xl p-4 border border-slate-200 bg-white animate-fade-in cursor-pointer group hover:-translate-y-1 hover:shadow-lg transition-all duration-300 shadow-md"
           style={{ animationDelay: `${i * 50}ms` }}
         >
@@ -263,6 +265,7 @@ function GlobalKPIs() {
 // ── Dashboard Principal ───────────────────────────────────────
 export default function DashboardPage() {
   const { state, actions } = useApp();
+  const navigate = useNavigate();
   const { teacher, courses, currentUser } = state; // Se añadió currentUser aquí
 
   useEffect(() => {
@@ -371,7 +374,7 @@ export default function DashboardPage() {
               style={{ animationDelay: `${i * 80}ms` }}
               className="animate-fade-in"
             >
-              <CourseCard course={course} onClick={actions.selectCourse} />
+              <CourseCard course={course} onClick={(c) => navigate(`/docente/curso/${c.id}`)} />
             </div>
           ))}
         </div>

@@ -85,12 +85,16 @@ jobs:
       - name: Compilar la aplicación con Vite
         run: npm run build
 
-      - name: Verificar que el bundle no supere 2 MB
+      - name: Verificar que la carga inicial no supere 2 MB
+        # Se mide el payload de primer render (entry JS + CSS). Los chunks
+        # de carga diferida (ExcelJS, módulos por rol) no cuentan porque
+        # solo se descargan bajo demanda.
         run: |
-          BUILD_SIZE=$(du -sk dist/assets | cut -f1)
-          echo "Bundle size: ${BUILD_SIZE} KB"
-          if [ $BUILD_SIZE -gt 2048 ]; then
-            echo "ERROR: Bundle demasiado grande (${BUILD_SIZE} KB > 2048 KB)"
+          INITIAL_SIZE=$(du -ck dist/assets/index-*.js dist/assets/*.css 2>/dev/null | tail -1 | cut -f1)
+          TOTAL_SIZE=$(du -sk dist/assets | cut -f1)
+          echo "Carga inicial: ${INITIAL_SIZE} KB · Total con chunks diferidos: ${TOTAL_SIZE} KB"
+          if [ $INITIAL_SIZE -gt 2048 ]; then
+            echo "ERROR: Carga inicial demasiado grande (${INITIAL_SIZE} KB > 2048 KB)"
             exit 1
           fi
 

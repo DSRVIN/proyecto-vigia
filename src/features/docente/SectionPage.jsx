@@ -1,4 +1,5 @@
 import React, { useState, useMemo, lazy, Suspense } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import {
   Search,
   Filter,
@@ -28,12 +29,12 @@ import {
   Tooltip,
   CartesianGrid,
 } from 'recharts';
-import { useApp } from '../context/AppContext.jsx';
-import RiskBadge, { RISK_CONFIG } from '../components/ui/RiskBadge.jsx';
-import { SkeletonStudentRow, SkeletonKPI } from '../components/ui/Skeleton.jsx';
-import { getEvalConfig } from '../data/dataset.js';
+import { useApp } from '../../context/AppContext.jsx';
+import RiskBadge, { RISK_CONFIG } from '../../components/ui/RiskBadge.jsx';
+import { SkeletonStudentRow, SkeletonKPI } from '../../components/ui/Skeleton.jsx';
+import { getEvalConfig } from '../../data/dataset.js';
 
-const StudentModal = lazy(() => import('../components/students/StudentModal.jsx'));
+const StudentModal = lazy(() => import('../students/StudentModal.jsx'));
 
 function KPICard({ label, value, icon: Icon, color, sub }) {
   return (
@@ -377,8 +378,11 @@ function StudentRow({ student, onSelect, index }) {
 }
 
 export default function SectionPage() {
-  const { state, actions } = useApp();
-  const { selectedCourse, students } = state;
+  const { state } = useApp();
+  const { cursoId } = useParams();
+  const navigate = useNavigate();
+  const { students } = state;
+  const selectedCourse = state.courses.find((c) => c.id === cursoId) || null;
 
   const [search, setSearch] = useState('');
   const [filterRisk, setFilterRisk] = useState('ALL');
@@ -485,7 +489,7 @@ export default function SectionPage() {
       <div className="flex items-start justify-between mb-6 animate-fade-in">
         <div>
           <button
-            onClick={actions.goDashboard}
+            onClick={() => navigate('/docente')}
             className="flex items-center gap-1.5 text-xs font-black uppercase tracking-wider text-slate-500 hover:text-slate-800 mb-3 transition-colors bg-white border border-slate-200 px-3 py-1.5 rounded-xl shadow-sm"
           >
             <ArrowLeft size={15} /> Volver al Dashboard

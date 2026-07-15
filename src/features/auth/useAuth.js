@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { supabase } from '../supabaseClient';
+import { supabase } from '../../supabaseClient';
+import { normalizeRole } from './roles.js';
 
 export function useAuth() {
   const [loading, setLoading] = useState(false);
@@ -65,6 +66,7 @@ export function useAuth() {
               !profile.nombre || profile.nombre === 'Dr. Docente UTP'
                 ? defaultNombre
                 : profile.nombre,
+            role: normalizeRole(profile.role),
           }
         : {
             codigo: teacherCode,
@@ -73,6 +75,7 @@ export function useAuth() {
             cargo: 'Docente Titular',
             departamento: 'Ing. de Sistemas',
             avatar: null,
+            role: normalizeRole(user.user_metadata?.role),
           };
 
       setLoading(false);

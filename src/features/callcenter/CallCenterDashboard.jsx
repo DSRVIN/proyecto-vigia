@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useApp } from '../context/AppContext.jsx';
+import { useApp } from '../../context/AppContext.jsx';
 import {
   Zap,
   Loader2,
@@ -13,12 +13,12 @@ import {
   BookOpen,
   Clock,
 } from 'lucide-react';
-import RiskBadge from '../components/ui/RiskBadge.jsx';
-import { generarMensajeIntervencion } from '../services/ia.service.js';
-import { enrichStudentData } from '../data/dataset.js';
-import { enviarCorreoEstudiante } from '../services/messaging.service.js';
+import RiskBadge from '../../components/ui/RiskBadge.jsx';
+import { generarMensajeIntervencion } from '../../services/ia.service.js';
+import { enrichStudentData } from '../../data/dataset.js';
+import { enviarCorreoEstudiante } from '../../services/messaging.service.js';
 import { saveAs } from 'file-saver';
-import { supabase } from '../supabaseClient.js';
+import { supabase } from '../../supabaseClient.js';
 
 export default function CallCenterDashboard() {
   const { state } = useApp();

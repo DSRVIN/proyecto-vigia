@@ -23,8 +23,6 @@ const initialState = {
   accountLocked: false,
   recoveryCode: null,
   recoveryEmail: null,
-  currentView: 'dashboard',
-  selectedCourse: null,
   students: [],
   courses: [],
   teacher: {
@@ -37,7 +35,6 @@ const initialState = {
   },
   adminTab: 'students',
   isNotificationsOpen: false,
-  kpiFilter: null,
 };
 
 function reducer(state, action) {
@@ -66,34 +63,11 @@ function reducer(state, action) {
         courses: [],
       };
 
-    case 'SELECT_COURSE':
-      return { ...state, selectedCourse: action.payload, currentView: 'section' };
-
-    case 'GO_DASHBOARD':
-      return { ...state, currentView: 'dashboard', selectedCourse: null, kpiFilter: null };
-
-    case 'GO_ADMIN':
-      return { ...state, currentView: 'admin', kpiFilter: null };
-
-    case 'GO_CALLCENTER':
-      return { ...state, currentView: 'callcenter', selectedCourse: null, kpiFilter: null };
-
-    case 'GO_EJECUTIVO':
-      return { ...state, currentView: 'ejecutivo', selectedCourse: null, kpiFilter: null };
-
     case 'SET_ADMIN_TAB':
       return { ...state, adminTab: action.payload };
 
     case 'TOGGLE_NOTIFICATIONS':
       return { ...state, isNotificationsOpen: !state.isNotificationsOpen };
-
-    case 'SET_KPI_FILTER':
-      return {
-        ...state,
-        kpiFilter: action.payload,
-        currentView: 'kpi_students',
-        selectedCourse: null,
-      };
 
     case 'ADD_STUDENT': {
       const s = action.payload;
@@ -194,14 +168,8 @@ export function AppProvider({ children }) {
         dispatch({ type: 'LOGIN_SUCCESS', payload: { user, profile } }),
       setStudents: (students) => dispatch({ type: 'SET_STUDENTS', payload: students }),
       logout: () => dispatch({ type: 'LOGOUT' }),
-      selectCourse: (course) => dispatch({ type: 'SELECT_COURSE', payload: course }),
-      goDashboard: () => dispatch({ type: 'GO_DASHBOARD' }),
-      goAdmin: () => dispatch({ type: 'GO_ADMIN' }),
-      goCallCenter: () => dispatch({ type: 'GO_CALLCENTER' }),
-      goEjecutivo: () => dispatch({ type: 'GO_EJECUTIVO' }),
       setAdminTab: (tab) => dispatch({ type: 'SET_ADMIN_TAB', payload: tab }),
       toggleNotifications: () => dispatch({ type: 'TOGGLE_NOTIFICATIONS' }),
-      setKPIFilter: (filter) => dispatch({ type: 'SET_KPI_FILTER', payload: filter }),
       addStudent: (student) => dispatch({ type: 'ADD_STUDENT', payload: student }),
       updateStudent: (codigo, changes) =>
         dispatch({ type: 'UPDATE_STUDENT', payload: { codigo, changes } }),

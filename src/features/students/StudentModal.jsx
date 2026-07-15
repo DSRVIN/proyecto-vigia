@@ -26,7 +26,7 @@ import {
   AreaChart,
 } from 'recharts';
 import { useApp } from '../../context/AppContext.jsx';
-import RiskBadge from '../ui/RiskBadge.jsx';
+import RiskBadge from '../../components/ui/RiskBadge.jsx';
 import { getEvalConfig, ROUND_THRESHOLD, MIN_APPROVAL } from '../../data/dataset.js';
 import {
   generarMensajeIntervencion,

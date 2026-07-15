@@ -15,6 +15,7 @@ create table if not exists public.profiles (
   cargo text default 'Docente Titular',
   departamento text default 'Ing. de Sistemas',
   avatar text,
+  role text not null default 'DOCENTE' check (role in ('DOCENTE', 'CALLCENTER', 'ADMIN')),
   created_at timestamptz default now()
 );
 

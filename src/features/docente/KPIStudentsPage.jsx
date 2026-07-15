@@ -1,10 +1,11 @@
 import React, { useState, useMemo, lazy, Suspense } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import { Search, Users, ArrowLeft, SortAsc, ChevronUp, ChevronDown } from 'lucide-react';
-import { useApp } from '../context/AppContext.jsx';
-import RiskBadge from '../components/ui/RiskBadge.jsx';
-import { SkeletonStudentRow } from '../components/ui/Skeleton.jsx';
+import { useApp } from '../../context/AppContext.jsx';
+import RiskBadge from '../../components/ui/RiskBadge.jsx';
+import { SkeletonStudentRow } from '../../components/ui/Skeleton.jsx';
 
-const StudentModal = lazy(() => import('../components/students/StudentModal.jsx'));
+const StudentModal = lazy(() => import('../students/StudentModal.jsx'));
 
 // ── Student Row Adaptado al Estilo Claro ───────────────────────
 function StudentRow({ student, courseName, onSelect, index }) {
@@ -93,8 +94,10 @@ function StudentRow({ student, courseName, onSelect, index }) {
 }
 
 export default function KPIStudentsPage() {
-  const { state, actions } = useApp();
-  const { students, courses, kpiFilter } = state;
+  const { state } = useApp();
+  const { filter: kpiFilter } = useParams();
+  const navigate = useNavigate();
+  const { students, courses } = state;
 
   const [search, setSearch] = useState('');
   const [sortField, setSortField] = useState('riesgo');
@@ -220,7 +223,7 @@ export default function KPIStudentsPage() {
       <div className="flex items-start justify-between mb-8 animate-fade-in">
         <div>
           <button
-            onClick={actions.goDashboard}
+            onClick={() => navigate('/docente')}
             className="flex items-center gap-1.5 text-xs font-black uppercase tracking-wider text-slate-700 hover:text-slate-900 mb-4 transition-colors bg-white border border-slate-200 px-3 py-1.5 rounded-xl w-fit shadow-sm"
           >
             <ArrowLeft size={15} /> Volver al Dashboard

@@ -1,16 +1,7 @@
-import React, { Suspense, lazy } from 'react';
-import { AppProvider, useApp } from './context/AppContext.jsx';
-import Header from './components/layout/Header.jsx';
-import NotificationsDrawer from './components/layout/NotificationsDrawer.jsx';
-import LoginPage from './pages/LoginPage.jsx';
-
-// Lazy load pages for optimized loading
-const DashboardPage = lazy(() => import('./pages/DashboardPage.jsx'));
-const SectionPage = lazy(() => import('./pages/SectionPage.jsx'));
-const AdminPage = lazy(() => import('./pages/AdminPage.jsx'));
-const KPIStudentsPage = lazy(() => import('./pages/KPIStudentsPage.jsx'));
-const CallCenterDashboard = lazy(() => import('./pages/CallCenterDashboard.jsx'));
-const EjecutivoDashboard = lazy(() => import('./pages/EjecutivoDashboard.jsx'));
+import React, { Suspense } from 'react';
+import { Outlet } from 'react-router-dom';
+import Header from '../../components/layout/Header.jsx';
+import NotificationsDrawer from '../../components/layout/NotificationsDrawer.jsx';
 
 function PageLoader() {
   return (
@@ -26,30 +17,16 @@ function PageLoader() {
   );
 }
 
-function AppRouter() {
-  const { state } = useApp();
-  const { authState, currentView } = state;
-
-  // Not authenticated → Login
-  if (authState !== 'authenticated') {
-    return <LoginPage />;
-  }
-
+export default function AppLayout() {
   return (
     <div className="min-h-screen bg-slate-950">
       <Header />
       <main>
         <Suspense fallback={<PageLoader />}>
-          {currentView === 'dashboard' && <DashboardPage />}
-          {currentView === 'section' && <SectionPage />}
-          {currentView === 'admin' && <AdminPage />}
-          {currentView === 'kpi_students' && <KPIStudentsPage />}
-          {currentView === 'callcenter' && <CallCenterDashboard />}
-          {currentView === 'ejecutivo' && <EjecutivoDashboard />}
+          <Outlet />
         </Suspense>
       </main>
 
-      {/* Footer */}
       <footer className="border-t border-slate-800/60 mt-16 py-6 px-6">
         <div className="max-w-screen-2xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-600">
           <div className="flex items-center gap-2">
@@ -60,7 +37,7 @@ function AppRouter() {
             <span>UTP 2026-I</span>
           </div>
           <div className="flex items-center gap-4">
-            <span>v1.0.0 · React + Recharts</span>
+            <span>v2.0.0 · React + Recharts</span>
             <span className="flex items-center gap-1.5">
               <span className="h-1.5 w-1.5 bg-emerald-500 rounded-full animate-pulse" />
               Sistema operativo
@@ -69,16 +46,7 @@ function AppRouter() {
         </div>
       </footer>
 
-      {/* Drawer */}
       <NotificationsDrawer />
     </div>
-  );
-}
-
-export default function App() {
-  return (
-    <AppProvider>
-      <AppRouter />
-    </AppProvider>
   );
 }
