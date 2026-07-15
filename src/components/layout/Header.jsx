@@ -57,40 +57,51 @@ export default function Header() {
           </div>
 
           {currentUser && (
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3">
               <button
                 onClick={actions.toggleNotifications}
-                className="relative p-2 text-slate-500 hover:text-[#d32f2f] hover:bg-red-50 rounded-lg transition-colors"
+                className="relative p-2 text-slate-500 hover:text-brand-700 hover:bg-brand-50 rounded-lg transition-colors"
               >
                 <Bell size={18} />
                 {criticalCount > 0 && (
-                  <span className="absolute top-1.5 right-1.5 h-4 w-4 bg-[#d32f2f] rounded-full text-[10px] flex items-center justify-center text-white font-black">
+                  <span className="absolute top-1.5 right-1.5 h-4 w-4 bg-risk-critical rounded-full text-[10px] flex items-center justify-center text-white font-black">
                     {criticalCount}
                   </span>
                 )}
               </button>
 
-              {visibleLinks.length > 0 && <div className="h-6 w-px bg-slate-300" />}
-
               {visibleLinks.map(({ to, label, icon: Icon }) => {
                 const active = pathname === to;
                 return (
-                  <button
-                    key={to}
-                    onClick={() => navigate(to)}
-                    className={`flex items-center gap-2 text-xs font-black uppercase tracking-wider px-3 py-1.5 rounded-lg transition-all border ${
-                      active
-                        ? 'bg-slate-900 text-white border-slate-900'
-                        : 'text-slate-500 hover:bg-slate-100 hover:text-slate-900 border-transparent hover:border-slate-200'
-                    }`}
-                  >
-                    <Icon size={14} />
-                    {label}
-                  </button>
+                  <React.Fragment key={to}>
+                    <div className="h-10 w-px bg-brand-200" />
+                    <button
+                      onClick={() => navigate(to)}
+                      className={`flex items-center gap-2 text-xs font-black uppercase tracking-wider px-3 py-1.5 rounded-lg transition-all ${
+                        active
+                          ? 'bg-brand-700 text-white'
+                          : 'text-slate-500 hover:bg-slate-100 hover:text-slate-900'
+                      }`}
+                    >
+                      <Icon size={14} />
+                      {label}
+                    </button>
+                  </React.Fragment>
                 );
               })}
 
-              <div className="flex items-center gap-3 pl-3 border-l border-slate-200">
+              <div className="h-10 w-px bg-brand-200" />
+
+              <div className="flex items-center gap-3">
+                <div className="h-9 w-9 rounded-full bg-brand-700 text-white flex items-center justify-center font-black text-xs select-none">
+                  {(currentUser.nombre || 'U')
+                    .split(' ')
+                    .filter((w) => w.length > 2 && !w.includes('.'))
+                    .slice(0, 2)
+                    .map((w) => w[0])
+                    .join('')
+                    .toUpperCase() || 'U'}
+                </div>
                 <div className="text-right hidden lg:block">
                   <p className="text-xs font-black text-slate-900">
                     {currentUser.nombre || 'Usuario'}

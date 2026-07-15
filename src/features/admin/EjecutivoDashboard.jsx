@@ -316,16 +316,12 @@ const renderPieLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent })
 
 // ─── KPI CARD ─────────────────────────────────────────────────────────────────
 
-function KPICard({ icon: Icon, label, value, sub, trend, accentClass, bgClass }) {
+function KPICard({ icon: Icon, label, value, sub, trend, bgClass }) {
   const isPositive = trend >= 0;
   return (
-    <div
-      className={`rounded-2xl border border-slate-200 bg-white shadow-sm p-5 flex flex-col gap-3 relative overflow-hidden`}
-    >
-      {/* Accent stripe */}
-      <div className={`absolute inset-x-0 top-0 h-1 ${accentClass}`} />
-      <div className="flex items-start justify-between mt-1">
-        <div className={`p-2.5 rounded-xl ${bgClass}`}>
+    <div className="flex-1 px-5 py-2 flex flex-col gap-3">
+      <div className="flex items-start justify-between">
+        <div className={`h-11 w-11 rounded-full flex items-center justify-center ${bgClass}`}>
           <Icon size={18} className="text-current" />
         </div>
         {trend !== undefined && (
@@ -338,12 +334,12 @@ function KPICard({ icon: Icon, label, value, sub, trend, accentClass, bgClass })
         )}
       </div>
       <div>
-        <p className="text-2xl font-black text-slate-900 leading-none">{value}</p>
-        <p className="text-xs font-semibold text-slate-400 mt-1.5 uppercase tracking-wider">
+        <p className="text-3xl font-black text-slate-900 leading-none">{value}</p>
+        <p className="text-[11px] font-black text-slate-500 mt-1.5 uppercase tracking-wider">
           {label}
         </p>
       </div>
-      {sub && <p className="text-xs text-slate-500 border-t border-slate-100 pt-2">{sub}</p>}
+      {sub && <p className="text-[11px] text-slate-400 font-bold">{sub}</p>}
     </div>
   );
 }
@@ -422,57 +418,43 @@ export default function EjecutivoDashboard() {
           </div>
         </div>
 
-        {/* ── KPI Cards — grid 12 cols ── */}
-        <div className="grid grid-cols-12 gap-4">
-          {/* Recaudación Total — 3 cols */}
-          <div className="col-span-12 sm:col-span-6 xl:col-span-3">
+        {/* ── Panel KPI unificado ── */}
+        <div className="bg-white rounded-[22px] px-4 py-6 shadow-[0_8px_24px_rgba(15,23,42,0.08)]">
+          <div className="flex flex-col xl:flex-row xl:items-stretch divide-y xl:divide-y-0 divide-slate-100">
             <KPICard
               icon={DollarSign}
               label="Recaudación Total"
               value={fmtShort(recaudacionTotal)}
               sub={`${recaudacionMensual.length} meses acumulados · Ciclos 2026-I / II`}
               trend={+8.3}
-              accentClass="bg-brand-600"
-              bgClass="bg-brand-50 text-brand-600"
+              bgClass="bg-brand-50 text-brand-700"
             />
-          </div>
-
-          {/* Cuentas por Cobrar — 3 cols */}
-          <div className="col-span-12 sm:col-span-6 xl:col-span-3">
+            <div className="hidden xl:block w-px bg-brand-200 self-center h-16" />
             <KPICard
               icon={AlertCircle}
               label="Cuentas por Cobrar"
               value={fmtShort(totalDeuda)}
               sub={`${estadoDeuda.slice(1).reduce((a, d) => a + d.value, 0)} alumnos con deuda activa`}
               trend={-4.1}
-              accentClass="bg-slate-500"
-              bgClass="bg-amber-50 text-amber-600"
+              bgClass="bg-slate-100 text-slate-600"
             />
-          </div>
-
-          {/* Utilidad Neta — 3 cols  (SIN categoría "Ajuste") */}
-          <div className="col-span-12 sm:col-span-6 xl:col-span-3">
+            <div className="hidden xl:block w-px bg-brand-200 self-center h-16" />
             <KPICard
               icon={TrendingUp}
               label="Utilidad Neta"
               value={fmtShort(utilidadNeta)}
               sub="Ingresos − Gastos (excluye ajustes contables)"
               trend={+12.7}
-              accentClass="bg-brand-800"
               bgClass="bg-brand-50 text-brand-800"
             />
-          </div>
-
-          {/* Margen de Ganancia — 3 cols */}
-          <div className="col-span-12 sm:col-span-6 xl:col-span-3">
+            <div className="hidden xl:block w-px bg-brand-200 self-center h-16" />
             <KPICard
               icon={Percent}
               label="Margen de Ganancia"
               value={`${margenGanancia}%`}
               sub="Sobre total de ingresos acumulados del ciclo"
               trend={+2.4}
-              accentClass="bg-slate-700"
-              bgClass="bg-brand-50 text-brand-700"
+              bgClass="bg-slate-100 text-slate-700"
             />
           </div>
         </div>

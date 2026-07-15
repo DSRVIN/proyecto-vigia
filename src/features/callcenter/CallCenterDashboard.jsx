@@ -277,7 +277,7 @@ export default function CallCenterDashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-100 text-slate-900 pb-12">
+    <div className="min-h-screen bg-[#F5F7FB] text-slate-900 pb-12">
       <main className="max-w-screen-2xl mx-auto px-4 sm:px-6 py-8">
         {/* Header Section */}
         <div className="mb-8 animate-fade-in flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -304,25 +304,32 @@ export default function CallCenterDashboard() {
           </div>
         </div>
 
-        {/* Bloque A: Tarjetas KPI */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-          <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
-            <p className="text-xs text-slate-500 font-black uppercase tracking-wider">
-              Total Asignados
-            </p>
-            <p className="text-2xl font-black text-slate-900 mt-1">{totalStudents}</p>
-          </div>
-          <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
-            <p className="text-xs text-slate-500 font-black uppercase tracking-wider">
-              Pendientes de Pago
-            </p>
-            <p className="text-2xl font-black text-brand-600 mt-1">{pendingPayments}</p>
-          </div>
-          <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
-            <p className="text-xs text-slate-500 font-black uppercase tracking-wider">
-              Riesgo Crítico / Alto
-            </p>
-            <p className="text-2xl font-black text-risk-critical mt-1">{criticalRisk}</p>
+        {/* Bloque A: Panel KPI unificado */}
+        <div className="bg-white rounded-[22px] px-4 py-6 shadow-[0_8px_24px_rgba(15,23,42,0.08)] mb-8">
+          <div className="flex flex-col sm:flex-row sm:items-stretch divide-y sm:divide-y-0 divide-slate-100">
+            <div className="flex-1 px-5 py-2">
+              <p className="text-[11px] text-slate-500 font-black uppercase tracking-wider">
+                Total Asignados
+              </p>
+              <p className="text-3xl font-black text-slate-900 mt-1">{totalStudents}</p>
+              <p className="text-[11px] text-slate-400 font-bold">Alumnos en cartera</p>
+            </div>
+            <div className="hidden sm:block w-px bg-brand-200 self-center h-12" />
+            <div className="flex-1 px-5 py-2">
+              <p className="text-[11px] text-slate-500 font-black uppercase tracking-wider">
+                Pendientes de Pago
+              </p>
+              <p className="text-3xl font-black text-brand-700 mt-1">{pendingPayments}</p>
+              <p className="text-[11px] text-slate-400 font-bold">Con deuda activa</p>
+            </div>
+            <div className="hidden sm:block w-px bg-brand-200 self-center h-12" />
+            <div className="flex-1 px-5 py-2">
+              <p className="text-[11px] text-slate-500 font-black uppercase tracking-wider">
+                Riesgo Crítico / Alto
+              </p>
+              <p className="text-3xl font-black text-risk-critical mt-1">{criticalRisk}</p>
+              <p className="text-[11px] text-slate-400 font-bold">Requieren intervención</p>
+            </div>
           </div>
         </div>
 
