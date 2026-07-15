@@ -1,18 +1,32 @@
 @import 'tailwindcss';
 
 @theme {
-  /* Paleta Oficial UTP e Interfaz */
+  /* ── Sistema de diseño VIGÍA ──────────────────────────────
+   * Regla: UN solo tono de marca (azul institucional) + neutros.
+   * El color semafórico (verde/ámbar/rojo) se reserva EXCLUSIVAMENTE
+   * para comunicar nivel de riesgo. Nada más lleva color.
+   */
+
+  /* Marca: azul institucional (único tono de datos/acción) */
+  --color-brand-50: #eff6ff;
+  --color-brand-100: #dbeafe;
+  --color-brand-300: #93c5fd;
+  --color-brand-500: #3b82f6;
+  --color-brand-600: #2563eb;
+  --color-brand-700: #1d4ed8;
+  --color-brand-800: #1e40af;
+  --color-brand-900: #1e3a8a;
+
+  /* Acento UTP (solo para la marca del logo) */
   --color-utp-red: #990000;
   --color-utp-hover: #7a0000;
   --color-utp-glass: rgba(153, 0, 0, 0.1);
 
-  --color-primary-50: #fef2f2;
-  --color-primary-500: #990000;
-  --color-primary-600: #7a0000;
-
-  --color-danger-400: #ef4444;
-  --color-danger-500: #dc2626;
-  --color-success-400: #22c55e;
+  /* Semáforo de riesgo (uso exclusivo para estados de riesgo) */
+  --color-risk-low: #059669;
+  --color-risk-medium: #d97706;
+  --color-risk-high: #ea580c;
+  --color-risk-critical: #dc2626;
 
   --font-sans: 'Inter', system-ui, sans-serif;
   --font-mono: 'JetBrains Mono', monospace;

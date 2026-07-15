@@ -25,7 +25,7 @@ function TabBtn({ active, onClick, icon: Icon, label, count }) {
       className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-extrabold transition-all uppercase tracking-wider border ${
         active
           ? 'bg-[#d32f2f] border-[#b71c1c] text-white shadow-lg shadow-red-200'
-          : 'text-slate-600 border-transparent hover:text-[#d32f2f] hover:bg-white transition-all'
+          : 'text-slate-600 border-transparent hover:text-risk-critical hover:bg-white transition-all'
       }`}
     >
       <Icon size={15} />
@@ -130,7 +130,7 @@ function StudentsTab() {
 
       {showAdd && (
         <div className="bg-white rounded-2xl p-5 border border-red-200 shadow-xl animate-fade-in space-y-4">
-          <h3 className="text-xs font-black text-[#d32f2f] uppercase tracking-widest flex items-center gap-2">
+          <h3 className="text-xs font-black text-risk-critical uppercase tracking-widest flex items-center gap-2">
             <Plus size={14} /> Nuevo Estudiante
           </h3>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
@@ -365,7 +365,7 @@ function StudentRow({ student: s, editing, setEditing, actions }) {
                 onClick={() => {
                   if (confirm(`¿Eliminar a ${s.nombre}?`)) actions.deleteStudent(s.codigo);
                 }}
-                className="p-1.5 rounded-lg bg-red-50 border border-red-200 text-[#d32f2f] hover:bg-red-100 transition-all"
+                className="p-1.5 rounded-lg bg-red-50 border border-red-200 text-risk-critical hover:bg-red-100 transition-all"
               >
                 <Trash2 size={13} />
               </button>
@@ -433,7 +433,7 @@ function CoursesTab() {
 
       {showAdd && (
         <div className="bg-white rounded-2xl p-5 border border-red-200 shadow-xl animate-fade-in space-y-4">
-          <h3 className="text-xs font-black text-[#d32f2f] uppercase tracking-widest">
+          <h3 className="text-xs font-black text-risk-critical uppercase tracking-widest">
             Nuevo Curso
           </h3>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
@@ -532,7 +532,7 @@ function CoursesTab() {
               <div className="flex items-start justify-between gap-4">
                 <div>
                   <div className="flex items-center gap-2 mb-1.5">
-                    <span className="text-xs font-mono bg-red-50 px-2 py-0.5 rounded-md text-[#d32f2f] font-bold border border-red-100">
+                    <span className="text-xs font-mono bg-red-50 px-2 py-0.5 rounded-md text-risk-critical font-bold border border-red-100">
                       {c.codigo}
                     </span>
                     <span className="text-slate-300 font-bold">·</span>
@@ -557,7 +557,7 @@ function CoursesTab() {
                     onClick={() => {
                       if (confirm('¿Eliminar este curso?')) actions.deleteCourse(c.id);
                     }}
-                    className="p-2 rounded-xl bg-red-50 border border-red-200 text-[#d32f2f] hover:bg-red-100 transition-all shadow-sm"
+                    className="p-2 rounded-xl bg-red-50 border border-red-200 text-risk-critical hover:bg-red-100 transition-all shadow-sm"
                   >
                     <Trash2 size={14} />
                   </button>
@@ -632,7 +632,7 @@ function GradesTab() {
               {evals.map((e) => (
                 <th
                   key={e.key}
-                  className="text-center px-4 py-3.5 text-xs font-black text-[#d32f2f] uppercase tracking-widest"
+                  className="text-center px-4 py-3.5 text-xs font-black text-risk-critical uppercase tracking-widest"
                 >
                   {e.label} ({(e.weight * 100).toFixed(0)}%)
                 </th>
@@ -722,8 +722,8 @@ export default function AdminPage() {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <div className="flex items-center gap-2 mb-1.5">
-              <Shield size={16} className="text-[#d32f2f]" />
-              <span className="text-[10px] font-black bg-red-50 border border-red-200 text-[#d32f2f] px-2.5 py-0.5 rounded-md uppercase tracking-widest">
+              <Shield size={16} className="text-risk-critical" />
+              <span className="text-[10px] font-black bg-red-50 border border-red-200 text-risk-critical px-2.5 py-0.5 rounded-md uppercase tracking-widest">
                 Panel Protegido
               </span>
             </div>
@@ -736,7 +736,7 @@ export default function AdminPage() {
           </div>
           <div className="flex items-center gap-2 px-4 py-2.5 bg-white border border-slate-200 rounded-xl w-fit shadow-md">
             <div className="h-2 w-2 bg-[#d32f2f] rounded-full animate-pulse" />
-            <span className="text-xs text-[#d32f2f] font-black font-mono uppercase tracking-wider">
+            <span className="text-xs text-risk-critical font-black font-mono uppercase tracking-wider">
               Modo Admin — {state.teacher?.codigo || 'Docente'}
             </span>
           </div>

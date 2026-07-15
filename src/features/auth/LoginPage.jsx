@@ -83,8 +83,8 @@ function LoginForm() {
   return (
     <form onSubmit={handleSubmit} className="space-y-5 animate-fade-in">
       {/* Alerta de información del cuadro de diseño */}
-      <div className="flex items-start gap-2.5 bg-blue-500/10 border border-blue-500/20 rounded-xl p-3.5">
-        <Shield size={16} className="text-blue-700 flex-shrink-0 mt-0.5" />
+      <div className="flex items-start gap-2.5 bg-brand-500/10 border border-brand-600/20 rounded-xl p-3.5">
+        <Shield size={16} className="text-brand-700 flex-shrink-0 mt-0.5" />
         <p className="text-xs text-slate-700 leading-relaxed">
           <strong>Información importante:</strong> Use su código docente con prefijo "C" o su correo
           institucional.

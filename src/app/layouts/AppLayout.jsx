@@ -30,7 +30,7 @@ export default function AppLayout() {
       <footer className="border-t border-slate-800/60 mt-16 py-6 px-6">
         <div className="max-w-screen-2xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-600">
           <div className="flex items-center gap-2">
-            <span className="font-bold gradient-text text-sm">VIGÍA</span>
+            <span className="font-bold text-slate-400 text-sm">VIGÍA</span>
             <span>·</span>
             <span>Sistema de Alerta Temprana Académica</span>
             <span>·</span>

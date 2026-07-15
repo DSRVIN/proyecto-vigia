@@ -48,10 +48,10 @@ const recaudacionMensual = [
 
 /** Distribución del estado de deuda (alumnos) */
 const estadoDeuda = [
-  { name: 'Al día', value: 1_248, color: '#22c55e' },
-  { name: 'Deuda < 30 días', value: 312, color: '#f59e0b' },
-  { name: 'Deuda 30-60 días', value: 187, color: '#f97316' },
-  { name: 'Deuda > 60 días', value: 94, color: '#ef4444' },
+  { name: 'Al día', value: 1_248, color: '#cbd5e1' },
+  { name: 'Deuda < 30 días', value: 312, color: '#93c5fd' },
+  { name: 'Deuda 30-60 días', value: 187, color: '#3b82f6' },
+  { name: 'Deuda > 60 días', value: 94, color: '#1e40af' },
 ];
 
 /** Movimientos financieros históricos */
@@ -251,13 +251,13 @@ const fmtShort = (n) => {
   return fmt(n);
 };
 
-const TIPO_COLORS = { ingreso: '#22c55e', gasto: '#ef4444', Ajuste: '#94a3b8' };
+const TIPO_COLORS = { ingreso: '#1e40af', gasto: '#64748b', Ajuste: '#cbd5e1' };
 const CATEGORIA_COLORS = {
-  Pensión: '#3b82f6',
-  Matrícula: '#8b5cf6',
-  Servicios: '#f59e0b',
-  Operativo: '#ef4444',
-  Ajuste: '#94a3b8',
+  Pensión: '#1e40af',
+  Matrícula: '#3b82f6',
+  Servicios: '#93c5fd',
+  Operativo: '#64748b',
+  Ajuste: '#cbd5e1',
 };
 
 // Custom tooltip for AreaChart
@@ -432,8 +432,8 @@ export default function EjecutivoDashboard() {
               value={fmtShort(recaudacionTotal)}
               sub={`${recaudacionMensual.length} meses acumulados · Ciclos 2026-I / II`}
               trend={+8.3}
-              accentClass="bg-gradient-to-r from-blue-500 to-blue-400"
-              bgClass="bg-blue-50 text-blue-600"
+              accentClass="bg-brand-600"
+              bgClass="bg-brand-50 text-brand-600"
             />
           </div>
 
@@ -445,7 +445,7 @@ export default function EjecutivoDashboard() {
               value={fmtShort(totalDeuda)}
               sub={`${estadoDeuda.slice(1).reduce((a, d) => a + d.value, 0)} alumnos con deuda activa`}
               trend={-4.1}
-              accentClass="bg-gradient-to-r from-amber-500 to-orange-400"
+              accentClass="bg-slate-500"
               bgClass="bg-amber-50 text-amber-600"
             />
           </div>
@@ -458,7 +458,7 @@ export default function EjecutivoDashboard() {
               value={fmtShort(utilidadNeta)}
               sub="Ingresos − Gastos (excluye ajustes contables)"
               trend={+12.7}
-              accentClass="bg-gradient-to-r from-emerald-500 to-green-400"
+              accentClass="bg-brand-800"
               bgClass="bg-emerald-50 text-emerald-600"
             />
           </div>
@@ -471,8 +471,8 @@ export default function EjecutivoDashboard() {
               value={`${margenGanancia}%`}
               sub="Sobre total de ingresos acumulados del ciclo"
               trend={+2.4}
-              accentClass="bg-gradient-to-r from-violet-500 to-purple-400"
-              bgClass="bg-violet-50 text-violet-600"
+              accentClass="bg-slate-700"
+              bgClass="bg-brand-50 text-brand-700"
             />
           </div>
         </div>
@@ -490,7 +490,7 @@ export default function EjecutivoDashboard() {
               </div>
               <div className="flex items-center gap-4 text-xs text-slate-500">
                 <span className="flex items-center gap-1.5">
-                  <span className="h-2.5 w-2.5 rounded-full bg-blue-500" />
+                  <span className="h-2.5 w-2.5 rounded-full bg-brand-500" />
                   Ingresos
                 </span>
                 <span className="flex items-center gap-1.5">
@@ -506,12 +506,12 @@ export default function EjecutivoDashboard() {
               >
                 <defs>
                   <linearGradient id="gradIngresos" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.18} />
-                    <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
+                    <stop offset="5%" stopColor="#1e40af" stopOpacity={0.18} />
+                    <stop offset="95%" stopColor="#1e40af" stopOpacity={0} />
                   </linearGradient>
                   <linearGradient id="gradGastos" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#ef4444" stopOpacity={0.12} />
-                    <stop offset="95%" stopColor="#ef4444" stopOpacity={0} />
+                    <stop offset="5%" stopColor="#64748b" stopOpacity={0.12} />
+                    <stop offset="95%" stopColor="#64748b" stopOpacity={0} />
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
@@ -533,7 +533,7 @@ export default function EjecutivoDashboard() {
                   type="monotone"
                   dataKey="ingresos"
                   name="ingresos"
-                  stroke="#3b82f6"
+                  stroke="#1e40af"
                   strokeWidth={2.5}
                   fill="url(#gradIngresos)"
                   dot={false}
@@ -543,7 +543,7 @@ export default function EjecutivoDashboard() {
                   type="monotone"
                   dataKey="gastos"
                   name="gastos"
-                  stroke="#ef4444"
+                  stroke="#64748b"
                   strokeWidth={2}
                   fill="url(#gradGastos)"
                   dot={false}

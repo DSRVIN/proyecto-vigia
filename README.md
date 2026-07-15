@@ -73,6 +73,15 @@ src/
 tests/              # Tests unitarios (riesgo, métricas, roles)
 ```
 
+## Sistema de diseño
+
+Definido como design tokens en [src/index.css](src/index.css) (`@theme` de Tailwind 4):
+
+- **Un solo tono de marca** (`brand-*`, azul institucional) para datos, acciones y gráficos. Las series de los gráficos se diferencian por intensidad del mismo tono, no por colores distintos.
+- **Neutros** (`slate-*`) para toda la estructura.
+- **El semáforo (`risk-low/medium/high/critical`) se reserva exclusivamente para comunicar nivel de riesgo** — si algo es rojo, es riesgo crítico; el color codifica significado, nunca decoración. El nivel siempre va acompañado de etiqueta e ícono (accesible para daltonismo).
+- El rojo UTP (`utp-red`) solo aparece en la marca del logo y el botón institucional del login.
+
 ## Lógica de clasificación de riesgo
 
 - `src/services/metrics.service.js` → `calcRiesgo(promedio, asistencia, actividadDias)`: clasificación operativa del dashboard (`BAJO` / `MEDIO` / `ALTO` / `CRITICO`).

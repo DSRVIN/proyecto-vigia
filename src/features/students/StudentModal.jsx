@@ -64,9 +64,9 @@ function getAIRecommendations(student) {
       {
         tipo: 'Análisis Predictivo IA',
         icon: Brain,
-        color: 'text-violet-600',
-        bg: 'bg-violet-50 border-violet-200',
-        border: 'border-violet-200',
+        color: 'text-brand-700',
+        bg: 'bg-brand-50 border-brand-100',
+        border: 'border-brand-100',
         texto:
           'El modelo predictivo indica 87% de probabilidad de abandono si no se interviene en los próximos 7 días. Patrón consistente con "Silencio Digital": reducción gradual de accesos al campus virtual.',
       },
@@ -83,9 +83,9 @@ function getAIRecommendations(student) {
       {
         tipo: 'Análisis Predictivo IA',
         icon: Brain,
-        color: 'text-violet-600',
-        bg: 'bg-violet-50 border-violet-200',
-        border: 'border-violet-200',
+        color: 'text-brand-700',
+        bg: 'bg-brand-50 border-brand-100',
+        border: 'border-brand-100',
         texto:
           'Probabilidad de recuperación: 62% con intervención temprana. Se detectó disminución progresiva del rendimiento en los últimos 2 períodos de evaluación.',
       },
@@ -116,12 +116,8 @@ function getAIRecommendations(student) {
 
 function GradeBar({ label, value, weight, max = 20 }) {
   const pct = (value / max) * 100;
-  const color =
-    value >= 12
-      ? 'from-emerald-500 to-teal-400'
-      : value >= 10
-        ? 'from-amber-500 to-yellow-400'
-        : 'from-red-600 to-red-400';
+  // Semáforo plano: el color de la barra codifica el estado de la nota
+  const color = value >= 12 ? 'bg-risk-low' : value >= 10 ? 'bg-risk-medium' : 'bg-risk-critical';
   return (
     <div className="space-y-1">
       <div className="flex justify-between text-xs">
@@ -136,7 +132,7 @@ function GradeBar({ label, value, weight, max = 20 }) {
       </div>
       <div className="h-2 bg-slate-200 rounded-full overflow-hidden">
         <div
-          className={`h-full bg-gradient-to-r ${color} rounded-full transition-all duration-700`}
+          className={`h-full ${color} rounded-full transition-all duration-700`}
           style={{ width: `${pct}%` }}
         />
       </div>
@@ -149,7 +145,7 @@ const CustomTooltip = ({ active, payload, label }) => {
     return (
       <div className="bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs shadow-md">
         <p className="text-slate-500 font-bold mb-1">{label}</p>
-        <p className="text-blue-600 font-black">{payload[0].value} accesos</p>
+        <p className="text-brand-600 font-black">{payload[0].value} accesos</p>
       </div>
     );
   }
@@ -240,7 +236,7 @@ export default function StudentModal({ student, onClose }) {
         {/* Header */}
         <div className="sticky top-0 bg-slate-50 border-b border-slate-200 px-6 py-4 flex items-center justify-between z-10">
           <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-full bg-gradient-to-br from-[#990000] to-red-700 flex items-center justify-center text-white font-bold text-sm flex-shrink-0 shadow-sm">
+            <div className="h-10 w-10 rounded-full bg-slate-700 flex items-center justify-center text-white font-bold text-sm flex-shrink-0 shadow-sm">
               {student.nombre
                 .split(' ')
                 .map((n) => n[0])
@@ -280,13 +276,13 @@ export default function StudentModal({ student, onClose }) {
                     ? 'text-emerald-600'
                     : promedio >= 10
                       ? 'text-amber-600'
-                      : 'text-[#d32f2f]',
+                      : 'text-risk-critical',
               },
               {
                 label: 'Nota Final',
                 value: student.notaFinal,
                 sub: needsRounding ? '⟳ Redondeado' : 'Sin redondeo',
-                color: student.notaFinal >= 12 ? 'text-emerald-600' : 'text-[#d32f2f]',
+                color: student.notaFinal >= 12 ? 'text-emerald-600' : 'text-risk-critical',
               },
               {
                 label: 'Asistencia',
@@ -297,7 +293,7 @@ export default function StudentModal({ student, onClose }) {
                     ? 'text-emerald-600'
                     : student.asistencia >= 65
                       ? 'text-amber-600'
-                      : 'text-[#d32f2f]',
+                      : 'text-risk-critical',
               },
               {
                 label: 'Inactividad',
@@ -305,7 +301,7 @@ export default function StudentModal({ student, onClose }) {
                 sub: student.actividadDias > 14 ? 'Abandono Silencioso' : 'Normal',
                 color:
                   student.actividadDias > 21
-                    ? 'text-[#d32f2f]'
+                    ? 'text-risk-critical'
                     : student.actividadDias > 14
                       ? 'text-amber-600'
                       : 'text-emerald-600',
@@ -326,9 +322,9 @@ export default function StudentModal({ student, onClose }) {
 
           {/* Projection for last evaluation */}
           {necesitaProyeccion !== null && necesitaProyeccion > 0 && (
-            <div className="bg-blue-50 border border-blue-100 rounded-xl p-4 shadow-sm">
+            <div className="bg-brand-50 border border-brand-100 rounded-xl p-4 shadow-sm">
               <div className="flex items-center gap-2 mb-2">
-                <BarChart2 size={15} className="text-blue-600" />
+                <BarChart2 size={15} className="text-brand-600" />
                 <span className="text-xs font-black text-blue-800 uppercase tracking-wider">
                   Proyección — Motor UTP
                 </span>
@@ -362,7 +358,7 @@ export default function StudentModal({ student, onClose }) {
           {/* Dynamic grades breakdown */}
           <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-3 shadow-sm">
             <h3 className="text-xs font-black text-slate-700 flex items-center gap-1.5 uppercase tracking-wider">
-              <Award size={14} className="text-violet-600" /> Detalle de Notas — {student.cursoId}
+              <Award size={14} className="text-brand-700" /> Detalle de Notas — {student.cursoId}
             </h3>
             {evals.map((e) => (
               <GradeBar key={e.key} label={e.label} value={grades[e.key] || 0} weight={e.weight} />
@@ -418,7 +414,7 @@ export default function StudentModal({ student, onClose }) {
             {student.academic && (
               <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-3 shadow-sm">
                 <h3 className="text-xs font-black text-slate-700 flex items-center gap-1.5 uppercase tracking-wider">
-                  <BookOpen size={14} className="text-blue-600" /> Cursos Críticos
+                  <BookOpen size={14} className="text-brand-600" /> Cursos Críticos
                 </h3>
                 <div className="space-y-2.5">
                   {student.academic.cursos.map((c, idx) => (
@@ -448,7 +444,7 @@ export default function StudentModal({ student, onClose }) {
           {/* Activity chart */}
           <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 shadow-sm">
             <h3 className="text-xs font-black text-slate-700 flex items-center gap-1.5 uppercase tracking-wider mb-4">
-              <Activity size={14} className="text-blue-600" /> Evolución de Actividad en Campus
+              <Activity size={14} className="text-brand-600" /> Evolución de Actividad en Campus
               Virtual
             </h3>
             <ResponsiveContainer width="100%" height={140}>
@@ -490,7 +486,7 @@ export default function StudentModal({ student, onClose }) {
             {!showAIEditor ? (
               <button
                 onClick={handleGenerateAI}
-                className="group relative w-full py-3 bg-gradient-to-r from-blue-600 to-violet-600 hover:from-blue-500 hover:to-violet-500 text-white font-black uppercase tracking-wider text-xs rounded-xl transition-all hover:scale-[1.01] active:scale-95 shadow-md flex items-center justify-center gap-2"
+                className="group relative w-full py-3 bg-brand-700 hover:bg-brand-600 text-white font-black uppercase tracking-wider text-xs rounded-xl transition-all hover:scale-[1.01] active:scale-95 shadow-md flex items-center justify-center gap-2"
               >
                 <Brain size={14} className="group-hover:animate-pulse" />
                 Generar Intervención Inteligente con IA
@@ -504,14 +500,14 @@ export default function StudentModal({ student, onClose }) {
               </div>
             ) : (
               <div className="space-y-4 animate-fade-in">
-                <div className="bg-violet-50 border border-violet-100 rounded-xl p-4 space-y-1.5 shadow-sm">
+                <div className="bg-brand-50 border border-brand-100 rounded-xl p-4 space-y-1.5 shadow-sm">
                   <div className="flex items-center gap-1.5">
-                    <Zap size={14} className="text-violet-600" />
-                    <h4 className="text-xs font-black text-violet-800 uppercase tracking-wider">
+                    <Zap size={14} className="text-brand-700" />
+                    <h4 className="text-xs font-black text-brand-800 uppercase tracking-wider">
                       Diagnóstico IA del Asesor
                     </h4>
                   </div>
-                  <p className="text-xs text-violet-950 font-medium leading-relaxed">{aiComment}</p>
+                  <p className="text-xs text-brand-900 font-medium leading-relaxed">{aiComment}</p>
                 </div>
 
                 <div className="space-y-1">
@@ -522,7 +518,7 @@ export default function StudentModal({ student, onClose }) {
                     type="text"
                     value={emailSubject}
                     onChange={(e) => setEmailSubject(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-200 focus:border-blue-500 focus:bg-white rounded-xl px-3 py-2 text-xs text-slate-900 font-semibold outline-none transition-all shadow-inner"
+                    className="w-full bg-slate-50 border border-slate-200 focus:border-brand-600 focus:bg-white rounded-xl px-3 py-2 text-xs text-slate-900 font-semibold outline-none transition-all shadow-inner"
                   />
                 </div>
 
@@ -534,7 +530,7 @@ export default function StudentModal({ student, onClose }) {
                     value={emailBody}
                     onChange={(e) => setEmailBody(e.target.value)}
                     rows={8}
-                    className="w-full bg-slate-50 border border-slate-200 focus:border-blue-500 focus:bg-white rounded-xl px-3 py-2 text-xs text-slate-900 font-medium leading-relaxed outline-none transition-all shadow-inner resize-y font-mono"
+                    className="w-full bg-slate-50 border border-slate-200 focus:border-brand-600 focus:bg-white rounded-xl px-3 py-2 text-xs text-slate-900 font-medium leading-relaxed outline-none transition-all shadow-inner resize-y font-mono"
                   />
                 </div>
 
@@ -548,7 +544,7 @@ export default function StudentModal({ student, onClose }) {
                   <button
                     onClick={handleSendEmail}
                     disabled={isSendingEmail}
-                    className="flex-1 inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-black text-xs uppercase tracking-wider transition-all shadow-md active:scale-95 disabled:bg-blue-400 disabled:cursor-not-allowed"
+                    className="flex-1 inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl bg-brand-600 hover:bg-blue-700 text-white font-black text-xs uppercase tracking-wider transition-all shadow-md active:scale-95 disabled:bg-blue-400 disabled:cursor-not-allowed"
                   >
                     {isSendingEmail ? (
                       <>
@@ -570,7 +566,7 @@ export default function StudentModal({ student, onClose }) {
           {/* AI Static Recommendations */}
           <div className="space-y-3">
             <h3 className="text-xs font-black text-slate-700 flex items-center gap-1.5 uppercase tracking-wider">
-              <Brain size={14} className="text-violet-600" /> Alertas Predictivas de Riesgo
+              <Brain size={14} className="text-brand-700" /> Alertas Predictivas de Riesgo
             </h3>
             {recs.map((rec, i) => (
               <div

@@ -78,12 +78,12 @@ function CourseCard({ course, onClick }) {
             </span>
             <RiskBadge level={riskLevel} size="xs" />
           </div>
-          <h3 className="text-base font-black text-slate-900 group-hover:text-[#d32f2f] transition-colors leading-snug">
+          <h3 className="text-base font-black text-slate-900 group-hover:text-risk-critical transition-colors leading-snug">
             {course.nombre}
           </h3>
         </div>
         <div className="ml-3 p-2.5 rounded-xl bg-red-50 border border-red-100 group-hover:bg-red-100 transition-all flex-shrink-0">
-          <BookOpen size={20} className="text-[#d32f2f]" />
+          <BookOpen size={20} className="text-risk-critical" />
         </div>
       </div>
 
@@ -95,7 +95,7 @@ function CourseCard({ course, onClick }) {
           icon={Award}
           label="Créditos"
           value={`${course.creditos} cr`}
-          color="text-violet-700"
+          color="text-brand-700"
         />
       </div>
 
@@ -115,7 +115,7 @@ function CourseCard({ course, onClick }) {
             </div>
             <div>
               <p
-                className={`text-lg font-black ${stats.criticos > 0 ? 'text-[#d32f2f]' : 'text-slate-400'}`}
+                className={`text-lg font-black ${stats.criticos > 0 ? 'text-risk-critical' : 'text-slate-400'}`}
               >
                 {stats.criticos}
               </p>
@@ -145,7 +145,7 @@ function CourseCard({ course, onClick }) {
             <div className="flex justify-between text-xs">
               <span className="text-slate-500 font-bold">Salud académica del aula</span>
               <span
-                className={`font-black ${healthPct >= 70 ? 'text-emerald-600' : healthPct >= 50 ? 'text-amber-600' : 'text-[#d32f2f]'}`}
+                className={`font-black ${healthPct >= 70 ? 'text-emerald-600' : healthPct >= 50 ? 'text-amber-600' : 'text-risk-critical'}`}
               >
                 {healthPct}%
               </span>
@@ -154,10 +154,10 @@ function CourseCard({ course, onClick }) {
               <div
                 className={`h-full rounded-full transition-all duration-700 ${
                   healthPct >= 70
-                    ? 'bg-gradient-to-r from-emerald-600 to-teal-500'
+                    ? 'bg-risk-low'
                     : healthPct >= 50
-                      ? 'bg-gradient-to-r from-amber-500 to-yellow-400'
-                      : 'bg-gradient-to-r from-[#d32f2f] to-red-400'
+                      ? 'bg-risk-medium'
+                      : 'bg-risk-critical'
                 }`}
                 style={{ width: `${healthPct}%` }}
               />
@@ -170,7 +170,7 @@ function CourseCard({ course, onClick }) {
                 e.stopPropagation();
                 onClick(course);
               }}
-              className="text-xs text-[#d32f2f] font-black uppercase tracking-wider group-hover:translate-x-1 transition-transform flex items-center gap-1 cursor-pointer bg-transparent border-0 p-0"
+              className="text-xs text-risk-critical font-black uppercase tracking-wider group-hover:translate-x-1 transition-transform flex items-center gap-1 cursor-pointer bg-transparent border-0 p-0"
             >
               Ver sección completa <ChevronRight size={14} />
             </button>
@@ -201,15 +201,15 @@ function GlobalKPIs() {
       value: stats.total,
       icon: Users,
       color: 'text-slate-900',
-      badgeColor: 'text-blue-600 bg-blue-50 border-blue-100',
+      badgeColor: 'text-brand-600 bg-brand-50 border-brand-100',
       filterId: 'ALL',
     },
     {
       label: 'Riesgo Crítico',
       value: stats.criticos,
       icon: AlertTriangle,
-      color: 'text-[#d32f2f]',
-      badgeColor: 'text-[#d32f2f] bg-red-50 border-red-100',
+      color: 'text-risk-critical',
+      badgeColor: 'text-risk-critical bg-red-50 border-red-100',
       filterId: 'CRITICO',
     },
     {
@@ -224,8 +224,8 @@ function GlobalKPIs() {
       label: 'Posible Abandono',
       value: stats.abandono,
       icon: Clock,
-      color: 'text-violet-600',
-      badgeColor: 'text-violet-600 bg-violet-50 border-violet-100',
+      color: 'text-brand-700',
+      badgeColor: 'text-brand-700 bg-brand-50 border-brand-100',
       filterId: 'ABANDONO',
     },
     {
@@ -339,7 +339,7 @@ export default function DashboardPage() {
         <div className="mb-8 animate-fade-in">
           <div className="flex items-start justify-between">
             <div>
-              <p className="text-xs text-[#d32f2f] font-black uppercase tracking-widest mb-1">
+              <p className="text-xs text-risk-critical font-black uppercase tracking-widest mb-1">
                 Bienvenido de vuelta
               </p>
               <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
@@ -350,7 +350,7 @@ export default function DashboardPage() {
                 {teacher.departamento || 'Dirección de Tecnología Educativa'}{' '}
                 <span className="text-slate-300">·</span> {teacher.cargo || 'Docente'}{' '}
                 <span className="text-slate-300">·</span>{' '}
-                <span className="text-[#d32f2f] font-black">Ciclo 2026-I</span>
+                <span className="text-risk-critical font-black">Ciclo 2026-I</span>
               </p>
             </div>
           </div>

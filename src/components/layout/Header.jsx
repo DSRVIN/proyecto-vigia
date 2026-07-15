@@ -1,14 +1,6 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import {
-  Bell,
-  LogOut,
-  Settings,
-  LayoutDashboard,
-  ChevronRight,
-  Headphones,
-  Briefcase,
-} from 'lucide-react';
+import { Bell, LogOut, Settings, LayoutDashboard, Headphones, Briefcase } from 'lucide-react';
 import { useApp } from '../../context/AppContext.jsx';
 import { ROLES, roleHome } from '../../features/auth/roles.js';
 
@@ -22,12 +14,6 @@ const NAV_LINKS = [
   { to: '/admin', label: 'ADMIN', icon: Settings, roles: [ROLES.ADMIN] },
 ];
 
-const BREADCRUMB_LABELS = {
-  '/admin': 'Panel Administrativo',
-  '/admin/ejecutivo': 'Panel Ejecutivo',
-  '/callcenter': 'Call Center',
-};
-
 export default function Header() {
   const { state, actions } = useApp();
   const { currentUser } = state;
@@ -39,20 +25,6 @@ export default function Header() {
   const criticalCount = state.students.filter((s) => s.riesgo === 'CRITICO').length;
 
   const visibleLinks = NAV_LINKS.filter((l) => l.roles.includes(role));
-
-  const getBreadcrumb = () => {
-    if (pathname === home) return null;
-    if (BREADCRUMB_LABELS[pathname]) return [{ label: BREADCRUMB_LABELS[pathname] }];
-    if (pathname.startsWith('/docente/curso/')) {
-      const course = state.courses.find((c) => c.id === pathname.split('/').pop());
-      return [{ label: course?.nombre || 'Curso' }];
-    }
-    if (pathname.startsWith('/docente/kpi/')) return [{ label: 'Indicadores' }];
-    if (pathname === '/docente') return [{ label: 'Módulo Docente' }];
-    return null;
-  };
-
-  const breadcrumb = getBreadcrumb();
 
   const handleLogout = () => {
     actions.logout();
@@ -82,23 +54,6 @@ export default function Header() {
               <span className="text-[#d32f2f] font-black text-xl mx-1">+</span>
               <span className="text-slate-900 font-black text-xl tracking-tight">VIGÍA</span>
             </div>
-
-            {breadcrumb && (
-              <div className="hidden md:flex items-center gap-2 ml-4 text-sm font-bold text-slate-400 border-l border-slate-200 pl-4">
-                <button
-                  onClick={() => navigate(home)}
-                  className="hover:text-blue-600 transition-colors"
-                >
-                  Inicio
-                </button>
-                {breadcrumb.map((crumb, i) => (
-                  <React.Fragment key={i}>
-                    <ChevronRight size={14} className="text-slate-300" />
-                    <span className="text-slate-700">{crumb.label}</span>
-                  </React.Fragment>
-                ))}
-              </div>
-            )}
           </div>
 
           {currentUser && (
@@ -155,7 +110,7 @@ export default function Header() {
           )}
         </div>
       </div>
-      <div className="h-0.5 bg-gradient-to-r from-slate-900 to-[#d32f2f]" />
+      <div className="h-px bg-slate-200" />
     </header>
   );
 }

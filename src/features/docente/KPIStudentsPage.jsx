@@ -26,12 +26,12 @@ function StudentRow({ student, courseName, onSelect, index }) {
         className={`h-9 w-9 rounded-full flex items-center justify-center text-white text-xs font-black flex-shrink-0 shadow-sm
         ${
           student.riesgo === 'CRITICO'
-            ? 'bg-gradient-to-br from-[#d32f2f] to-red-700'
+            ? 'bg-risk-critical'
             : student.riesgo === 'ALTO'
-              ? 'bg-gradient-to-br from-amber-500 to-orange-600'
+              ? 'bg-risk-high'
               : student.riesgo === 'MEDIO'
-                ? 'bg-gradient-to-br from-blue-500 to-blue-700'
-                : 'bg-gradient-to-br from-emerald-500 to-teal-600'
+                ? 'bg-brand-700'
+                : 'bg-risk-low'
         }`}
       >
         {student.nombre
@@ -48,7 +48,7 @@ function StudentRow({ student, courseName, onSelect, index }) {
             {student.nombre}
           </p>
           {isAbandono && (
-            <span className="text-xs px-1.5 py-0.5 bg-violet-50 border border-violet-200 text-violet-700 rounded font-black uppercase tracking-wider flex-shrink-0">
+            <span className="text-xs px-1.5 py-0.5 bg-brand-50 border border-brand-100 text-brand-700 rounded font-black uppercase tracking-wider flex-shrink-0">
               Abandono
             </span>
           )}
@@ -73,7 +73,7 @@ function StudentRow({ student, courseName, onSelect, index }) {
       {/* Promedio */}
       <div className="text-right flex-shrink-0 w-16">
         <p
-          className={`text-base font-black font-mono leading-tight ${student.notaFinal >= 12 ? 'text-emerald-600' : student.notaFinal >= 10 ? 'text-amber-600' : 'text-[#d32f2f]'}`}
+          className={`text-base font-black font-mono leading-tight ${student.notaFinal >= 12 ? 'text-emerald-600' : student.notaFinal >= 10 ? 'text-amber-600' : 'text-risk-critical'}`}
         >
           {student.notaFinal}
         </p>
@@ -83,7 +83,7 @@ function StudentRow({ student, courseName, onSelect, index }) {
       {/* Attendance */}
       <div className="hidden lg:block text-right flex-shrink-0 w-14">
         <p
-          className={`text-sm font-black font-mono leading-tight ${student.asistencia >= 75 ? 'text-emerald-600' : student.asistencia >= 65 ? 'text-amber-600' : 'text-[#d32f2f]'}`}
+          className={`text-sm font-black font-mono leading-tight ${student.asistencia >= 75 ? 'text-emerald-600' : student.asistencia >= 65 ? 'text-amber-600' : 'text-risk-critical'}`}
         >
           {student.asistencia}%
         </p>
@@ -230,7 +230,7 @@ export default function KPIStudentsPage() {
           </button>
 
           <div className="flex items-center gap-2 mb-1.5">
-            <span className="text-xs font-black bg-red-50 border border-red-200 text-[#d32f2f] px-2 py-0.5 rounded-md uppercase tracking-wider">
+            <span className="text-xs font-black bg-red-50 border border-red-200 text-risk-critical px-2 py-0.5 rounded-md uppercase tracking-wider">
               Filtro VIGÍA
             </span>
           </div>
@@ -243,7 +243,7 @@ export default function KPIStudentsPage() {
             <p className="text-sm font-bold text-slate-600">{kpiDescription}</p>
             <div className="hidden sm:flex items-center gap-2 bg-red-50 border border-red-100 px-2.5 py-0.5 rounded-full shadow-sm">
               <span className="h-1.5 w-1.5 rounded-full bg-[#d32f2f] animate-pulse" />
-              <p className="text-xs font-black text-[#d32f2f] uppercase tracking-wider">
+              <p className="text-xs font-black text-risk-critical uppercase tracking-wider">
                 {baseFilteredStudents.length} alumnos bajo este criterio
               </p>
             </div>
@@ -256,7 +256,7 @@ export default function KPIStudentsPage() {
         <div className="p-5 border-b border-slate-200 bg-slate-50/50">
           <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
             <h2 className="text-base font-black uppercase tracking-wide text-slate-800 flex items-center gap-2">
-              <Users size={16} className="text-[#d32f2f]" />
+              <Users size={16} className="text-risk-critical" />
               Alumnos Detectados
               <span className="text-sm font-bold text-slate-500">({filteredAndSorted.length})</span>
             </h2>
@@ -301,7 +301,7 @@ export default function KPIStudentsPage() {
                     onClick={() => toggleSort(field)}
                     className={`flex items-center gap-1 text-xs font-black uppercase tracking-wider px-3 py-1.5 rounded-lg transition-all border ${
                       sortField === field
-                        ? 'text-[#d32f2f] bg-red-50 border-red-200 font-black'
+                        ? 'text-risk-critical bg-red-50 border-red-200 font-black'
                         : 'text-slate-600 border-slate-200 bg-white hover:bg-slate-50 hover:text-slate-900 shadow-sm'
                     }`}
                   >
@@ -318,12 +318,12 @@ export default function KPIStudentsPage() {
           {!showList ? (
             <div className="flex-1 flex flex-col items-center justify-center py-14 px-4 text-center animate-fade-in">
               <div className="h-20 w-20 bg-red-50 rounded-full flex items-center justify-center mb-5 border border-red-100 shadow-md">
-                <Users size={32} className="text-[#d32f2f]" />
+                <Users size={32} className="text-risk-critical" />
               </div>
               <h3 className="text-xl font-black text-slate-900 mb-2.5">Vista Segura Activada</h3>
               <p className="text-sm font-bold text-slate-600 mb-6 max-w-md mx-auto leading-relaxed">
                 Para resguardar el rendimiento analítico, el reporte analítico de los{' '}
-                <span className="text-[#d32f2f] font-black">
+                <span className="text-risk-critical font-black">
                   {filteredAndSorted.length} alumnos
                 </span>{' '}
                 se procesa bajo demanda.
@@ -356,7 +356,7 @@ export default function KPIStudentsPage() {
               <div className="flex justify-end mb-1 px-2">
                 <button
                   onClick={handleToggleList}
-                  className="text-xs text-slate-400 hover:text-[#d32f2f] transition-colors flex items-center gap-1.5 font-black uppercase tracking-wider"
+                  className="text-xs text-slate-400 hover:text-risk-critical transition-colors flex items-center gap-1.5 font-black uppercase tracking-wider"
                 >
                   Contraer lista <ChevronUp size={12} />
                 </button>

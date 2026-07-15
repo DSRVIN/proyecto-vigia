@@ -45,11 +45,11 @@ function KPICard({ label, value, icon: Icon, color, sub }) {
           <div
             className={`p-2 rounded-lg ${color.replace('text-', 'bg-').replace('400', '50/70').replace('300', '50/70')}`}
           >
-            <Icon size={16} className={color.includes('blue-300') ? 'text-blue-600' : color} />
+            <Icon size={16} className={color.includes('blue-300') ? 'text-brand-600' : color} />
           </div>
         </div>
         <p
-          className={`text-3xl font-black ${color.includes('blue-300') ? 'text-blue-600' : color}`}
+          className={`text-3xl font-black ${color.includes('blue-300') ? 'text-brand-600' : color}`}
         >
           {value}
         </p>
@@ -64,7 +64,7 @@ const CustomTooltip = ({ active, payload, label }) => {
     return (
       <div className="bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs shadow-lg">
         <p className="text-slate-500 font-bold mb-1">{label}</p>
-        <p className="text-blue-600 font-black">{payload[0].value} alumnos</p>
+        <p className="text-brand-600 font-black">{payload[0].value} alumnos</p>
       </div>
     );
   }
@@ -159,7 +159,7 @@ function ChartsPanel({ students }) {
 
       <div className="bg-white rounded-xl p-5 border border-slate-200 shadow-sm">
         <h3 className="text-xs font-black uppercase tracking-wider text-slate-700 mb-4 flex items-center gap-2">
-          <BarChart2 size={14} className="text-blue-600" /> Distribución de Promedios
+          <BarChart2 size={14} className="text-brand-600" /> Distribución de Promedios
         </h3>
         <ResponsiveContainer width="100%" height={110}>
           <BarChart data={gradeDist} barSize={14}>
@@ -197,7 +197,7 @@ function ChartsPanel({ students }) {
 
       <div className="bg-white rounded-xl p-5 border border-slate-200 shadow-sm flex flex-col items-center justify-center">
         <h3 className="text-xs font-black uppercase tracking-wider text-slate-700 mb-2 self-start flex items-center gap-2">
-          <Activity size={14} className="text-violet-600" /> Asistencia Promedio
+          <Activity size={14} className="text-brand-700" /> Asistencia Promedio
         </h3>
         <div className="relative">
           <ResponsiveContainer width={130} height={130}>
@@ -215,7 +215,7 @@ function ChartsPanel({ students }) {
           </ResponsiveContainer>
           <div className="absolute inset-0 flex flex-col items-center justify-center">
             <span
-              className={`text-2xl font-black ${avgAsistencia >= 75 ? 'text-emerald-600' : avgAsistencia >= 65 ? 'text-amber-600' : 'text-[#d32f2f]'}`}
+              className={`text-2xl font-black ${avgAsistencia >= 75 ? 'text-emerald-600' : avgAsistencia >= 65 ? 'text-amber-600' : 'text-risk-critical'}`}
             >
               {avgAsistencia}%
             </span>
@@ -250,7 +250,7 @@ function Top5Critical({ students, onSelect }) {
 
   return (
     <div className="mb-8">
-      <h2 className="text-xs font-black text-[#d32f2f] uppercase tracking-widest mb-3 flex items-center gap-2">
+      <h2 className="text-xs font-black text-risk-critical uppercase tracking-widest mb-3 flex items-center gap-2">
         <AlertTriangle size={14} /> Top 5 Alumnos en Riesgo Crítico
       </h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
@@ -261,7 +261,7 @@ function Top5Critical({ students, onSelect }) {
             className="bg-white rounded-xl p-4 border border-red-100 hover:border-red-300 shadow-sm transition-all text-left group hover:-translate-y-1"
           >
             <div className="flex items-center justify-between mb-3">
-              <div className="h-7 w-7 rounded-full bg-gradient-to-br from-[#d32f2f] to-red-700 flex items-center justify-center text-white text-xs font-black shadow-sm">
+              <div className="h-7 w-7 rounded-full bg-slate-700 flex items-center justify-center text-white text-xs font-black shadow-sm">
                 {i + 1}
               </div>
               <RiskBadge level={s.riesgo} size="xs" />
@@ -271,7 +271,9 @@ function Top5Critical({ students, onSelect }) {
             </p>
             <p className="text-xs font-mono font-bold text-slate-400">{s.codigo}</p>
             <div className="mt-3 pt-2 border-t border-slate-100">
-              <p className="text-lg font-black text-[#d32f2f] font-mono">{s.promedio.toFixed(1)}</p>
+              <p className="text-lg font-black text-risk-critical font-mono">
+                {s.promedio.toFixed(1)}
+              </p>
               <p className="text-[11px] font-black text-slate-400 uppercase tracking-wider">
                 promedio
               </p>
@@ -303,12 +305,12 @@ function StudentRow({ student, onSelect, index }) {
         className={`h-9 w-9 rounded-full flex items-center justify-center text-white text-xs font-black flex-shrink-0 shadow-sm
         ${
           student.riesgo === 'CRITICO'
-            ? 'bg-gradient-to-br from-[#d32f2f] to-red-700'
+            ? 'bg-risk-critical'
             : student.riesgo === 'ALTO'
-              ? 'bg-gradient-to-br from-amber-500 to-orange-600'
+              ? 'bg-risk-high'
               : student.riesgo === 'MEDIO'
-                ? 'bg-gradient-to-br from-blue-500 to-blue-700'
-                : 'bg-gradient-to-br from-emerald-500 to-teal-600'
+                ? 'bg-brand-700'
+                : 'bg-risk-low'
         }`}
       >
         {student.nombre
@@ -324,7 +326,7 @@ function StudentRow({ student, onSelect, index }) {
             {student.nombre}
           </p>
           {isAbandono && (
-            <span className="text-xs px-1.5 py-0.5 bg-violet-50 border border-violet-200 text-violet-700 rounded font-black uppercase tracking-wider flex-shrink-0">
+            <span className="text-xs px-1.5 py-0.5 bg-brand-50 border border-brand-100 text-brand-700 rounded font-black uppercase tracking-wider flex-shrink-0">
               Abandono
             </span>
           )}
@@ -345,7 +347,7 @@ function StudentRow({ student, onSelect, index }) {
         {firstEvals.map((e) => (
           <div key={e.key} className="text-center w-10">
             <p
-              className={`text-xs font-black font-mono ${student.grades[e.key] >= 12 ? 'text-emerald-600' : student.grades[e.key] >= 10 ? 'text-amber-600' : 'text-[#d32f2f]'}`}
+              className={`text-xs font-black font-mono ${student.grades[e.key] >= 12 ? 'text-emerald-600' : student.grades[e.key] >= 10 ? 'text-amber-600' : 'text-risk-critical'}`}
             >
               {student.grades[e.key]}
             </p>
@@ -358,7 +360,7 @@ function StudentRow({ student, onSelect, index }) {
 
       <div className="text-right flex-shrink-0 w-16">
         <p
-          className={`text-base font-black font-mono leading-tight ${student.notaFinal >= 12 ? 'text-emerald-600' : student.notaFinal >= 10 ? 'text-amber-600' : 'text-[#d32f2f]'}`}
+          className={`text-base font-black font-mono leading-tight ${student.notaFinal >= 12 ? 'text-emerald-600' : student.notaFinal >= 10 ? 'text-amber-600' : 'text-risk-critical'}`}
         >
           {student.notaFinal}
         </p>
@@ -367,7 +369,7 @@ function StudentRow({ student, onSelect, index }) {
 
       <div className="hidden lg:block text-right flex-shrink-0 w-14">
         <p
-          className={`text-sm font-black font-mono leading-tight ${student.asistencia >= 75 ? 'text-emerald-600' : student.asistencia >= 65 ? 'text-amber-600' : 'text-[#d32f2f]'}`}
+          className={`text-sm font-black font-mono leading-tight ${student.asistencia >= 75 ? 'text-emerald-600' : student.asistencia >= 65 ? 'text-amber-600' : 'text-risk-critical'}`}
         >
           {student.asistencia}%
         </p>
@@ -512,14 +514,14 @@ export default function SectionPage() {
           label="Alumnos"
           value={kpis.total}
           icon={Users}
-          color="text-blue-600"
+          color="text-brand-600"
           sub="matriculados"
         />
         <KPICard
           label="Críticos"
           value={kpis.criticos}
           icon={AlertTriangle}
-          color="text-[#d32f2f]"
+          color="text-risk-critical"
           sub="intervención urgente"
         />
         <KPICard
@@ -533,7 +535,7 @@ export default function SectionPage() {
           label="Abandono"
           value={kpis.abandono}
           icon={Clock}
-          color="text-violet-600"
+          color="text-brand-700"
           sub="+14 días inactivos"
         />
         <KPICard
@@ -547,7 +549,7 @@ export default function SectionPage() {
           label="Promedio"
           value={kpis.promedio}
           icon={BarChart2}
-          color="text-blue-500"
+          color="text-brand-500"
           sub="grupo"
         />
       </div>
@@ -560,7 +562,7 @@ export default function SectionPage() {
         <div className="p-5 border-b border-slate-200 bg-slate-50/50">
           <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
             <h2 className="text-base font-black uppercase tracking-wide text-slate-800 flex items-center gap-2">
-              <Users size={16} className="text-blue-600" />
+              <Users size={16} className="text-brand-600" />
               Lista Completa de Alumnos
               <span className="text-sm font-bold text-slate-400">
                 ({filtered.length} de {courseStudents.length})
@@ -575,7 +577,7 @@ export default function SectionPage() {
                     onClick={() => setFilterRisk(r)}
                     className={`text-xs px-2.5 py-1.5 rounded-lg font-black uppercase tracking-wider transition-all border ${
                       filterRisk === r
-                        ? 'bg-blue-50 border-blue-200 text-blue-600 font-black shadow-sm'
+                        ? 'bg-brand-50 border-brand-100 text-brand-600 font-black shadow-sm'
                         : 'text-slate-500 hover:text-slate-800 border-transparent bg-transparent'
                     }`}
                   >
@@ -594,7 +596,7 @@ export default function SectionPage() {
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Buscar por nombre o código U (ej. U21317697)..."
-                className="w-full bg-white border border-slate-200 focus:border-blue-500/60 rounded-xl pl-9 pr-8 py-2.5 text-sm text-slate-900 placeholder-slate-400 outline-none transition-all shadow-inner"
+                className="w-full bg-white border border-slate-200 focus:border-brand-600/60 rounded-xl pl-9 pr-8 py-2.5 text-sm text-slate-900 placeholder-slate-400 outline-none transition-all shadow-inner"
               />
               {search && (
                 <button
@@ -623,7 +625,7 @@ export default function SectionPage() {
                   onClick={() => toggleSort(field)}
                   className={`flex items-center gap-1 text-xs font-black uppercase tracking-wider px-3 py-1.5 rounded-lg transition-all border ${
                     sortField === field
-                      ? 'text-blue-600 bg-blue-50 border-blue-200'
+                      ? 'text-brand-600 bg-brand-50 border-brand-100'
                       : 'text-slate-600 border-slate-200 bg-white hover:bg-slate-50 shadow-sm'
                   }`}
                 >
@@ -637,8 +639,8 @@ export default function SectionPage() {
         <div className="p-4 space-y-2 max-h-[600px] overflow-y-auto custom-scrollbar bg-slate-50/30 min-h-[300px] flex flex-col justify-center">
           {!showList ? (
             <div className="text-center py-10 flex-1 flex flex-col items-center justify-center">
-              <div className="h-16 w-16 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-4 border border-blue-100 shadow-sm">
-                <Users size={24} className="text-blue-600" />
+              <div className="h-16 w-16 bg-brand-50 rounded-full flex items-center justify-center mx-auto mb-4 border border-brand-100 shadow-sm">
+                <Users size={24} className="text-brand-600" />
               </div>
               <h3 className="text-lg font-black text-slate-900 mb-2">Lista de Alumnos Oculta</h3>
               <p className="text-sm font-bold text-slate-600 mb-6 max-w-sm mx-auto leading-relaxed">
@@ -647,7 +649,7 @@ export default function SectionPage() {
               </p>
               <button
                 onClick={handleToggleList}
-                className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-black uppercase tracking-wider rounded-xl transition-all hover:scale-[1.01] active:scale-95 shadow-md"
+                className="px-6 py-2.5 bg-brand-600 hover:bg-blue-700 text-white text-xs font-black uppercase tracking-wider rounded-xl transition-all hover:scale-[1.01] active:scale-95 shadow-md"
               >
                 Cargar lista completa
               </button>
@@ -671,7 +673,7 @@ export default function SectionPage() {
               <div className="flex justify-end mb-1 px-1">
                 <button
                   onClick={handleToggleList}
-                  className="text-xs text-slate-400 hover:text-blue-600 transition-colors flex items-center gap-1 font-black uppercase tracking-wider"
+                  className="text-xs text-slate-400 hover:text-brand-600 transition-colors flex items-center gap-1 font-black uppercase tracking-wider"
                 >
                   Ocultar lista <ChevronUp size={12} />
                 </button>

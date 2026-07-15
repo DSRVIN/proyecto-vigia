@@ -282,7 +282,7 @@ export default function CallCenterDashboard() {
         {/* Header Section */}
         <div className="mb-8 animate-fade-in flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <p className="text-xs text-[#d32f2f] font-black uppercase tracking-widest mb-1">
+            <p className="text-xs text-risk-critical font-black uppercase tracking-widest mb-1">
               Módulo de Retención
             </p>
             <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
@@ -290,7 +290,7 @@ export default function CallCenterDashboard() {
             </h1>
             <p className="text-slate-600 text-xs mt-1.5 font-bold bg-white border border-slate-200 px-3 py-1.5 rounded-lg w-fit shadow-sm">
               Gestión de llamadas y compromisos de pago <span className="text-slate-300">·</span>{' '}
-              <span className="text-[#d32f2f] font-black">Ciclo 2026-I</span>
+              <span className="text-risk-critical font-black">Ciclo 2026-I</span>
             </p>
           </div>
           <div>
@@ -316,13 +316,13 @@ export default function CallCenterDashboard() {
             <p className="text-xs text-slate-500 font-black uppercase tracking-wider">
               Pendientes de Pago
             </p>
-            <p className="text-2xl font-black text-blue-600 mt-1">{pendingPayments}</p>
+            <p className="text-2xl font-black text-brand-600 mt-1">{pendingPayments}</p>
           </div>
           <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
             <p className="text-xs text-slate-500 font-black uppercase tracking-wider">
               Riesgo Crítico / Alto
             </p>
-            <p className="text-2xl font-black text-[#d32f2f] mt-1">{criticalRisk}</p>
+            <p className="text-2xl font-black text-risk-critical mt-1">{criticalRisk}</p>
           </div>
         </div>
 
@@ -333,8 +333,8 @@ export default function CallCenterDashboard() {
               onClick={() => setActiveFilter('ALL')}
               className={`px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all ${
                 activeFilter === 'ALL'
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-white border border-blue-200 text-blue-600 hover:bg-blue-50'
+                  ? 'bg-brand-600 text-white'
+                  : 'bg-white border border-brand-100 text-brand-600 hover:bg-brand-50'
               }`}
             >
               Todos los Alumnos
@@ -343,8 +343,8 @@ export default function CallCenterDashboard() {
               onClick={() => setActiveFilter('DEBT')}
               className={`px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all ${
                 activeFilter === 'DEBT'
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-white border border-blue-200 text-blue-600 hover:bg-blue-50'
+                  ? 'bg-brand-600 text-white'
+                  : 'bg-white border border-brand-100 text-brand-600 hover:bg-brand-50'
               }`}
             >
               Solo Deudores
@@ -353,8 +353,8 @@ export default function CallCenterDashboard() {
               onClick={() => setActiveFilter('RISK')}
               className={`px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all ${
                 activeFilter === 'RISK'
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-white border border-blue-200 text-blue-600 hover:bg-blue-50'
+                  ? 'bg-brand-600 text-white'
+                  : 'bg-white border border-brand-100 text-brand-600 hover:bg-brand-50'
               }`}
             >
               Riesgo Académico
@@ -367,7 +367,7 @@ export default function CallCenterDashboard() {
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="Buscar por nombre o código..."
-              className="border border-slate-300 rounded-lg pl-10 pr-4 py-2 text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 w-full bg-white text-slate-800"
+              className="border border-slate-300 rounded-lg pl-10 pr-4 py-2 text-sm focus:outline-none focus:border-brand-600 focus:ring-1 focus:ring-blue-500 w-full bg-white text-slate-800"
             />
             <Search className="absolute left-3 top-2.5 text-slate-400" size={16} />
           </div>
@@ -457,7 +457,7 @@ export default function CallCenterDashboard() {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <span
-                            className={`text-sm font-black ${student.promedio >= 12 ? 'text-emerald-600' : 'text-[#d32f2f]'}`}
+                            className={`text-sm font-black ${student.promedio >= 12 ? 'text-emerald-600' : 'text-risk-critical'}`}
                           >
                             {typeof student.promedio === 'number'
                               ? Math.round(student.promedio * 100) / 100
@@ -545,7 +545,7 @@ export default function CallCenterDashboard() {
             <div className="p-6 space-y-4 max-h-[75vh] overflow-y-auto custom-scrollbar">
               {isLoadingAI ? (
                 <div className="flex flex-col items-center justify-center py-12 gap-3">
-                  <Loader2 size={36} className="text-[#d32f2f] animate-spin" />
+                  <Loader2 size={36} className="text-risk-critical animate-spin" />
                   <p className="text-sm text-slate-600 font-black uppercase tracking-wider animate-pulse">
                     Generando propuesta con Gemini 2.5 Flash...
                   </p>
@@ -559,7 +559,7 @@ export default function CallCenterDashboard() {
                         {/* Panel Académico */}
                         <div className="bg-slate-50 border border-slate-200/80 rounded-xl p-3 text-xs space-y-2">
                           <h4 className="font-black text-slate-700 flex items-center gap-1.5 uppercase tracking-wider text-[10px]">
-                            <BookOpen size={12} className="text-blue-600" /> Resumen Académico
+                            <BookOpen size={12} className="text-brand-600" /> Resumen Académico
                           </h4>
                           <div className="grid grid-cols-3 gap-1 text-center">
                             <div className="bg-white p-1.5 rounded-lg border border-slate-200 shadow-sm">
@@ -635,14 +635,14 @@ export default function CallCenterDashboard() {
                   )}
 
                   {/* Comentario de Diagnóstico */}
-                  <div className="bg-violet-50 border border-violet-100 rounded-xl p-4 space-y-1.5">
+                  <div className="bg-brand-50 border border-brand-100 rounded-xl p-4 space-y-1.5">
                     <div className="flex items-center gap-1.5">
-                      <Zap size={14} className="text-violet-600" />
-                      <h4 className="text-xs font-black text-violet-800 uppercase tracking-wider">
+                      <Zap size={14} className="text-brand-700" />
+                      <h4 className="text-xs font-black text-brand-800 uppercase tracking-wider">
                         Diagnóstico IA del Asesor
                       </h4>
                     </div>
-                    <p className="text-xs text-violet-950 font-medium leading-relaxed">
+                    <p className="text-xs text-brand-900 font-medium leading-relaxed">
                       {aiComment}
                     </p>
                   </div>
@@ -656,7 +656,7 @@ export default function CallCenterDashboard() {
                       type="text"
                       value={emailSubject}
                       onChange={(e) => setEmailSubject(e.target.value)}
-                      className="w-full bg-slate-50 border border-slate-200 focus:border-blue-500 focus:bg-white rounded-xl px-3 py-2 text-sm text-slate-900 font-semibold outline-none transition-all shadow-inner"
+                      className="w-full bg-slate-50 border border-slate-200 focus:border-brand-600 focus:bg-white rounded-xl px-3 py-2 text-sm text-slate-900 font-semibold outline-none transition-all shadow-inner"
                     />
                   </div>
 
@@ -669,7 +669,7 @@ export default function CallCenterDashboard() {
                       value={emailBody}
                       onChange={(e) => setEmailBody(e.target.value)}
                       rows={9}
-                      className="w-full bg-slate-50 border border-slate-200 focus:border-blue-500 focus:bg-white rounded-xl px-3 py-2 text-xs text-slate-900 font-medium leading-relaxed outline-none transition-all shadow-inner resize-y font-mono animate-fade-in"
+                      className="w-full bg-slate-50 border border-slate-200 focus:border-brand-600 focus:bg-white rounded-xl px-3 py-2 text-xs text-slate-900 font-medium leading-relaxed outline-none transition-all shadow-inner resize-y font-mono animate-fade-in"
                     />
                   </div>
                 </div>
@@ -695,7 +695,7 @@ export default function CallCenterDashboard() {
                 <button
                   onClick={handleSendEmail}
                   disabled={isSendingEmail}
-                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs uppercase tracking-wider transition-all shadow-sm active:scale-95 disabled:bg-blue-400 disabled:cursor-not-allowed"
+                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-brand-600 hover:bg-blue-700 text-white font-bold text-xs uppercase tracking-wider transition-all shadow-sm active:scale-95 disabled:bg-blue-400 disabled:cursor-not-allowed"
                 >
                   {isSendingEmail ? (
                     <>
