@@ -330,7 +330,7 @@ function KPICard({ icon: Icon, label, value, sub, trend, accentClass, bgClass })
         </div>
         {trend !== undefined && (
           <span
-            className={`flex items-center gap-1 text-xs font-bold px-2 py-0.5 rounded-full ${isPositive ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-500'}`}
+            className={`flex items-center gap-1 text-xs font-bold px-2 py-0.5 rounded-full ${isPositive ? 'bg-slate-100 text-slate-700' : 'bg-slate-100 text-slate-500'}`}
           >
             {isPositive ? <ArrowUpRight size={12} /> : <ArrowDownRight size={12} />}
             {Math.abs(trend)}%
@@ -459,7 +459,7 @@ export default function EjecutivoDashboard() {
               sub="Ingresos − Gastos (excluye ajustes contables)"
               trend={+12.7}
               accentClass="bg-brand-800"
-              bgClass="bg-emerald-50 text-emerald-600"
+              bgClass="bg-brand-50 text-brand-800"
             />
           </div>
 
@@ -494,7 +494,7 @@ export default function EjecutivoDashboard() {
                   Ingresos
                 </span>
                 <span className="flex items-center gap-1.5">
-                  <span className="h-2.5 w-2.5 rounded-full bg-red-400" />
+                  <span className="h-2.5 w-2.5 rounded-full bg-slate-400" />
                   Gastos
                 </span>
               </div>
@@ -687,8 +687,8 @@ export default function EjecutivoDashboard() {
                         <span
                           className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full font-bold text-[10px] ${
                             m.tipo === 'ingreso'
-                              ? 'bg-emerald-50 text-emerald-700'
-                              : 'bg-red-50 text-red-600'
+                              ? 'bg-brand-50 text-brand-800'
+                              : 'bg-slate-100 text-slate-600'
                           }`}
                         >
                           {m.tipo === 'ingreso' ? <CheckCircle2 size={9} /> : <XCircle size={9} />}
@@ -714,7 +714,7 @@ export default function EjecutivoDashboard() {
                       {/* Monto */}
                       <td
                         className={`px-4 py-3 font-black tabular-nums text-right ${
-                          m.tipo === 'ingreso' ? 'text-emerald-700' : 'text-red-600'
+                          m.tipo === 'ingreso' ? 'text-brand-800' : 'text-slate-600'
                         }`}
                       >
                         {m.tipo === 'ingreso' ? '+' : '-'}
@@ -740,10 +740,12 @@ export default function EjecutivoDashboard() {
                     Subtotales (filtro activo)
                   </td>
                   <td className="px-4 py-3 text-right space-y-0.5">
-                    <div className="text-emerald-700 font-black text-xs">
+                    <div className="text-brand-800 font-black text-xs">
                       +{fmt(totalIngresosTabla)}
                     </div>
-                    <div className="text-red-600 font-black text-xs">−{fmt(totalGastosTabla)}</div>
+                    <div className="text-slate-600 font-black text-xs">
+                      −{fmt(totalGastosTabla)}
+                    </div>
                   </td>
                 </tr>
               </tfoot>

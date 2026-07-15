@@ -282,7 +282,7 @@ export default function CallCenterDashboard() {
         {/* Header Section */}
         <div className="mb-8 animate-fade-in flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <p className="text-xs text-risk-critical font-black uppercase tracking-widest mb-1">
+            <p className="text-xs text-brand-700 font-black uppercase tracking-widest mb-1">
               Módulo de Retención
             </p>
             <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
@@ -290,13 +290,13 @@ export default function CallCenterDashboard() {
             </h1>
             <p className="text-slate-600 text-xs mt-1.5 font-bold bg-white border border-slate-200 px-3 py-1.5 rounded-lg w-fit shadow-sm">
               Gestión de llamadas y compromisos de pago <span className="text-slate-300">·</span>{' '}
-              <span className="text-risk-critical font-black">Ciclo 2026-I</span>
+              <span className="text-brand-700 font-black">Ciclo 2026-I</span>
             </p>
           </div>
           <div>
             <button
               onClick={exportarExcel}
-              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white border border-emerald-600 text-emerald-700 hover:bg-emerald-50 font-black text-xs uppercase tracking-wider transition-all shadow-sm active:scale-95"
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 font-black text-xs uppercase tracking-wider transition-all shadow-sm active:scale-95"
             >
               <FileSpreadsheet size={16} />
               Exportar Excel
@@ -687,7 +687,7 @@ export default function CallCenterDashboard() {
                 </button>
                 <button
                   onClick={handleSendWhatsApp}
-                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-white border border-emerald-600 text-emerald-700 hover:bg-emerald-50 font-bold text-xs uppercase tracking-wider transition-all"
+                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 font-bold text-xs uppercase tracking-wider transition-all"
                 >
                   <MessageCircle size={12} />
                   ENVIAR WHATSAPP

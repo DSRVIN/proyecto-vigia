@@ -339,7 +339,7 @@ export default function DashboardPage() {
         <div className="mb-8 animate-fade-in">
           <div className="flex items-start justify-between">
             <div>
-              <p className="text-xs text-risk-critical font-black uppercase tracking-widest mb-1">
+              <p className="text-xs text-brand-700 font-black uppercase tracking-widest mb-1">
                 Bienvenido de vuelta
               </p>
               <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
@@ -350,7 +350,7 @@ export default function DashboardPage() {
                 {teacher.departamento || 'Dirección de Tecnología Educativa'}{' '}
                 <span className="text-slate-300">·</span> {teacher.cargo || 'Docente'}{' '}
                 <span className="text-slate-300">·</span>{' '}
-                <span className="text-risk-critical font-black">Ciclo 2026-I</span>
+                <span className="text-brand-700 font-black">Ciclo 2026-I</span>
               </p>
             </div>
           </div>
