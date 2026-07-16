@@ -1,5 +1,6 @@
 import React, { useMemo, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import docenteHero from '../../assets/roles/docente.png';
 import {
   BookOpen,
   Users,
@@ -189,47 +190,15 @@ function CourseCard({ course, onClick }) {
   );
 }
 
-// Ilustración decorativa del hero: docente frente a laptop con analítica.
-// Tonos suaves de marca para no competir con el título.
+// Ilustración del hero (assets/roles): tono suave, no compite con el título
 function HeroIllustration() {
   return (
-    <svg
-      viewBox="0 0 360 150"
-      className="hidden lg:block w-[340px] h-auto opacity-90"
+    <img
+      src={docenteHero}
+      alt=""
       aria-hidden="true"
-    >
-      {/* fondo */}
-      <ellipse cx="190" cy="132" rx="150" ry="14" fill="#dbeafe" opacity="0.6" />
-      {/* pantalla con gráfico */}
-      <rect x="228" y="28" width="104" height="72" rx="8" fill="#ffffff" stroke="#bfdbfe" />
-      <rect x="242" y="72" width="12" height="18" rx="2" fill="#93c5fd" />
-      <rect x="260" y="60" width="12" height="30" rx="2" fill="#3b82f6" />
-      <rect x="278" y="48" width="12" height="42" rx="2" fill="#1e40af" />
-      <polyline
-        points="240,52 262,42 284,46 314,34"
-        fill="none"
-        stroke="#2563eb"
-        strokeWidth="2.5"
-        strokeLinecap="round"
-      />
-      <circle cx="314" cy="34" r="3" fill="#2563eb" />
-      <rect x="272" y="100" width="16" height="14" fill="#dbeafe" />
-      <rect x="252" y="114" width="56" height="5" rx="2.5" fill="#bfdbfe" />
-      {/* persona */}
-      <circle cx="150" cy="52" r="16" fill="#1e3a8a" />
-      <path d="M118 128c0-24 14-40 32-40s32 16 32 40z" fill="#2563eb" />
-      {/* laptop */}
-      <rect x="96" y="96" width="60" height="34" rx="4" fill="#1e40af" />
-      <rect x="88" y="126" width="76" height="6" rx="3" fill="#93c5fd" />
-      {/* planta */}
-      <rect x="30" y="106" width="18" height="24" rx="3" fill="#bfdbfe" />
-      <path
-        d="M39 106c-2-12-12-16-16-14 2 8 8 12 16 14zm0 0c2-14 12-18 16-16-2 9-8 14-16 16z"
-        fill="#3b82f6"
-      />
-      {/* taza */}
-      <rect x="196" y="116" width="14" height="14" rx="3" fill="#93c5fd" />
-    </svg>
+      className="hidden lg:block w-[360px] h-auto mix-blend-multiply"
+    />
   );
 }
 

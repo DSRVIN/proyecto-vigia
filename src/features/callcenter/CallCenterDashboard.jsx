@@ -19,6 +19,7 @@ import { enrichStudentData } from '../../data/dataset.js';
 import { enviarCorreoEstudiante } from '../../services/messaging.service.js';
 import { saveAs } from 'file-saver';
 import { supabase } from '../../supabaseClient.js';
+import callcenterHero from '../../assets/roles/callcenter.png';
 
 export default function CallCenterDashboard() {
   const { state } = useApp();
@@ -107,15 +108,12 @@ export default function CallCenterDashboard() {
     setTimeout(() => setToast(null), 4000);
   };
 
-  const totalStudents = students?.length || 0;
-  const pendingPayments =
-    students?.filter(
-      (s) =>
-        s.estado_pago === 'PENDIENTE' ||
-        (!s.estado_pago && parseInt(s.codigo.replace(/\D/g, ''), 10) % 3 === 0)
-    ).length || 0;
-  const criticalRisk =
-    students?.filter((s) => s.riesgo === 'CRITICO' || s.riesgo === 'ALTO').length || 0;
+  // Metricas operativas: pendientes/resueltos derivan de los datos reales;
+  // llamadas activas, tiempo promedio y satisfaccion son referenciales (demo)
+  const llamadasPendientes =
+    students?.filter((s) => (s.riesgo === 'CRITICO' || s.riesgo === 'ALTO') && !s.intervenido)
+      .length || 0;
+  const casosResueltos = students?.filter((s) => s.intervenido).length || 0;
 
   const filteredStudents = (students || [])
     .filter((student) => {
@@ -279,56 +277,76 @@ export default function CallCenterDashboard() {
   return (
     <div className="min-h-screen bg-[#F5F7FB] text-slate-900 pb-12">
       <main className="max-w-screen-2xl mx-auto px-4 sm:px-6 py-8">
-        {/* Header Section */}
-        <div className="mb-8 animate-fade-in flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        {/* Hero: texto + ilustracion */}
+        <div className="mb-8 animate-fade-in grid grid-cols-1 lg:grid-cols-[1fr_auto] items-center gap-6">
           <div>
             <p className="text-xs text-brand-700 font-black uppercase tracking-widest mb-1">
               Módulo de Retención
             </p>
             <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
-              Panel Administrativo - Seguimiento de Retención
+              Seguimiento de Retención
             </h1>
-            <p className="text-slate-600 text-xs mt-1.5 font-bold bg-white border border-slate-200 px-3 py-1.5 rounded-lg w-fit shadow-sm">
+            <p className="text-slate-600 text-xs mt-2 font-bold bg-white border border-slate-200 px-3 py-1.5 rounded-lg w-fit shadow-sm">
               Gestión de llamadas y compromisos de pago <span className="text-slate-300">·</span>{' '}
               <span className="text-brand-700 font-black">Ciclo 2026-I</span>
             </p>
-          </div>
-          <div>
             <button
               onClick={exportarExcel}
-              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 font-black text-xs uppercase tracking-wider transition-all shadow-sm active:scale-95"
+              className="mt-4 inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 font-black text-xs uppercase tracking-wider transition-all shadow-sm active:scale-95"
             >
               <FileSpreadsheet size={16} />
               Exportar Excel
             </button>
           </div>
+          <img
+            src={callcenterHero}
+            alt=""
+            aria-hidden="true"
+            className="hidden lg:block w-[340px] h-auto mix-blend-multiply"
+          />
         </div>
 
-        {/* Bloque A: Panel KPI unificado */}
+        {/* Bloque A: Panel KPI unificado (operacion del call center) */}
         <div className="bg-white rounded-[22px] px-4 py-6 shadow-[0_8px_24px_rgba(15,23,42,0.08)] mb-8">
           <div className="flex flex-col sm:flex-row sm:items-stretch divide-y sm:divide-y-0 divide-slate-100">
             <div className="flex-1 px-5 py-2">
               <p className="text-[11px] text-slate-500 font-black uppercase tracking-wider">
-                Total Asignados
+                Llamadas Pendientes
               </p>
-              <p className="text-3xl font-black text-slate-900 mt-1">{totalStudents}</p>
-              <p className="text-[11px] text-slate-400 font-bold">Alumnos en cartera</p>
+              <p className="text-3xl font-black text-risk-critical mt-1">{llamadasPendientes}</p>
+              <p className="text-[11px] text-slate-400 font-bold">Riesgo sin intervenir</p>
             </div>
             <div className="hidden sm:block w-px bg-brand-200 self-center h-12" />
             <div className="flex-1 px-5 py-2">
               <p className="text-[11px] text-slate-500 font-black uppercase tracking-wider">
-                Pendientes de Pago
+                Llamadas Activas
               </p>
-              <p className="text-3xl font-black text-brand-700 mt-1">{pendingPayments}</p>
-              <p className="text-[11px] text-slate-400 font-bold">Con deuda activa</p>
+              <p className="text-3xl font-black text-brand-700 mt-1">3</p>
+              <p className="text-[11px] text-slate-400 font-bold">En curso ahora</p>
             </div>
             <div className="hidden sm:block w-px bg-brand-200 self-center h-12" />
             <div className="flex-1 px-5 py-2">
               <p className="text-[11px] text-slate-500 font-black uppercase tracking-wider">
-                Riesgo Crítico / Alto
+                Casos Resueltos
               </p>
-              <p className="text-3xl font-black text-risk-critical mt-1">{criticalRisk}</p>
-              <p className="text-[11px] text-slate-400 font-bold">Requieren intervención</p>
+              <p className="text-3xl font-black text-slate-900 mt-1">{casosResueltos}</p>
+              <p className="text-[11px] text-slate-400 font-bold">Intervenciones del ciclo</p>
+            </div>
+            <div className="hidden sm:block w-px bg-brand-200 self-center h-12" />
+            <div className="flex-1 px-5 py-2">
+              <p className="text-[11px] text-slate-500 font-black uppercase tracking-wider">
+                Tiempo Promedio
+              </p>
+              <p className="text-3xl font-black text-slate-900 mt-1">4m 32s</p>
+              <p className="text-[11px] text-slate-400 font-bold">Por llamada atendida</p>
+            </div>
+            <div className="hidden sm:block w-px bg-brand-200 self-center h-12" />
+            <div className="flex-1 px-5 py-2">
+              <p className="text-[11px] text-slate-500 font-black uppercase tracking-wider">
+                Satisfacción
+              </p>
+              <p className="text-3xl font-black text-slate-900 mt-1">92%</p>
+              <p className="text-[11px] text-slate-400 font-bold">Encuestas post-llamada</p>
             </div>
           </div>
         </div>

@@ -64,7 +64,7 @@ src/
 │   ├── callcenter/ # CallCenterDashboard
 │   ├── admin/      # AdminPage, EjecutivoDashboard
 │   └── students/   # StudentModal (compartido entre módulos)
-├── components/     # UI compartida (layout, ui)
+├── components/     # UI compartida (Header, Sidebar por rol, ui)
 ├── context/        # Estado global de datos (AppContext, useReducer)
 ├── data/           # Dataset de demostración
 ├── lib/            # clasificarRiesgo — reglas de negocio del documento APF1

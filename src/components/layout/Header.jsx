@@ -36,8 +36,9 @@ export default function Header() {
       <div className="max-w-screen-2xl mx-auto px-4 sm:px-6">
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center gap-4">
+            {/* En pantallas grandes el logo vive en el sidebar */}
             <div
-              className="flex items-center gap-1 cursor-pointer select-none"
+              className="flex items-center gap-1 cursor-pointer select-none lg:hidden"
               onClick={() => navigate(home)}
             >
               <div className="flex gap-0.5">

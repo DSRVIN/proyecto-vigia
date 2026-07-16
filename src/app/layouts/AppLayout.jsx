@@ -1,6 +1,7 @@
 import React, { Suspense } from 'react';
 import { Outlet } from 'react-router-dom';
 import Header from '../../components/layout/Header.jsx';
+import Sidebar from '../../components/layout/Sidebar.jsx';
 import NotificationsDrawer from '../../components/layout/NotificationsDrawer.jsx';
 
 function PageLoader() {
@@ -19,32 +20,38 @@ function PageLoader() {
 
 export default function AppLayout() {
   return (
-    <div className="min-h-screen bg-slate-950">
-      <Header />
-      <main>
-        <Suspense fallback={<PageLoader />}>
-          <Outlet />
-        </Suspense>
-      </main>
+    <div className="flex min-h-screen bg-[#F5F7FB]">
+      {/* Barra lateral por rol (visible en pantallas grandes) */}
+      <Sidebar />
 
-      <footer className="border-t border-slate-800/60 mt-16 py-6 px-6">
-        <div className="max-w-screen-2xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-600">
-          <div className="flex items-center gap-2">
-            <span className="font-bold text-slate-400 text-sm">VIGÍA</span>
-            <span>·</span>
-            <span>Sistema de Alerta Temprana Académica</span>
-            <span>·</span>
-            <span>UTP 2026-I</span>
+      {/* Columna de contenido */}
+      <div className="flex-1 flex flex-col min-w-0">
+        <Header />
+        <main className="flex-1">
+          <Suspense fallback={<PageLoader />}>
+            <Outlet />
+          </Suspense>
+        </main>
+
+        <footer className="border-t border-slate-200 py-6 px-6 bg-white/60">
+          <div className="max-w-screen-2xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500">
+            <div className="flex items-center gap-2">
+              <span className="font-bold text-slate-600 text-sm">VIGÍA</span>
+              <span>·</span>
+              <span>Sistema de Alerta Temprana Académica</span>
+              <span>·</span>
+              <span>UTP 2026-I</span>
+            </div>
+            <div className="flex items-center gap-4">
+              <span>v2.0.0 · React + Recharts</span>
+              <span className="flex items-center gap-1.5">
+                <span className="h-1.5 w-1.5 bg-risk-low rounded-full animate-pulse" />
+                Sistema operativo
+              </span>
+            </div>
           </div>
-          <div className="flex items-center gap-4">
-            <span>v2.0.0 · React + Recharts</span>
-            <span className="flex items-center gap-1.5">
-              <span className="h-1.5 w-1.5 bg-emerald-500 rounded-full animate-pulse" />
-              Sistema operativo
-            </span>
-          </div>
-        </div>
-      </footer>
+        </footer>
+      </div>
 
       <NotificationsDrawer />
     </div>

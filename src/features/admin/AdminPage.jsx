@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
+import adminHero from '../../assets/roles/administrador.png';
 import {
   Users,
   BookOpen,
@@ -711,7 +712,7 @@ export default function AdminPage() {
   const { adminTab } = state;
 
   return (
-    <div className="min-h-screen bg-slate-100 text-slate-900 max-w-screen-2xl mx-auto px-4 sm:px-6 py-8">
+    <div className="min-h-screen bg-[#F5F7FB] text-slate-900 max-w-screen-2xl mx-auto px-4 sm:px-6 py-8">
       <div className="mb-8 animate-fade-in">
         <button
           onClick={() => navigate('/docente')}
@@ -719,11 +720,11 @@ export default function AdminPage() {
         >
           <ArrowLeft size={15} /> Vista Docente
         </button>
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto_auto] items-center gap-6">
           <div>
             <div className="flex items-center gap-2 mb-1.5">
-              <Shield size={16} className="text-risk-critical" />
-              <span className="text-[10px] font-black bg-red-50 border border-red-200 text-risk-critical px-2.5 py-0.5 rounded-md uppercase tracking-widest">
+              <Shield size={16} className="text-brand-800" />
+              <span className="text-[10px] font-black bg-brand-50 border border-brand-100 text-brand-800 px-2.5 py-0.5 rounded-md uppercase tracking-widest">
                 Panel Protegido
               </span>
             </div>
@@ -734,6 +735,12 @@ export default function AdminPage() {
               CRUD completo <span className="text-slate-300">·</span> Propagación en tiempo real
             </p>
           </div>
+          <img
+            src={adminHero}
+            alt=""
+            aria-hidden="true"
+            className="hidden lg:block w-[300px] h-auto mix-blend-multiply"
+          />
           <div className="flex items-center gap-2 px-4 py-2.5 bg-white border border-slate-200 rounded-xl w-fit shadow-md">
             <div className="h-2 w-2 bg-[#d32f2f] rounded-full animate-pulse" />
             <span className="text-xs text-risk-critical font-black font-mono uppercase tracking-wider">
