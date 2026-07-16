@@ -60,9 +60,13 @@ src/
 ├── app/            # App, router (rutas + guards por rol) y layout general
 ├── features/
 │   ├── auth/       # LoginPage, useAuth, roles.js, ProtectedRoute
-│   ├── docente/    # DashboardPage, SectionPage, KPIStudentsPage
-│   ├── callcenter/ # CallCenterDashboard
-│   ├── admin/      # AdminPage, EjecutivoDashboard
+│   ├── docente/    # Dashboard, Sección, KPIs, Calificaciones, Asistencias,
+│   │               #   Reportes, Calendario, Mensajería, Recursos
+│   ├── callcenter/ # Retención, Llamadas, Tickets, Conversaciones,
+│   │               #   Indicadores, Historial, Agenda
+│   ├── admin/      # Panel, Ejecutivo, Usuarios, Docentes, Facultades,
+│   │               #   Roles y permisos, Integraciones
+│   ├── shared/     # ConfiguracionPage (reutilizada por los 3 roles)
 │   └── students/   # StudentModal (compartido entre módulos)
 ├── components/     # UI compartida (Header, Sidebar por rol, ui)
 ├── context/        # Estado global de datos (AppContext, useReducer)

@@ -47,8 +47,8 @@ const NAV_BY_ROLE = {
       items: [
         { label: 'Mis Secciones', icon: BookOpen, to: '/docente' },
         { label: 'Estudiantes', icon: GraduationCap, to: '/docente/kpi/ALL' },
-        { label: 'Asistencias', icon: ClipboardCheck, soon: true },
-        { label: 'Calificaciones', icon: FileText, soon: true },
+        { label: 'Asistencias', icon: ClipboardCheck, to: '/docente/asistencias' },
+        { label: 'Calificaciones', icon: FileText, to: '/docente/calificaciones' },
       ],
     },
     {
@@ -56,20 +56,20 @@ const NAV_BY_ROLE = {
       items: [
         { label: 'Alertas', icon: Bell, action: 'alerts' },
         { label: 'Riesgo Académico', icon: ShieldAlert, to: '/docente/kpi/CRITICO' },
-        { label: 'Reportes', icon: BarChart3, soon: true },
+        { label: 'Reportes', icon: BarChart3, to: '/docente/reportes' },
       ],
     },
     {
       title: 'Organización',
       items: [
-        { label: 'Calendario', icon: Calendar, soon: true },
-        { label: 'Mensajería', icon: MessageSquare, soon: true },
-        { label: 'Recursos', icon: FolderOpen, soon: true },
+        { label: 'Calendario', icon: Calendar, to: '/docente/calendario' },
+        { label: 'Mensajería', icon: MessageSquare, to: '/docente/mensajeria' },
+        { label: 'Recursos', icon: FolderOpen, to: '/docente/recursos' },
       ],
     },
     {
       title: 'Sistema',
-      items: [{ label: 'Configuración', icon: Settings, soon: true }],
+      items: [{ label: 'Configuración', icon: Settings, to: '/docente/configuracion' }],
     },
   ],
   [ROLES.CALLCENTER]: [
@@ -77,23 +77,23 @@ const NAV_BY_ROLE = {
     {
       title: 'Operaciones',
       items: [
-        { label: 'Llamadas', icon: Phone, soon: true },
+        { label: 'Llamadas', icon: Phone, to: '/callcenter/llamadas' },
         { label: 'Casos', icon: Users, to: '/callcenter' },
-        { label: 'Tickets', icon: Ticket, soon: true },
-        { label: 'Conversaciones', icon: MessageSquare, soon: true },
+        { label: 'Tickets', icon: Ticket, to: '/callcenter/tickets' },
+        { label: 'Conversaciones', icon: MessageSquare, to: '/callcenter/conversaciones' },
       ],
     },
     {
       title: 'Seguimiento',
       items: [
-        { label: 'Indicadores', icon: BarChart3, soon: true },
-        { label: 'Historial', icon: History, soon: true },
-        { label: 'Agenda', icon: Calendar, soon: true },
+        { label: 'Indicadores', icon: BarChart3, to: '/callcenter/indicadores' },
+        { label: 'Historial', icon: History, to: '/callcenter/historial' },
+        { label: 'Agenda', icon: Calendar, to: '/callcenter/agenda' },
       ],
     },
     {
       title: 'Sistema',
-      items: [{ label: 'Configuración', icon: Settings, soon: true }],
+      items: [{ label: 'Configuración', icon: Settings, to: '/callcenter/configuracion' }],
     },
   ],
   [ROLES.ADMIN]: [
@@ -101,17 +101,17 @@ const NAV_BY_ROLE = {
     {
       title: 'Gestión',
       items: [
-        { label: 'Usuarios', icon: Users, soon: true },
-        { label: 'Docentes', icon: GraduationCap, soon: true },
+        { label: 'Usuarios', icon: Users, to: '/admin/usuarios' },
+        { label: 'Docentes', icon: GraduationCap, to: '/admin/docentes' },
         { label: 'Estudiantes', icon: ClipboardCheck, to: '/admin' },
-        { label: 'Facultades', icon: Building2, soon: true },
+        { label: 'Facultades', icon: Building2, to: '/admin/facultades' },
         { label: 'Cursos', icon: BookOpen, to: '/admin' },
       ],
     },
     {
       title: 'Administración',
       items: [
-        { label: 'Roles y permisos', icon: ShieldCheck, soon: true },
+        { label: 'Roles y permisos', icon: ShieldCheck, to: '/admin/roles' },
         { label: 'Reportes', icon: BarChart3, to: '/admin/ejecutivo' },
         { label: 'Estadísticas', icon: LineChart, to: '/admin/ejecutivo' },
       ],
@@ -120,8 +120,8 @@ const NAV_BY_ROLE = {
       title: 'Plataforma',
       items: [
         { label: 'Notificaciones', icon: Bell, action: 'alerts' },
-        { label: 'Integraciones', icon: Plug, soon: true },
-        { label: 'Configuración', icon: Settings, soon: true },
+        { label: 'Integraciones', icon: Plug, to: '/admin/integraciones' },
+        { label: 'Configuración', icon: Settings, to: '/admin/configuracion' },
       ],
     },
   ],
@@ -221,8 +221,18 @@ export default function Sidebar() {
   const sections = NAV_BY_ROLE[role] || NAV_BY_ROLE[ROLES.DOCENTE];
   const activeClass = ACTIVE_CLASS[role] || ACTIVE_CLASS[ROLES.DOCENTE];
 
+  // Solo el primer ítem que coincide con la ruta se resalta: evita que
+  // "Inicio" y "Mis Secciones" (ambos → /docente) se marquen a la vez.
+  let activeKey = null;
+  sections.forEach((section, si) => {
+    section.items.forEach((item, ii) => {
+      if (activeKey === null && item.to && item.to === pathname) {
+        activeKey = `${si}:${ii}`;
+      }
+    });
+  });
+
   const handleItem = (item) => {
-    if (item.soon) return;
     if (item.action === 'alerts') {
       actions.toggleNotifications();
       return;
@@ -261,28 +271,20 @@ export default function Sidebar() {
               </p>
             )}
             <div className="space-y-0.5">
-              {section.items.map((item) => {
-                const active = !item.soon && item.to && pathname === item.to;
+              {section.items.map((item, ii) => {
+                const active = activeKey === `${si}:${ii}`;
                 return (
                   <button
                     key={item.label}
                     onClick={() => handleItem(item)}
-                    disabled={item.soon}
                     className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] font-bold transition-colors text-left ${
                       active
                         ? `${activeClass} text-white`
-                        : item.soon
-                          ? 'text-slate-500 cursor-not-allowed'
-                          : 'text-slate-300 hover:bg-white/10 hover:text-white'
+                        : 'text-slate-300 hover:bg-white/10 hover:text-white'
                     }`}
                   >
                     <item.icon size={16} className="flex-shrink-0" />
                     <span className="flex-1 truncate">{item.label}</span>
-                    {item.soon && (
-                      <span className="text-[9px] font-black uppercase tracking-wider bg-white/10 text-slate-400 px-1.5 py-0.5 rounded">
-                        Pronto
-                      </span>
-                    )}
                     {item.action === 'alerts' &&
                       state.students.filter((s) => s.riesgo === 'CRITICO').length > 0 && (
                         <span className="h-5 min-w-5 px-1 bg-risk-critical rounded-full text-[10px] flex items-center justify-center text-white font-black">
