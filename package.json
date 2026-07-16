@@ -12,7 +12,8 @@
     "format:check": "prettier --check .",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run --coverage",
+    "db:seed": "node scripts/generate-seed.mjs"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

@@ -103,6 +103,27 @@ El pipeline (`.github/workflows/ci-cd.yml`) se ejecuta en cada PR y push a `main
 
 Secrets requeridos en GitHub (Settings → Secrets and variables → Actions): `SUPABASE_URL_TEST`, `SUPABASE_ANON_KEY_TEST`, `GEMINI_API_KEY_TEST`, `VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID`.
 
+## Base de datos (Supabase)
+
+Los estudiantes viven en la tabla `students` de Supabase y se cargan una sola vez
+tras la autenticación (`src/features/shared/useStudentsLoader.js`), para todos los
+roles y cualquier ruta de entrada. Las políticas RLS filtran por rol, así que la
+misma consulta devuelve solo lo que cada usuario puede ver. Si la base aún no está
+sembrada, la app usa una cartera de demostración para seguir siendo navegable.
+
+Orden de ejecución en **SQL Editor** (una vez por proyecto):
+
+1. [supabase/setup.sql](supabase/setup.sql) — tablas `profiles` / `students` / `grades`.
+2. [supabase/migrations/002_roles.sql](supabase/migrations/002_roles.sql) — columna `role` y usuarios demo.
+3. [supabase/migrations/003_datos_reales_rls.sql](supabase/migrations/003_datos_reales_rls.sql) — clasificación en `students`, `predictions_history` y RLS por rol.
+4. [supabase/seed.sql](supabase/seed.sql) — 522 estudiantes de demostración.
+
+El seed se regenera de forma determinista con `npm run db:seed`
+([scripts/generate-seed.mjs](scripts/generate-seed.mjs)), reutilizando las funciones
+reales de `metrics.service` para que el promedio y el riesgo coincidan con la app.
+Las escrituras masivas (seed, ingesta, clasificación por lotes) usan la **service
+role key**, reservada al backend/n8n; nunca al frontend.
+
 ## Seguridad
 
 - Las credenciales viven en variables de entorno (`.env`, ignorado por git).

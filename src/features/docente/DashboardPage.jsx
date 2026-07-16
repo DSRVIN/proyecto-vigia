@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import docenteHero from '../../assets/roles/docente.png';
 import {
@@ -14,13 +14,6 @@ import {
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext.jsx';
 import RiskBadge from '../../components/ui/RiskBadge.jsx';
-import { supabase } from '../../supabaseClient';
-import {
-  STUDENTS_INITIAL,
-  enrichStudentData,
-  getStudentsForTeacher,
-  getEvalConfig,
-} from '../../data/dataset.js';
 
 // Componente de píldora de estadísticas
 function StatPill({ icon: Icon, label, value, color }) {
@@ -296,73 +289,11 @@ function GlobalKPIs() {
 
 // ── Dashboard Principal ───────────────────────────────────────
 export default function DashboardPage() {
-  const { state, actions } = useApp();
+  const { state } = useApp();
   const navigate = useNavigate();
-  const { teacher, courses, currentUser } = state; // Se añadió currentUser aquí
-
-  useEffect(() => {
-    const fetchStudents = async () => {
-      try {
-        const courseIds = courses.map((c) => c.id);
-
-        if (courseIds.length > 0) {
-          const { data, error: dbError } = await supabase
-            .from('students')
-            .select('*, grades(pc1, pc2, pc3, pc4, promedio, nota_final, riesgo, necesita_pc4)')
-            .in('curso_id', courseIds);
-
-          if (dbError) throw dbError;
-
-          if (data && data.length > 0) {
-            const mapped = data.map((st) => {
-              const rawGrades = Array.isArray(st.grades) ? st.grades[0] : st.grades || {};
-              const cursoId = st.curso_id || 'SIST101';
-              const evals = getEvalConfig(cursoId);
-              const cleanGrades = {};
-              evals.forEach((e) => {
-                cleanGrades[e.key] = rawGrades?.[e.key] ?? rawGrades?.[e.key] ?? 0;
-              });
-              const baseStudent = {
-                ...st,
-                cursoId,
-                promedio: rawGrades?.promedio ?? 0,
-                notaFinal: rawGrades?.nota_final ?? 0,
-                riesgo: rawGrades?.riesgo ?? 'BAJO',
-                email: st.email || `${st.codigo?.toLowerCase()}@utp.edu.pe`,
-                grades: cleanGrades,
-                asistencia: st.asistencia ?? 75,
-                actividadDias: st.actividad_dias ?? st.actividadDias ?? 5,
-                actividadMensual: st.actividadMensual || [
-                  { mes: 'Feb', accesos: 20 },
-                  { mes: 'Mar', accesos: 18 },
-                  { mes: 'Abr', accesos: 15 },
-                  { mes: 'May', accesos: 10 },
-                ],
-                notaNecesaria: rawGrades?.nota_necesaria ?? rawGrades?.necesita_pc4 ?? null,
-                notaNecesariaLabel: evals[evals.length - 1]?.label || 'Evaluación Final',
-                notaNecesariaKey: evals[evals.length - 1]?.key || null,
-                notaNecesariaWeight: evals[evals.length - 1]?.weight || 0,
-              };
-              return enrichStudentData(baseStudent);
-            });
-            actions.setStudents(mapped);
-            return;
-          }
-        }
-
-        console.log(
-          'No students in database or no courses, seeding with mock data for',
-          currentUser?.codigo
-        );
-        actions.setStudents(getStudentsForTeacher(currentUser?.codigo));
-      } catch (err) {
-        console.error('Error fetching students, falling back to mock data:', err);
-        actions.setStudents(getStudentsForTeacher(currentUser?.codigo));
-      }
-    };
-
-    fetchStudents();
-  }, [currentUser?.codigo, courses, actions]);
+  const { teacher, courses, currentUser } = state;
+  // La cartera de estudiantes la carga AppLayout (useStudentsLoader) una
+  // sola vez tras la autenticación, para todos los roles y rutas.
 
   return (
     <div className="min-h-screen bg-[#F5F7FB] text-slate-900 pb-12">
