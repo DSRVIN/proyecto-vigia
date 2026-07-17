@@ -1,0 +1,27 @@
+# ============================================================
+# VIGÍA — n8n self-hosted (automatización)
+# Levantar:  docker compose up -d      (desde esta carpeta)
+# Detener:   docker compose down       (los datos persisten)
+# UI:        http://localhost:5678
+# ============================================================
+services:
+  n8n:
+    image: docker.n8n.io/n8nio/n8n
+    container_name: vigia-n8n
+    restart: unless-stopped
+    ports:
+      - '5678:5678'
+    environment:
+      - GENERIC_TIMEZONE=America/Lima
+      - TZ=America/Lima
+      # n8n corre en http://localhost (sin TLS); sin esto el login no funciona
+      - N8N_SECURE_COOKIE=false
+      - N8N_RUNNERS_ENABLED=true
+    volumes:
+      # Persistencia de flujos y credenciales entre reinicios
+      - n8n_data:/home/node/.n8n
+      # Flujos del repo, montados solo-lectura para importarlos por CLI
+      - ./flows:/flows:ro
+
+volumes:
+  n8n_data:

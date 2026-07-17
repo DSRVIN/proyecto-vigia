@@ -1,0 +1,6 @@
+codigo,nombre,email,carrera,ciclo,curso_id,docente_codigo,asistencia,actividad_dias,pc1,pc2,proyectoFinal,examenFinal
+U2026100001,Ignacio Castillo Villanueva,u2026100001@utp.edu.pe,Ingeniería de Sistemas,8vo,SIST101,C13005,91,1,15,18,19,17
+U2026100002,Alejandro Vargas Torres,u2026100002@utp.edu.pe,Contabilidad,4to,SIST101,C13005,85,2,20,20,20,19
+U2026100003,Fernanda Espinoza Pilco,u2026100003@utp.edu.pe,Psicología,6to,SIST101,C13005,45,18,8,7,6,
+U2026999001,Estudiante Nuevo Ingesta,u2026999001@utp.edu.pe,Marketing,2do,SIST101,C13005,78,4,13,14,15,
+U2026999002,Registro Invalido Demo,u2026999002@utp.edu.pe,Derecho,2do,SIST101,C13005,150,3,25,14,15,

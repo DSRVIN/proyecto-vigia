@@ -124,6 +124,13 @@ reales de `metrics.service` para que el promedio y el riesgo coincidan con la ap
 Las escrituras masivas (seed, ingesta, clasificación por lotes) usan la **service
 role key**, reservada al backend/n8n; nunca al frontend.
 
+## Automatización (n8n)
+
+La capa de automatización corre self-hosted en Docker ([n8n/docker-compose.yml](n8n/docker-compose.yml)):
+ingesta de notas CSV con validación, clasificación nocturna con historial en
+`predictions_history`, y alertas automáticas de riesgo crítico en `alerts`.
+Guía completa de instalación, credenciales y demo: [docs/N8N_SETUP.md](docs/N8N_SETUP.md).
+
 ## Seguridad
 
 - Las credenciales viven en variables de entorno (`.env`, ignorado por git).

@@ -1,0 +1,245 @@
+{
+  "name": "VIGÍA — Alertas de riesgo crítico",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 15
+            }
+          ]
+        }
+      },
+      "id": "d1000003-0000-4000-8000-000000000001",
+      "name": "Cada 15 minutos",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [0, 0]
+    },
+    {
+      "parameters": {
+        "url": "https://goxrpvizleicftnmsgrd.supabase.co/rest/v1/students?riesgo=eq.CRITICO&select=codigo,nombre,riesgo,promedio,asistencia,curso_id,docente_codigo",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "options": {}
+      },
+      "id": "d1000003-0000-4000-8000-000000000002",
+      "name": "Leer críticos",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [220, -100],
+      "alwaysOutputData": true,
+      "credentials": {
+        "supabaseApi": {
+          "name": "Supabase VIGIA (service role)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "=https://goxrpvizleicftnmsgrd.supabase.co/rest/v1/alerts?select=student_codigo&created_at=gte.{{ new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString() }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "options": {}
+      },
+      "id": "d1000003-0000-4000-8000-000000000003",
+      "name": "Alertas últimas 24h",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [220, 100],
+      "alwaysOutputData": true,
+      "credentials": {
+        "supabaseApi": {
+          "name": "Supabase VIGIA (service role)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "destinationFieldName": "criticos",
+        "options": {}
+      },
+      "id": "d1000003-0000-4000-8000-000000000004",
+      "name": "Agrupar críticos",
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [440, -100]
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "destinationFieldName": "alertadas",
+        "options": {}
+      },
+      "id": "d1000003-0000-4000-8000-000000000005",
+      "name": "Agrupar alertadas",
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [440, 100]
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "id": "d1000003-0000-4000-8000-000000000006",
+      "name": "Unir datos",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3,
+      "position": [660, 0]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Genera una alerta solo para los críticos SIN alerta en las últimas 24h\n// (evita duplicar notificaciones en cada corrida del scheduler).\nconst input = $input.first().json;\nconst criticos = (input.criticos || []).filter((c) => c && c.codigo);\nconst yaAlertados = new Set((input.alertadas || []).map((a) => a.student_codigo));\n\nconst nuevas = criticos\n  .filter((c) => !yaAlertados.has(c.codigo))\n  .map((c) => ({\n    json: {\n      student_codigo: c.codigo,\n      student_nombre: c.nombre,\n      riesgo: c.riesgo,\n      mensaje: `Riesgo crítico de deserción: promedio ${c.promedio}, asistencia ${c.asistencia}% (${c.curso_id}). Docente: ${c.docente_codigo}.`,\n      fuente: 'n8n',\n    },\n  }));\n\nreturn nuevas; // si no hay nuevas, el flujo termina sin insertar nada"
+      },
+      "id": "d1000003-0000-4000-8000-000000000007",
+      "name": "Filtrar nuevos críticos",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [880, 0]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://goxrpvizleicftnmsgrd.supabase.co/rest/v1/alerts",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Prefer",
+              "value": "return=minimal"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ student_codigo: $json.student_codigo, student_nombre: $json.student_nombre, riesgo: $json.riesgo, mensaje: $json.mensaje, fuente: $json.fuente }) }}",
+        "options": {}
+      },
+      "id": "d1000003-0000-4000-8000-000000000008",
+      "name": "Registrar alerta",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1100, 0],
+      "credentials": {
+        "supabaseApi": {
+          "name": "Supabase VIGIA (service role)"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "id": "d1000003-0000-4000-8000-000000000009",
+      "name": "TODO: correo/WhatsApp al tutor (SMTP)",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [1320, 0],
+      "disabled": true
+    }
+  ],
+  "connections": {
+    "Cada 15 minutos": {
+      "main": [
+        [
+          {
+            "node": "Leer críticos",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Alertas últimas 24h",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Leer críticos": {
+      "main": [
+        [
+          {
+            "node": "Agrupar críticos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Alertas últimas 24h": {
+      "main": [
+        [
+          {
+            "node": "Agrupar alertadas",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Agrupar críticos": {
+      "main": [
+        [
+          {
+            "node": "Unir datos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Agrupar alertadas": {
+      "main": [
+        [
+          {
+            "node": "Unir datos",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Unir datos": {
+      "main": [
+        [
+          {
+            "node": "Filtrar nuevos críticos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filtrar nuevos críticos": {
+      "main": [
+        [
+          {
+            "node": "Registrar alerta",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Registrar alerta": {
+      "main": [
+        [
+          {
+            "node": "TODO: correo/WhatsApp al tutor (SMTP)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "active": false
+}

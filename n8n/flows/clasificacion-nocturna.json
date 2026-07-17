@@ -1,0 +1,178 @@
+{
+  "name": "VIGÍA — Clasificación nocturna de riesgo",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 3 * * *"
+            }
+          ]
+        }
+      },
+      "id": "c1000002-0000-4000-8000-000000000001",
+      "name": "Cada día a las 3:00 am",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [0, 0]
+    },
+    {
+      "parameters": {
+        "url": "https://goxrpvizleicftnmsgrd.supabase.co/rest/v1/students?select=codigo,nombre,promedio,asistencia,actividad_dias,riesgo",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "options": {}
+      },
+      "id": "c1000002-0000-4000-8000-000000000002",
+      "name": "Leer estudiantes",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [220, 0],
+      "credentials": {
+        "supabaseApi": {
+          "name": "Supabase VIGIA (service role)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Reclasifica el riesgo de toda la cartera con la misma lógica de la app\n// (calcRiesgo de metrics.service.js) y prepara:\n//  - historial: un registro por estudiante para predictions_history (trazabilidad)\n//  - cambios: solo los estudiantes cuyo nivel cambió (para actualizar students)\nfunction calcRiesgo(promedio, asistencia, dias) {\n  if (promedio < 8 || asistencia < 50 || dias > 21) return 'CRITICO';\n  if (promedio < 10 || asistencia < 65 || dias > 14) return 'ALTO';\n  if (promedio < 12 || asistencia < 75) return 'MEDIO';\n  return 'BAJO';\n}\n\nconst historial = [];\nconst cambios = [];\nfor (const item of $input.all()) {\n  const s = item.json;\n  const nuevo = calcRiesgo(Number(s.promedio) || 0, Number(s.asistencia) || 0, Number(s.actividad_dias) || 0);\n  historial.push({\n    student_codigo: s.codigo,\n    riesgo: nuevo,\n    promedio: s.promedio,\n    asistencia: s.asistencia,\n    fuente: 'n8n-batch-nocturno',\n  });\n  if (nuevo !== s.riesgo) {\n    cambios.push({ codigo: s.codigo, nombre: s.nombre, riesgo_anterior: s.riesgo, riesgo: nuevo });\n  }\n}\nreturn [{ json: { historial, cambios, total: historial.length, actualizados: cambios.length } }];"
+      },
+      "id": "c1000002-0000-4000-8000-000000000003",
+      "name": "Clasificar riesgo",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [440, 0]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://goxrpvizleicftnmsgrd.supabase.co/rest/v1/predictions_history",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Prefer",
+              "value": "return=minimal"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json.historial) }}",
+        "options": {}
+      },
+      "id": "c1000002-0000-4000-8000-000000000004",
+      "name": "Registrar historial",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [660, -100],
+      "credentials": {
+        "supabaseApi": {
+          "name": "Supabase VIGIA (service role)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "cambios",
+        "options": {}
+      },
+      "id": "c1000002-0000-4000-8000-000000000005",
+      "name": "Separar cambios",
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [660, 100]
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "=https://goxrpvizleicftnmsgrd.supabase.co/rest/v1/students?codigo=eq.{{ $json.codigo }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Prefer",
+              "value": "return=minimal"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ riesgo: $json.riesgo }) }}",
+        "options": {}
+      },
+      "id": "c1000002-0000-4000-8000-000000000006",
+      "name": "Actualizar riesgo",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [880, 100],
+      "credentials": {
+        "supabaseApi": {
+          "name": "Supabase VIGIA (service role)"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Cada día a las 3:00 am": {
+      "main": [
+        [
+          {
+            "node": "Leer estudiantes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Leer estudiantes": {
+      "main": [
+        [
+          {
+            "node": "Clasificar riesgo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Clasificar riesgo": {
+      "main": [
+        [
+          {
+            "node": "Registrar historial",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Separar cambios",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Separar cambios": {
+      "main": [
+        [
+          {
+            "node": "Actualizar riesgo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "active": false
+}

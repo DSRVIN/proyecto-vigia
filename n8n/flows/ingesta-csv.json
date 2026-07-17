@@ -1,0 +1,176 @@
+{
+  "name": "VIGÍA — Ingesta de notas (CSV)",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "VIGÍA — Ingesta de notas",
+        "formDescription": "Sube el CSV con las notas del ciclo. Columnas: codigo, nombre, email, carrera, ciclo, curso_id, docente_codigo, asistencia, actividad_dias y las evaluaciones del curso (p. ej. pc1, pc2, proyectoFinal, examenFinal). Los registros inválidos se separan en un log de rechazos.",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "archivo",
+              "fieldType": "file",
+              "acceptFileTypes": ".csv",
+              "requiredField": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "a1000001-0000-4000-8000-000000000001",
+      "name": "Formulario de carga",
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.2,
+      "position": [0, 0],
+      "webhookId": "b2000001-0000-4000-8000-000000000001"
+    },
+    {
+      "parameters": {
+        "operation": "csv",
+        "binaryPropertyName": "archivo",
+        "options": {}
+      },
+      "id": "a1000001-0000-4000-8000-000000000002",
+      "name": "Leer CSV",
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [220, 0]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Validación y clasificación (contingencia del Riesgo R1 del APF1)\n// Reutiliza la misma lógica de negocio que la app (metrics.service.js).\nconst EVALS = {\n  SIST101: [['pc1',0.2],['pc2',0.2],['proyectoFinal',0.3],['examenFinal',0.3]],\n  SIST102: [['avance1',0.15],['avance2',0.15],['proyectoFinal',0.3],['examenFinal',0.4]],\n  SIST103: [['laboratorio',0.15],['pc1',0.2],['pc2',0.2],['proyectoBD',0.45]],\n  SIST104: [['avance1',0.1],['avance2',0.2],['sustentacion',0.3],['informeFinal',0.4]],\n  SIST105: [['prototipo1',0.15],['prototipo2',0.2],['pc',0.25],['examenFinal',0.4]],\n  SIST106: [['ejercicios',0.1],['pc1',0.2],['pc2',0.2],['proyecto',0.5]],\n  SIST107: [['participacion',0.1],['trabajoParcial',0.2],['trabajoFinal',0.3],['examen',0.4]],\n  SIST108: [['foros',0.1],['pc',0.2],['trabajoAplicativo',0.3],['examenFinal',0.4]],\n  SIST109: [['talleres',0.1],['pc1',0.2],['pc2',0.25],['proyectoWeb',0.45]],\n  EDUC201: [['avanceTeorico',0.15],['avanceMetodologia',0.15],['informeFinal',0.3],['examen',0.4]],\n  EDUC202: [['practicas',0.15],['pc1',0.2],['pc2',0.25],['examenFinal',0.4]],\n  EDUC203: [['foros',0.1],['trabajoGrupal',0.2],['pc',0.3],['examenFinal',0.4]],\n  EDUC204: [['avance1',0.15],['avance2',0.15],['disenoFinal',0.3],['examen',0.4]],\n  EDUC205: [['practicas',0.1],['proyectoAula',0.2],['pc',0.3],['examenFinal',0.4]],\n  EDUC206: [['trabajoParcial',0.2],['trabajoFinal',0.25],['examenParcial',0.25],['examenFinal',0.3]],\n  EDUC207: [['participacion',0.1],['trabajoAplicativo',0.2],['pc',0.3],['examenFinal',0.4]],\n  EDUC208: [['avanceCap1',0.15],['avanceCap2',0.15],['borradorTesis',0.3],['sustentacion',0.4]],\n  EDUC209: [['debates',0.1],['ensayo',0.2],['pc',0.3],['examenFinal',0.4]],\n};\nconst ROUND_THRESHOLD = 11.45;\nconst MIN_APPROVAL = 12;\n\nfunction calcRiesgo(promedio, asistencia, dias) {\n  if (promedio < 8 || asistencia < 50 || dias > 21) return 'CRITICO';\n  if (promedio < 10 || asistencia < 65 || dias > 14) return 'ALTO';\n  if (promedio < 12 || asistencia < 75) return 'MEDIO';\n  return 'BAJO';\n}\n\nconst out = [];\nfor (const item of $input.all()) {\n  const r = item.json;\n  const errores = [];\n\n  const codigo = String(r.codigo || '').trim();\n  const nombre = String(r.nombre || '').trim();\n  const cursoId = String(r.curso_id || '').trim();\n  const docente = String(r.docente_codigo || '').trim();\n  const asistencia = Number(r.asistencia);\n  const dias = Number(r.actividad_dias);\n\n  if (!codigo) errores.push('codigo vacío');\n  if (!nombre) errores.push('nombre vacío');\n  if (!EVALS[cursoId]) errores.push(`curso_id desconocido: ${cursoId}`);\n  if (!/^C\\d+$/.test(docente)) errores.push(`docente_codigo inválido: ${docente}`);\n  if (!(asistencia >= 0 && asistencia <= 100)) errores.push(`asistencia fuera de rango: ${r.asistencia}`);\n  if (!(dias >= 0 && dias <= 120)) errores.push(`actividad_dias fuera de rango: ${r.actividad_dias}`);\n\n  const notas = {};\n  let promedio = 0;\n  if (EVALS[cursoId]) {\n    for (const [key, peso] of EVALS[cursoId]) {\n      const raw = r[key];\n      if (raw === undefined || raw === null || String(raw).trim() === '') {\n        notas[key] = null; // evaluación pendiente\n        continue;\n      }\n      const n = Number(raw);\n      if (!(n >= 0 && n <= 20)) {\n        errores.push(`nota ${key} fuera de rango 0-20: ${raw}`);\n        continue;\n      }\n      notas[key] = n;\n      promedio += n * peso;\n    }\n  }\n  promedio = Number(promedio.toFixed(2));\n  const notaFinal = promedio >= ROUND_THRESHOLD && promedio < MIN_APPROVAL ? MIN_APPROVAL : promedio;\n\n  if (errores.length > 0) {\n    out.push({ json: { valido: false, codigo: codigo || '(sin código)', errores, original: r } });\n    continue;\n  }\n\n  out.push({\n    json: {\n      valido: true,\n      row: {\n        codigo,\n        nombre,\n        email: String(r.email || `${codigo.toLowerCase()}@utp.edu.pe`).trim(),\n        carrera: String(r.carrera || '').trim(),\n        ciclo: String(r.ciclo || '').trim(),\n        curso_id: cursoId,\n        docente_codigo: docente,\n        asistencia,\n        actividad_dias: dias,\n        notas,\n        promedio,\n        nota_final: Number(notaFinal.toFixed(2)),\n        riesgo: calcRiesgo(promedio, asistencia, dias),\n      },\n    },\n  });\n}\nreturn out;"
+      },
+      "id": "a1000001-0000-4000-8000-000000000003",
+      "name": "Validar y clasificar",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [440, 0]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.valido }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "a1000001-0000-4000-8000-000000000004",
+      "name": "¿Registro válido?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [660, 0]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://goxrpvizleicftnmsgrd.supabase.co/rest/v1/students?on_conflict=codigo",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Prefer",
+              "value": "resolution=merge-duplicates,return=minimal"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json.row) }}",
+        "options": {}
+      },
+      "id": "a1000001-0000-4000-8000-000000000005",
+      "name": "Upsert en Supabase",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [880, -100],
+      "credentials": {
+        "supabaseApi": {
+          "name": "Supabase VIGIA (service role)"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "id": "a1000001-0000-4000-8000-000000000006",
+      "name": "Registros rechazados (log)",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [880, 100]
+    }
+  ],
+  "connections": {
+    "Formulario de carga": {
+      "main": [
+        [
+          {
+            "node": "Leer CSV",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Leer CSV": {
+      "main": [
+        [
+          {
+            "node": "Validar y clasificar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validar y clasificar": {
+      "main": [
+        [
+          {
+            "node": "¿Registro válido?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "¿Registro válido?": {
+      "main": [
+        [
+          {
+            "node": "Upsert en Supabase",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Registros rechazados (log)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "active": false
+}
