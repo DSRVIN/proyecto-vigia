@@ -4,6 +4,7 @@ import Header from '../../components/layout/Header.jsx';
 import Sidebar from '../../components/layout/Sidebar.jsx';
 import NotificationsDrawer from '../../components/layout/NotificationsDrawer.jsx';
 import { useStudentsLoader } from '../../features/shared/useStudentsLoader.js';
+import { useAlertsLoader } from '../../features/shared/useAlertsLoader.js';
 
 function PageLoader() {
   return (
@@ -23,6 +24,8 @@ export default function AppLayout() {
   // Carga la cartera de estudiantes una vez tras la autenticación, para
   // todos los roles y cualquier ruta de entrada.
   useStudentsLoader();
+  // Alertas reales de n8n (tabla alerts), refrescadas cada minuto
+  useAlertsLoader();
 
   return (
     <div className="flex min-h-screen bg-[#F5F7FB]">

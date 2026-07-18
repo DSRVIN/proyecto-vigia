@@ -31,6 +31,7 @@ const UsuariosPage = lazy(() => import('../features/admin/UsuariosPage.jsx'));
 const DocentesPage = lazy(() => import('../features/admin/DocentesPage.jsx'));
 const FacultadesPage = lazy(() => import('../features/admin/FacultadesPage.jsx'));
 const RolesPermisosPage = lazy(() => import('../features/admin/RolesPermisosPage.jsx'));
+const MetricasPage = lazy(() => import('../features/admin/MetricasPage.jsx'));
 const IntegracionesPage = lazy(() => import('../features/admin/IntegracionesPage.jsx'));
 
 const ConfiguracionPage = lazy(() => import('../features/shared/ConfiguracionPage.jsx'));
@@ -87,6 +88,7 @@ export const router = createBrowserRouter([
               { path: '/admin/docentes', element: <DocentesPage /> },
               { path: '/admin/facultades', element: <FacultadesPage /> },
               { path: '/admin/roles', element: <RolesPermisosPage /> },
+              { path: '/admin/metricas', element: <MetricasPage /> },
               { path: '/admin/integraciones', element: <IntegracionesPage /> },
               { path: '/admin/configuracion', element: <ConfiguracionPage /> },
             ],

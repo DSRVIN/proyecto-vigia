@@ -18,6 +18,9 @@ const AppContext = createContext(null);
 
 const initialState = {
   authState: 'login',
+  // true cuando ya se intentó restaurar la sesión persistida de Supabase
+  // (evita redirigir a /login antes de saber si hay sesión válida)
+  authReady: false,
   currentUser: null,
   loginAttempts: 0,
   accountLocked: false,
@@ -25,6 +28,8 @@ const initialState = {
   recoveryEmail: null,
   students: [],
   courses: [],
+  // Alertas reales generadas por n8n (tabla alerts de Supabase)
+  alerts: [],
   teacher: {
     codigo: '',
     nombre: 'Cargando...',
@@ -44,11 +49,24 @@ function reducer(state, action) {
       return {
         ...state,
         authState: 'authenticated',
+        authReady: true,
         currentUser: profile,
         teacher: profile,
         courses: getCoursesForTeacher(profile.codigo),
       };
     }
+
+    case 'AUTH_READY':
+      return { ...state, authReady: true };
+
+    case 'SET_ALERTS':
+      return { ...state, alerts: action.payload };
+
+    case 'MARK_ALERT_ATENDIDA':
+      return {
+        ...state,
+        alerts: state.alerts.map((a) => (a.id === action.payload ? { ...a, atendida: true } : a)),
+      };
 
     case 'SET_STUDENTS':
       return {
@@ -57,10 +75,13 @@ function reducer(state, action) {
       };
 
     case 'LOGOUT':
+      // authReady queda en true: ya sabemos que no hay sesión
       return {
         ...initialState,
+        authReady: true,
         students: [],
         courses: [],
+        alerts: [],
       };
 
     case 'SET_ADMIN_TAB':
@@ -167,6 +188,9 @@ export function AppProvider({ children }) {
       loginSuccess: (user, profile) =>
         dispatch({ type: 'LOGIN_SUCCESS', payload: { user, profile } }),
       setStudents: (students) => dispatch({ type: 'SET_STUDENTS', payload: students }),
+      authReady: () => dispatch({ type: 'AUTH_READY' }),
+      setAlerts: (alerts) => dispatch({ type: 'SET_ALERTS', payload: alerts }),
+      markAlertAtendida: (id) => dispatch({ type: 'MARK_ALERT_ATENDIDA', payload: id }),
       logout: () => dispatch({ type: 'LOGOUT' }),
       setAdminTab: (tab) => dispatch({ type: 'SET_ADMIN_TAB', payload: tab }),
       toggleNotifications: () => dispatch({ type: 'TOGGLE_NOTIFICATIONS' }),

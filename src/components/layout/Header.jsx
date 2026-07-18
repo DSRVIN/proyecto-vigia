@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { Bell, LogOut, Settings, LayoutDashboard, Headphones, Briefcase } from 'lucide-react';
 import { useApp } from '../../context/AppContext.jsx';
 import { ROLES, roleHome } from '../../features/auth/roles.js';
+import { supabase } from '../../supabaseClient.js';
 
 // Módulos navegables desde el header, restringidos por rol.
 // Solo el ADMIN ve la barra completa; docente y call center
@@ -22,11 +23,22 @@ export default function Header() {
 
   const role = currentUser?.role;
   const home = roleHome(role);
-  const criticalCount = state.students.filter((s) => s.riesgo === 'CRITICO').length;
+  // Contador de la campana: alertas reales de n8n sin atender; si la tabla
+  // aún no está sembrada, cae al conteo de estudiantes críticos (demo)
+  const criticalCount =
+    state.alerts.length > 0
+      ? state.alerts.filter((a) => !a.atendida).length
+      : state.students.filter((s) => s.riesgo === 'CRITICO').length;
 
   const visibleLinks = NAV_LINKS.filter((l) => l.roles.includes(role));
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    // Cierra también la sesión persistida de Supabase (no solo el estado local)
+    try {
+      await supabase.auth.signOut();
+    } catch (err) {
+      console.warn('Error al cerrar sesión de Supabase:', err.message);
+    }
     actions.logout();
     navigate('/login', { replace: true });
   };

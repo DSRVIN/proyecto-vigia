@@ -1,79 +1,120 @@
-import React, { useMemo } from 'react';
-import { X, AlertTriangle, TrendingDown, Clock, ChevronRight } from 'lucide-react';
+import React, { useMemo, useState } from 'react';
+import { X, AlertTriangle, TrendingDown, Clock, ChevronRight, Workflow } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useApp } from '../../context/AppContext.jsx';
 import { ROLES } from '../../features/auth/roles.js';
-import RiskBadge from '../ui/RiskBadge.jsx';
+import { atenderAlerta } from '../../features/shared/useAlertsLoader.js';
+
+/** "Hace X min/h/d" a partir de un timestamp ISO. */
+function timeAgo(iso) {
+  const diffMs = Date.now() - new Date(iso).getTime();
+  const min = Math.max(0, Math.floor(diffMs / 60000));
+  if (min < 1) return 'Ahora mismo';
+  if (min < 60) return `Hace ${min} min`;
+  const h = Math.floor(min / 60);
+  if (h < 24) return `Hace ${h} h`;
+  return `Hace ${Math.floor(h / 24)} d`;
+}
+
+const RISK_STYLE = {
+  CRITICO: {
+    title: 'Riesgo Crítico de Deserción',
+    color: 'text-red-400',
+    bg: 'bg-red-500/10',
+    border: 'border-red-500/30',
+  },
+  ALTO: {
+    title: 'Riesgo Alto de Deserción',
+    color: 'text-amber-400',
+    bg: 'bg-amber-500/10',
+    border: 'border-amber-500/30',
+  },
+};
 
 export default function NotificationsDrawer() {
   const { state, actions } = useApp();
   const navigate = useNavigate();
   const role = state.currentUser?.role;
   const canOpenCourse = role === ROLES.DOCENTE || role === ROLES.ADMIN;
-  const { isNotificationsOpen, students, courses } = state;
+  const { isNotificationsOpen, students, courses, alerts } = state;
+  const [attending, setAttending] = useState(null);
 
-  const notifications = useMemo(() => {
-    const alerts = [];
+  // Modo real: la tabla alerts (poblada por n8n) tiene registros
+  const usingDbAlerts = alerts.length > 0;
 
-    // Sort students by highest risk and lowest grades
-    const sortedStudents = [...students].sort((a, b) => a.promedio - b.promedio);
+  // ── Alertas reales de n8n ──────────────────────────────────
+  const dbNotifications = useMemo(() => {
+    return alerts
+      .filter((a) => !a.atendida)
+      .slice(0, 25)
+      .map((a) => {
+        const student = students.find((s) => s.codigo === a.student_codigo) || null;
+        const style = RISK_STYLE[a.riesgo] || RISK_STYLE.ALTO;
+        return {
+          id: `db-${a.id}`,
+          dbId: a.id,
+          student,
+          nombre: a.student_nombre || student?.nombre || a.student_codigo,
+          codigo: a.student_codigo,
+          mensaje: a.mensaje,
+          icon: AlertTriangle,
+          time: timeAgo(a.created_at),
+          ...style,
+        };
+      });
+  }, [alerts, students]);
 
-    sortedStudents.forEach((student, index) => {
-      // Find course name to add context
+  // ── Modo demostración (derivado del estado, sin tabla alerts) ──
+  const derivedNotifications = useMemo(() => {
+    if (usingDbAlerts) return [];
+    const out = [];
+    const sorted = [...students].sort((a, b) => a.promedio - b.promedio);
+    sorted.forEach((student, index) => {
       const course = courses.find((c) => c.id === student.cursoId);
-      const courseName = course ? course.nombre : 'Curso Desconocido';
-
-      // Critical Risk Alert
+      const courseName = course ? course.nombre : student.cursoId;
       if (student.riesgo === 'CRITICO' && !student.intervenido) {
-        alerts.push({
+        out.push({
           id: `crit-${student.codigo}`,
           student,
-          courseName,
-          type: 'risk_critical',
-          title: 'Riesgo Crítico de Deserción',
+          nombre: student.nombre,
+          codigo: student.codigo,
+          mensaje: `Promedio ${student.notaFinal} y asistencia ${student.asistencia}% en ${courseName}.`,
           icon: AlertTriangle,
-          color: 'text-red-400',
-          bg: 'bg-red-500/10',
-          border: 'border-red-500/30',
           time: `Hace ${index * 15 + 5} min`,
+          ...RISK_STYLE.CRITICO,
         });
-      }
-      // High Risk Alert
-      else if (student.riesgo === 'ALTO' && !student.intervenido) {
-        alerts.push({
+      } else if (student.riesgo === 'ALTO' && !student.intervenido) {
+        out.push({
           id: `alto-${student.codigo}`,
           student,
-          courseName,
-          type: 'risk_high',
-          title: 'Riesgo Alto de Deserción',
-          icon: AlertTriangle,
-          color: 'text-amber-400',
-          bg: 'bg-amber-500/10',
-          border: 'border-amber-500/30',
-          time: `Hace ${index * 20 + 10} min`,
-        });
-      }
-
-      // Low Performance Alert (notaFinal < 10)
-      if (student.notaFinal < 10 && !student.intervenido) {
-        alerts.push({
-          id: `perf-${student.codigo}`,
-          student,
-          courseName,
-          type: 'performance',
-          title: 'Rendimiento Crítico',
+          nombre: student.nombre,
+          codigo: student.codigo,
+          mensaje: `Promedio ${student.notaFinal} y asistencia ${student.asistencia}% en ${courseName}.`,
           icon: TrendingDown,
-          color: 'text-orange-400',
-          bg: 'bg-orange-500/10',
-          border: 'border-orange-500/30',
-          time: `Hace ${index * 12 + 2} min`,
+          time: `Hace ${index * 20 + 10} min`,
+          ...RISK_STYLE.ALTO,
         });
       }
     });
+    return out.slice(0, 15);
+  }, [usingDbAlerts, students, courses]);
 
-    // Limit to latest 15 alerts for performance and UX
-    return alerts.slice(0, 15);
-  }, [students, courses]);
+  const notifications = usingDbAlerts ? dbNotifications : derivedNotifications;
+
+  const handleAtender = async (alert) => {
+    if (alert.dbId) {
+      setAttending(alert.dbId);
+      try {
+        await atenderAlerta(alert.dbId);
+        actions.markAlertAtendida(alert.dbId);
+      } catch (err) {
+        console.error('No se pudo marcar la alerta como atendida:', err.message);
+      } finally {
+        setAttending(null);
+      }
+    }
+    if (alert.student) actions.markIntervened(alert.student.codigo);
+  };
 
   if (!isNotificationsOpen) return null;
 
@@ -106,7 +147,16 @@ export default function NotificationsDrawer() {
                 {notifications.length}
               </span>
             </h2>
-            <p className="text-xs text-slate-400 mt-1">Alertas en tiempo real del sistema VIGÍA</p>
+            <p className="text-xs text-slate-400 mt-1 flex items-center gap-1.5">
+              {usingDbAlerts ? (
+                <>
+                  <Workflow size={12} className="text-brand-300" />
+                  Generadas por la automatización n8n
+                </>
+              ) : (
+                'Alertas derivadas del estado académico'
+              )}
+            </p>
           </div>
           <button
             onClick={actions.toggleNotifications}
@@ -131,7 +181,7 @@ export default function NotificationsDrawer() {
               <div
                 key={alert.id}
                 className={`p-4 rounded-xl border ${alert.border} ${alert.bg} flex flex-col gap-3 animate-fade-in group hover:bg-slate-800/80 transition-colors`}
-                style={{ animationDelay: `${i * 50}ms` }}
+                style={{ animationDelay: `${i * 40}ms` }}
               >
                 {/* Alert Header */}
                 <div className="flex items-start justify-between">
@@ -150,41 +200,18 @@ export default function NotificationsDrawer() {
                 {/* Student Info */}
                 <div>
                   <p className="text-sm font-semibold text-white group-hover:text-blue-300 transition-colors">
-                    {alert.student.nombre}
+                    {alert.nombre}
                   </p>
-                  <div className="flex items-center gap-2 mt-1">
-                    <span className="text-xs font-mono text-slate-400">{alert.student.codigo}</span>
-                    <span className="text-slate-600 text-xs">•</span>
-                    <span className="text-xs text-slate-400 truncate">{alert.courseName}</span>
-                  </div>
-                </div>
-
-                {/* Metrics snapshot based on alert type */}
-                <div className="flex items-center gap-3 mt-1">
-                  <div className="flex items-center gap-1.5 bg-slate-900/50 px-2 py-1 rounded text-xs">
-                    <span className="text-slate-500">Promedio:</span>
-                    <span
-                      className={`font-bold ${alert.student.notaFinal < 12 ? 'text-red-400' : 'text-slate-300'}`}
-                    >
-                      {alert.student.notaFinal}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-1.5 bg-slate-900/50 px-2 py-1 rounded text-xs">
-                    <span className="text-slate-500">Asistencia:</span>
-                    <span
-                      className={`font-bold ${alert.student.asistencia < 70 ? 'text-amber-400' : 'text-slate-300'}`}
-                    >
-                      {alert.student.asistencia}%
-                    </span>
-                  </div>
+                  <p className="text-xs font-mono text-slate-400 mt-0.5">{alert.codigo}</p>
+                  <p className="text-xs text-slate-400 mt-1.5 leading-relaxed">{alert.mensaje}</p>
                 </div>
 
                 {/* Actions */}
-                <div className="flex items-center gap-2 mt-2 pt-3 border-t border-slate-700/30">
+                <div className="flex items-center gap-2 mt-1 pt-3 border-t border-slate-700/30">
                   <button
                     onClick={() => {
                       actions.toggleNotifications();
-                      const course = courses.find((c) => c.id === alert.student.cursoId);
+                      const course = courses.find((c) => c.id === alert.student?.cursoId);
                       if (course && canOpenCourse) {
                         navigate(`/docente/curso/${course.id}`);
                       }
@@ -194,12 +221,11 @@ export default function NotificationsDrawer() {
                     Ver detalle <ChevronRight size={14} />
                   </button>
                   <button
-                    onClick={() => {
-                      actions.markIntervened(alert.student.codigo);
-                    }}
-                    className="flex-1 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white text-xs font-semibold rounded-lg border border-slate-700/50 transition-colors"
+                    onClick={() => handleAtender(alert)}
+                    disabled={attending === alert.dbId}
+                    className="flex-1 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white text-xs font-semibold rounded-lg border border-slate-700/50 transition-colors disabled:opacity-50"
                   >
-                    Intervenir
+                    {attending === alert.dbId ? 'Atendiendo…' : 'Atender'}
                   </button>
                 </div>
               </div>

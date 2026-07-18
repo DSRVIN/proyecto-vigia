@@ -169,6 +169,26 @@ Se creó un componente compartido `PageShell.jsx` (hero + panel + aviso) para qu
 
 ---
 
+### Bloque 7 — Automatización con n8n y cierre del circuito (fase 3, parte B)
+
+**Problema a resolver:** el documento APF1 define ingesta por lotes, procesamiento nocturno y alertas tempranas, pero hasta aquí todos los procesos eran manuales y la campana de notificaciones de la app generaba sus alertas en el navegador (no existían como dato real).
+
+**Qué se hizo:**
+
+- **n8n self-hosted en Docker** (`n8n/docker-compose.yml`): la plataforma de automatización corre en la máquina local con volumen persistente (los flujos y credenciales sobreviven a reinicios y actualizaciones — se validó actualizando de la versión 1.80 a la 2.30 sin pérdida de datos).
+- **Tres flujos de automatización** (versionados en `n8n/flows/`, sin ningún secreto — referencian la credencial por nombre):
+  1. *Ingesta de notas (CSV)*: formulario web → validación de cada registro (curso existente, notas 0–20, asistencia 0–100, formato del docente) con log de rechazados → upsert en `students` calculando promedio y riesgo con la misma lógica de la app. Implementa la contingencia del Riesgo R1 del APF1.
+  2. *Clasificación nocturna* (cron 3:00 am): reclasifica toda la cartera, escribe un registro por estudiante en `predictions_history` (trazabilidad §6.5) y actualiza solo los que cambiaron de nivel.
+  3. *Alertas de riesgo crítico* (cada 15 min): detecta críticos sin alerta reciente (anti-duplicados de 24 h) e inserta la alerta en la tabla `alerts` (migración 004) con mensaje explicativo.
+- **La service role key encontró su lugar correcto**: vive cifrada en las credenciales de n8n, restringida al dominio del proyecto Supabase (Allowed Domains) — nunca en el frontend ni en el repositorio.
+- **Cierre del circuito en la app**: el centro de notificaciones dejó de inventar alertas en el cliente — ahora lee la tabla `alerts` real (con refresco cada 60 s) y permite marcarlas como atendidas (persistido en Supabase). Los contadores de la campana y del sidebar usan las alertas reales, con reserva al modo derivado si la tabla aún no está poblada.
+- **Persistencia de sesión**: se corrigió que al recargar la página se perdiera el login — un hook restaura la sesión de Supabase guardada en localStorage antes de que el router decida redirigir (estado `authReady` + loader), y el logout ahora también cierra la sesión de Supabase, no solo el estado local.
+- **Página de Métricas del Sistema** (`/admin/metricas`): indicadores calculados sobre las tablas reales — clasificaciones registradas, alertas generadas/atendidas, última corrida del batch y checklist de cumplimiento de los SLA del APF1.
+
+**Por qué funciona / cómo se validó:** los flujos se importaron a n8n por CLI y se ejecutaron contra la base real (el nodo de lectura devolvió los 522 estudiantes; la primera corrida de clasificación pobló `predictions_history`; la ingesta del CSV de ejemplo insertó 4 registros y rechazó 1 inválido con sus errores listados). En la app: lint sin errores, suite de tests completa y build verificados tras cada cambio.
+
+---
+
 ## 4. Archivos más importantes del proyecto (mapa de lectura)
 
 | Archivo | Por qué es importante |
@@ -184,6 +204,10 @@ Se creó un componente compartido `PageShell.jsx` (hero + panel + aviso) para qu
 | `scripts/generate-seed.mjs` | Cómo se generan los datos de demostración de forma reproducible |
 | `.github/workflows/ci-cd.yml` | Qué se valida automáticamente antes de que el código llegue a producción |
 | `tests/*.test.js(x)` | Prueba viva de que la lógica de negocio y las páginas hacen lo que deberían |
+| `n8n/docker-compose.yml` y `n8n/flows/*.json` | La capa de automatización: cómo corre n8n y qué hace cada flujo |
+| `src/features/shared/useAlertsLoader.js` | Cómo la app consume las alertas reales generadas por n8n |
+| `src/features/auth/useSessionRestore.js` | Cómo se restaura la sesión al recargar la página |
+| `src/features/admin/MetricasPage.jsx` | Las métricas operativas calculadas sobre la trazabilidad real |
 
 ---
 
@@ -191,6 +215,7 @@ Se creó un componente compartido `PageShell.jsx` (hero + panel + aviso) para qu
 
 - **10 commits** desde el clon inicial hasta este punto, cada uno con su propio mensaje descriptivo y verificación de CI en verde.
 - **~9,200 líneas de código** en `src/` (JS/JSX).
+- **3 flujos de automatización n8n** activos (ingesta, clasificación nocturna, alertas) sobre Docker.
 - **64 tests automatizados** (unitarios de lógica de negocio + smoke tests de componentes + tests de integración de datos), corriendo en cada `push` vía GitHub Actions.
 - **0 errores de ESLint**, formato 100% consistente con Prettier.
 - **3 roles funcionales** con control de acceso verificado tanto en frontend (router) como diseñado para backend (políticas RLS pendientes de aplicar por el usuario).

@@ -113,7 +113,7 @@ const NAV_BY_ROLE = {
       items: [
         { label: 'Roles y permisos', icon: ShieldCheck, to: '/admin/roles' },
         { label: 'Reportes', icon: BarChart3, to: '/admin/ejecutivo' },
-        { label: 'Estadísticas', icon: LineChart, to: '/admin/ejecutivo' },
+        { label: 'Estadísticas', icon: LineChart, to: '/admin/metricas' },
       ],
     },
     {
@@ -220,6 +220,11 @@ export default function Sidebar() {
   const role = state.currentUser?.role;
   const sections = NAV_BY_ROLE[role] || NAV_BY_ROLE[ROLES.DOCENTE];
   const activeClass = ACTIVE_CLASS[role] || ACTIVE_CLASS[ROLES.DOCENTE];
+  // Alertas reales de n8n sin atender; fallback al conteo de críticos (demo)
+  const alertCount =
+    state.alerts.length > 0
+      ? state.alerts.filter((a) => !a.atendida).length
+      : state.students.filter((s) => s.riesgo === 'CRITICO').length;
 
   // Solo el primer ítem que coincide con la ruta se resalta: evita que
   // "Inicio" y "Mis Secciones" (ambos → /docente) se marquen a la vez.
@@ -285,12 +290,11 @@ export default function Sidebar() {
                   >
                     <item.icon size={16} className="flex-shrink-0" />
                     <span className="flex-1 truncate">{item.label}</span>
-                    {item.action === 'alerts' &&
-                      state.students.filter((s) => s.riesgo === 'CRITICO').length > 0 && (
-                        <span className="h-5 min-w-5 px-1 bg-risk-critical rounded-full text-[10px] flex items-center justify-center text-white font-black">
-                          {state.students.filter((s) => s.riesgo === 'CRITICO').length}
-                        </span>
-                      )}
+                    {item.action === 'alerts' && alertCount > 0 && (
+                      <span className="h-5 min-w-5 px-1 bg-risk-critical rounded-full text-[10px] flex items-center justify-center text-white font-black">
+                        {alertCount}
+                      </span>
+                    )}
                   </button>
                 );
               })}

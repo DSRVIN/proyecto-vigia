@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { supabase } from '../../supabaseClient';
-import { normalizeRole } from './roles.js';
+import { buildTeacherProfile } from './profile.js';
 
 export function useAuth() {
   const [loading, setLoading] = useState(false);
@@ -50,33 +50,8 @@ export function useAuth() {
         console.warn('Advertencia al consultar perfil:', profileError.message);
       }
 
-      const teacherCode = email.split('@')[0].toUpperCase();
-      let defaultNombre = 'Dr. Docente UTP';
-      if (teacherCode === 'C13007') {
-        defaultNombre = 'Mg. Andrea Salazar Rojas';
-      } else if (teacherCode === 'C13005') {
-        defaultNombre = 'Dr. Carlos Mendoza Paredes';
-      }
-
-      // Robust fallback if profile table is empty or lacks record
-      const teacherProfile = profile
-        ? {
-            ...profile,
-            nombre:
-              !profile.nombre || profile.nombre === 'Dr. Docente UTP'
-                ? defaultNombre
-                : profile.nombre,
-            role: normalizeRole(profile.role),
-          }
-        : {
-            codigo: teacherCode,
-            nombre: user.user_metadata?.nombre || defaultNombre,
-            email: email,
-            cargo: 'Docente Titular',
-            departamento: 'Ing. de Sistemas',
-            avatar: null,
-            role: normalizeRole(user.user_metadata?.role),
-          };
+      // Construcción del perfil unificada con la restauración de sesión
+      const teacherProfile = buildTeacherProfile(user, profile, email);
 
       setLoading(false);
       return { user, profile: teacherProfile };
