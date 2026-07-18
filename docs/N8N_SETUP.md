@@ -64,7 +64,20 @@ Ya vienen importados (si necesitas reimportarlos: `docker exec vigia-n8n n8n imp
 docker compose up -d        # levantar
 docker compose down         # detener (datos persisten)
 docker compose logs -f n8n  # ver logs en vivo
-docker exec vigia-n8n n8n import:workflow --separate --input=/flows   # reimportar flujos
+docker exec vigia-n8n n8n import:workflow --separate --input=/flows --userId=<ID>   # reimportar flujos
+```
+
+**Nota sobre la reimportación:** el flag `--userId` es necesario para que los flujos
+queden asignados a tu cuenta y aparezcan en la interfaz (sin él quedan huérfanos e
+invisibles). Tu ID se obtiene en n8n → Settings → Users, o consultando la tabla
+`user` de la base interna. Desde Git Bash en Windows, antepón `MSYS_NO_PATHCONV=1`
+para que la ruta `/flows` no sea reescrita.
+
+Para actualizar n8n a la última versión (los datos persisten en el volumen):
+
+```bash
+cd proyecto-vigia/n8n
+docker compose pull && docker compose down && docker compose up -d
 ```
 
 ## Seguridad
