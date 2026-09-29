@@ -39,8 +39,12 @@ import RolesPermisosPage from '../src/features/admin/RolesPermisosPage.jsx';
 import IntegracionesPage from '../src/features/admin/IntegracionesPage.jsx';
 import ConfiguracionPage from '../src/features/shared/ConfiguracionPage.jsx';
 import Sidebar from '../src/components/layout/Sidebar.jsx';
+import Header from '../src/components/layout/Header.jsx';
+import DashboardPage from '../src/features/docente/DashboardPage.jsx';
 
 const PAGES = {
+  DashboardPage,
+  Header,
   CalificacionesPage,
   AsistenciasPage,
   ReportesPage,

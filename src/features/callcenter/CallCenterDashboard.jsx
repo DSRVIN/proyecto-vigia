@@ -20,6 +20,7 @@ import { enviarCorreoEstudiante } from '../../services/messaging.service.js';
 import { saveAs } from 'file-saver';
 import { supabase } from '../../supabaseClient.js';
 import callcenterHero from '../../assets/roles/callcenter.png';
+import StatCard from '../../components/ui/StatCard.jsx';
 
 export default function CallCenterDashboard() {
   const { state } = useApp();
@@ -276,14 +277,14 @@ export default function CallCenterDashboard() {
 
   return (
     <div className="min-h-screen bg-[#F5F7FB] text-slate-900 pb-12">
-      <main className="max-w-screen-2xl mx-auto px-4 sm:px-6 py-8">
+      <main className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 py-6 sm:py-8">
         {/* Hero: texto + ilustracion */}
-        <div className="mb-8 animate-fade-in grid grid-cols-1 lg:grid-cols-[1fr_auto] items-center gap-6">
-          <div>
+        <div className="mb-6 sm:mb-8 animate-fade-in grid grid-cols-1 lg:grid-cols-[1fr_auto] items-center gap-4">
+          <div className="min-w-0">
             <p className="text-xs text-brand-700 font-black uppercase tracking-widest mb-1">
               Módulo de Retención
             </p>
-            <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
+            <h1 className="text-xl sm:text-2xl lg:text-3xl font-black text-slate-900 tracking-tight">
               Seguimiento de Retención
             </h1>
             <p className="text-slate-600 text-xs mt-2 font-bold bg-white border border-slate-200 px-3 py-1.5 rounded-lg w-fit shadow-sm">
@@ -306,49 +307,42 @@ export default function CallCenterDashboard() {
           />
         </div>
 
-        {/* Bloque A: Panel KPI unificado (operacion del call center) */}
-        <div className="bg-white rounded-[22px] px-4 py-6 shadow-[0_8px_24px_rgba(15,23,42,0.08)] mb-8">
-          <div className="flex flex-col sm:flex-row sm:items-stretch divide-y sm:divide-y-0 divide-slate-100">
-            <div className="flex-1 px-5 py-2">
-              <p className="text-[11px] text-slate-500 font-black uppercase tracking-wider">
-                Llamadas Pendientes
-              </p>
-              <p className="text-3xl font-black text-risk-critical mt-1">{llamadasPendientes}</p>
-              <p className="text-[11px] text-slate-400 font-bold">Riesgo sin intervenir</p>
-            </div>
-            <div className="hidden sm:block w-px bg-brand-200 self-center h-12" />
-            <div className="flex-1 px-5 py-2">
-              <p className="text-[11px] text-slate-500 font-black uppercase tracking-wider">
-                Llamadas Activas
-              </p>
-              <p className="text-3xl font-black text-brand-700 mt-1">3</p>
-              <p className="text-[11px] text-slate-400 font-bold">En curso ahora</p>
-            </div>
-            <div className="hidden sm:block w-px bg-brand-200 self-center h-12" />
-            <div className="flex-1 px-5 py-2">
-              <p className="text-[11px] text-slate-500 font-black uppercase tracking-wider">
-                Casos Resueltos
-              </p>
-              <p className="text-3xl font-black text-slate-900 mt-1">{casosResueltos}</p>
-              <p className="text-[11px] text-slate-400 font-bold">Intervenciones del ciclo</p>
-            </div>
-            <div className="hidden sm:block w-px bg-brand-200 self-center h-12" />
-            <div className="flex-1 px-5 py-2">
-              <p className="text-[11px] text-slate-500 font-black uppercase tracking-wider">
-                Tiempo Promedio
-              </p>
-              <p className="text-3xl font-black text-slate-900 mt-1">4m 32s</p>
-              <p className="text-[11px] text-slate-400 font-bold">Por llamada atendida</p>
-            </div>
-            <div className="hidden sm:block w-px bg-brand-200 self-center h-12" />
-            <div className="flex-1 px-5 py-2">
-              <p className="text-[11px] text-slate-500 font-black uppercase tracking-wider">
-                Satisfacción
-              </p>
-              <p className="text-3xl font-black text-slate-900 mt-1">92%</p>
-              <p className="text-[11px] text-slate-400 font-bold">Encuestas post-llamada</p>
-            </div>
+        {/* Bloque A: tarjetas KPI (operación del call center) */}
+        <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
+          <div className="col-span-2 lg:col-span-1">
+            <StatCard
+              title="Llamadas pendientes"
+              info="Estudiantes en riesgo crítico o alto aún sin intervención"
+              value={llamadasPendientes}
+              valueClass="text-risk-critical"
+              footer={<span className="text-slate-500 font-normal">Riesgo sin intervenir</span>}
+            />
           </div>
+          <StatCard
+            title="Llamadas activas"
+            value={3}
+            valueClass="text-brand-700"
+            footer={<span className="text-slate-500 font-normal">En curso ahora</span>}
+          />
+          <StatCard
+            title="Casos resueltos"
+            value={casosResueltos}
+            footer={<span className="text-slate-500 font-normal">Intervenciones del ciclo</span>}
+          />
+          <StatCard
+            title="Tiempo promedio"
+            value="4m 32s"
+            footer={<span className="text-slate-500 font-normal">Por llamada atendida</span>}
+          />
+          <StatCard
+            title="Satisfacción"
+            value="92%"
+            footer={<span className="text-slate-500 font-normal">Encuestas post-llamada</span>}
+          >
+            <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
+              <div className="h-full w-[92%] rounded-full bg-brand-500" />
+            </div>
+          </StatCard>
         </div>
 
         {/* Bloque B: Botones de Filtro Rápido y Búsqueda */}
@@ -543,8 +537,8 @@ export default function CallCenterDashboard() {
 
       {/* Modal for AI Intervention Message */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 transition-all duration-300">
-          <div className="bg-white rounded-2xl w-full max-w-2xl shadow-2xl border border-slate-200 overflow-hidden animate-scale-in">
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm p-0 sm:p-4 transition-all duration-300">
+          <div className="bg-white rounded-t-2xl sm:rounded-2xl w-full max-w-2xl max-h-[92vh] shadow-2xl border border-slate-200 overflow-hidden animate-scale-in">
             {/* Modal Header */}
             <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-slate-50">
               <div>

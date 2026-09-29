@@ -13,6 +13,7 @@ import {
 } from 'recharts';
 import { useApp } from '../../context/AppContext.jsx';
 import PageShell, { Panel } from '../../components/layout/PageShell.jsx';
+import StatCard from '../../components/ui/StatCard.jsx';
 import { MIN_APPROVAL } from '../../services/metrics.service.js';
 
 const RISK_COLORS = {
@@ -77,12 +78,7 @@ export default function ReportesPage() {
           },
           { label: 'Cursos', value: courses.length, color: 'text-brand-700' },
         ].map((k) => (
-          <Panel key={k.label} className="p-5">
-            <p className="text-[11px] text-slate-500 font-black uppercase tracking-wider">
-              {k.label}
-            </p>
-            <p className={`text-3xl font-black mt-1 ${k.color}`}>{k.value}</p>
-          </Panel>
+          <StatCard key={k.label} title={k.label} value={k.value} valueClass={k.color} />
         ))}
       </div>
 

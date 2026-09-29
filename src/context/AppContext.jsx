@@ -40,6 +40,9 @@ const initialState = {
   },
   adminTab: 'students',
   isNotificationsOpen: false,
+  // Menú lateral: cajón deslizable en móvil / modo compacto en escritorio
+  isSidebarOpen: false,
+  sidebarCollapsed: false,
 };
 
 function reducer(state, action) {
@@ -89,6 +92,15 @@ function reducer(state, action) {
 
     case 'TOGGLE_NOTIFICATIONS':
       return { ...state, isNotificationsOpen: !state.isNotificationsOpen };
+
+    case 'TOGGLE_SIDEBAR':
+      return { ...state, isSidebarOpen: !state.isSidebarOpen };
+
+    case 'CLOSE_SIDEBAR':
+      return state.isSidebarOpen ? { ...state, isSidebarOpen: false } : state;
+
+    case 'TOGGLE_SIDEBAR_COLLAPSED':
+      return { ...state, sidebarCollapsed: !state.sidebarCollapsed };
 
     case 'ADD_STUDENT': {
       const s = action.payload;
@@ -194,6 +206,9 @@ export function AppProvider({ children }) {
       logout: () => dispatch({ type: 'LOGOUT' }),
       setAdminTab: (tab) => dispatch({ type: 'SET_ADMIN_TAB', payload: tab }),
       toggleNotifications: () => dispatch({ type: 'TOGGLE_NOTIFICATIONS' }),
+      toggleSidebar: () => dispatch({ type: 'TOGGLE_SIDEBAR' }),
+      closeSidebar: () => dispatch({ type: 'CLOSE_SIDEBAR' }),
+      toggleSidebarCollapsed: () => dispatch({ type: 'TOGGLE_SIDEBAR_COLLAPSED' }),
       addStudent: (student) => dispatch({ type: 'ADD_STUDENT', payload: student }),
       updateStudent: (codigo, changes) =>
         dispatch({ type: 'UPDATE_STUDENT', payload: { codigo, changes } }),

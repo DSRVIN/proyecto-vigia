@@ -10,22 +10,22 @@ import { Info } from 'lucide-react';
 export default function PageShell({ eyebrow, title, description, actions, children }) {
   return (
     <div className="min-h-screen bg-[#F5F7FB] pb-12">
-      <main className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-12 py-8">
-        <div className="mb-8 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 animate-fade-in">
-          <div>
+      <main className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 py-6 sm:py-8">
+        <div className="mb-6 sm:mb-8 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 animate-fade-in">
+          <div className="min-w-0">
             {eyebrow && (
               <p className="text-xs text-brand-700 font-black uppercase tracking-widest mb-1">
                 {eyebrow}
               </p>
             )}
-            <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
+            <h1 className="text-xl sm:text-2xl lg:text-3xl font-black text-slate-900 tracking-tight">
               {title}
             </h1>
             {description && (
-              <p className="text-sm text-slate-600 mt-1.5 font-semibold max-w-2xl">{description}</p>
+              <p className="text-sm text-slate-600 mt-1.5 font-medium max-w-2xl">{description}</p>
             )}
           </div>
-          {actions && <div className="flex items-center gap-2 flex-shrink-0">{actions}</div>}
+          {actions && <div className="flex flex-wrap items-center gap-2">{actions}</div>}
         </div>
         {children}
       </main>
@@ -33,10 +33,12 @@ export default function PageShell({ eyebrow, title, description, actions, childr
   );
 }
 
-/** Tarjeta blanca estándar con sombra suave del sistema. */
+/** Tarjeta blanca estándar del sistema (mismo lenguaje que StatCard). */
 export function Panel({ className = '', children }) {
   return (
-    <div className={`bg-white rounded-[20px] shadow-[0_8px_24px_rgba(15,23,42,0.06)] ${className}`}>
+    <div
+      className={`bg-white rounded-2xl border border-slate-100 shadow-[0_2px_12px_rgba(15,23,42,0.05)] ${className}`}
+    >
       {children}
     </div>
   );

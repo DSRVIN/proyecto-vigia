@@ -2,6 +2,7 @@ import React, { useMemo } from 'react';
 import { Phone, PhoneCall, Clock, CheckCircle2 } from 'lucide-react';
 import { useApp } from '../../context/AppContext.jsx';
 import PageShell, { Panel, DemoNote } from '../../components/layout/PageShell.jsx';
+import StatCard from '../../components/ui/StatCard.jsx';
 import RiskBadge from '../../components/ui/RiskBadge.jsx';
 
 function initials(nombre = '') {
@@ -44,17 +45,7 @@ export default function LlamadasPage() {
           { label: 'Atendidas hoy', value: atendidas, icon: CheckCircle2, color: 'text-risk-low' },
           { label: 'Tiempo prom.', value: '4m 32s', icon: Clock, color: 'text-slate-900' },
         ].map((k) => (
-          <Panel key={k.label} className="p-5 flex items-center gap-4">
-            <div className="h-11 w-11 rounded-full bg-slate-100 flex items-center justify-center">
-              <k.icon size={19} className={k.color} />
-            </div>
-            <div>
-              <p className={`text-2xl font-black ${k.color}`}>{k.value}</p>
-              <p className="text-[11px] text-slate-500 font-black uppercase tracking-wider">
-                {k.label}
-              </p>
-            </div>
-          </Panel>
+          <StatCard key={k.label} title={k.label} value={k.value} valueClass={k.color} />
         ))}
       </div>
 

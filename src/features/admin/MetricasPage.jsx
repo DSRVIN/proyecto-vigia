@@ -13,6 +13,7 @@ import {
 import { useApp } from '../../context/AppContext.jsx';
 import { supabase } from '../../supabaseClient.js';
 import PageShell, { Panel, DemoNote } from '../../components/layout/PageShell.jsx';
+import StatCard from '../../components/ui/StatCard.jsx';
 
 const RISK_COLORS = { CRITICO: '#dc2626', ALTO: '#ea580c', MEDIO: '#d97706', BAJO: '#059669' };
 
@@ -142,16 +143,13 @@ export default function MetricasPage() {
             color: 'text-slate-900',
           },
         ].map((k) => (
-          <Panel key={k.label} className="p-5">
-            <div className="flex items-center justify-between mb-2">
-              <p className="text-[11px] text-slate-500 font-black uppercase tracking-wider leading-tight">
-                {k.label}
-              </p>
-              <k.icon size={16} className={k.color} />
-            </div>
-            <p className={`text-2xl font-black ${k.color}`}>{k.value}</p>
-            <p className="text-[11px] text-slate-400 font-bold mt-1">{k.sub}</p>
-          </Panel>
+          <StatCard
+            key={k.label}
+            title={k.label}
+            value={k.value}
+            valueClass={k.color}
+            footer={<span className="text-slate-500 font-normal">{k.sub}</span>}
+          />
         ))}
       </div>
 
