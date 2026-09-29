@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { Search, UserPlus, ShieldCheck } from 'lucide-react';
 import PageShell, { Panel, DemoNote } from '../../components/layout/PageShell.jsx';
+import StatCard from '../../components/ui/StatCard.jsx';
 
 function initials(nombre = '') {
   return nombre
@@ -89,12 +90,7 @@ export default function UsuariosPage() {
           { label: 'Call Center', value: USUARIOS.filter((u) => u.role === 'CALLCENTER').length },
           { label: 'Administradores', value: USUARIOS.filter((u) => u.role === 'ADMIN').length },
         ].map((k) => (
-          <Panel key={k.label} className="p-5">
-            <p className="text-[11px] text-slate-500 font-black uppercase tracking-wider">
-              {k.label}
-            </p>
-            <p className="text-3xl font-black mt-1 text-slate-900">{k.value}</p>
-          </Panel>
+          <StatCard key={k.label} title={k.label} value={k.value} />
         ))}
       </div>
 

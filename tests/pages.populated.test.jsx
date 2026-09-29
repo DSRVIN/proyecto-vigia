@@ -102,6 +102,7 @@ import AgendaPage from '../src/features/callcenter/AgendaPage.jsx';
 import UsuariosPage from '../src/features/admin/UsuariosPage.jsx';
 import FacultadesPage from '../src/features/admin/FacultadesPage.jsx';
 import RolesPermisosPage from '../src/features/admin/RolesPermisosPage.jsx';
+import DashboardPage from '../src/features/docente/DashboardPage.jsx';
 
 afterEach(cleanup);
 
@@ -143,5 +144,18 @@ describe('Render con datos poblados', () => {
   test('Usuarios muestra los cuatro roles demo', () => {
     renderPage(UsuariosPage);
     expect(screen.getByText('Ing. Jorge Ramírez Soto')).toBeTruthy();
+  });
+
+  test('Dashboard docente: tarjetas KPI, panel con pestañas, ranking y secciones', () => {
+    renderPage(DashboardPage);
+    // Tarjeta KPI con el total real de la cartera (24 estudiantes de prueba)
+    expect(screen.getByText('Total estudiantes')).toBeTruthy();
+    expect(screen.getByText('24')).toBeTruthy();
+    // Panel de análisis con sus tres pestañas
+    expect(screen.getByRole('tab', { name: 'Riesgo' })).toBeTruthy();
+    expect(screen.getByRole('tab', { name: 'Asistencia' })).toBeTruthy();
+    // Ranking de cursos + tarjetas de sección (cada curso aparece en ambos)
+    expect(screen.getAllByText('Algoritmos').length).toBeGreaterThan(1);
+    expect(screen.getByText('Mis Secciones')).toBeTruthy();
   });
 });

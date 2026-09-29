@@ -218,7 +218,7 @@ export default function KPIStudentsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-100 max-w-screen-xl mx-auto px-4 sm:px-6 py-8 text-slate-900">
+    <div className="min-h-screen bg-[#F5F7FB] max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 py-6 sm:py-8 text-slate-900">
       {/* Header */}
       <div className="flex items-start justify-between mb-8 animate-fade-in">
         <div>
@@ -235,7 +235,7 @@ export default function KPIStudentsPage() {
             </span>
           </div>
 
-          <h1 className="text-2xl sm:text-3xl font-black text-slate-900 leading-tight tracking-tight">
+          <h1 className="text-xl sm:text-2xl lg:text-3xl font-black text-slate-900 leading-tight tracking-tight">
             Métricas: {kpiTitle}
           </h1>
 

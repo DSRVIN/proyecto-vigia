@@ -2,6 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { Search } from 'lucide-react';
 import { useApp } from '../../context/AppContext.jsx';
 import PageShell, { Panel } from '../../components/layout/PageShell.jsx';
+import StatCard from '../../components/ui/StatCard.jsx';
 
 function asistColor(pct) {
   if (pct >= 85) return 'text-risk-low';
@@ -44,25 +45,24 @@ export default function AsistenciasPage() {
       title="Asistencias"
       description="Porcentaje de asistencia por estudiante y días de inactividad en el campus virtual. Ordenado de menor a mayor asistencia para priorizar."
     >
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-        <Panel className="p-5">
-          <p className="text-[11px] text-slate-500 font-black uppercase tracking-wider">
-            Asistencia Promedio
-          </p>
-          <p className={`text-3xl font-black mt-1 ${asistColor(promedioAsist)}`}>
-            {promedioAsist}%
-          </p>
-        </Panel>
-        <Panel className="p-5">
-          <p className="text-[11px] text-slate-500 font-black uppercase tracking-wider">Bajo 70%</p>
-          <p className="text-3xl font-black mt-1 text-risk-critical">{criticos}</p>
-        </Panel>
-        <Panel className="p-5">
-          <p className="text-[11px] text-slate-500 font-black uppercase tracking-wider">
-            Total Estudiantes
-          </p>
-          <p className="text-3xl font-black mt-1 text-slate-900">{rows.length}</p>
-        </Panel>
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-6">
+        <div className="col-span-2 sm:col-span-1">
+          <StatCard
+            title="Asistencia promedio"
+            info="Promedio de la selección actual (curso y búsqueda)"
+            value={`${promedioAsist}%`}
+            valueClass={asistColor(promedioAsist)}
+          >
+            <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
+              <div
+                className={`h-full rounded-full ${barColor(promedioAsist)}`}
+                style={{ width: `${promedioAsist}%` }}
+              />
+            </div>
+          </StatCard>
+        </div>
+        <StatCard title="Bajo 70%" value={criticos} valueClass="text-risk-critical" />
+        <StatCard title="Estudiantes" value={rows.length} />
       </div>
 
       <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-5">

@@ -29,6 +29,7 @@ import {
   Tooltip,
   Legend,
 } from 'recharts';
+import StatCard, { MiniArea, MiniBars } from '../../components/ui/StatCard.jsx';
 
 // ─── MOCK DATA ────────────────────────────────────────────────────────────────
 
@@ -316,33 +317,26 @@ const renderPieLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent })
 
 // ─── KPI CARD ─────────────────────────────────────────────────────────────────
 
-function KPICard({ icon: Icon, label, value, sub, trend, bgClass }) {
-  const isPositive = trend >= 0;
+/** Línea "vs. periodo anterior ±x%" con flecha de dirección. */
+function Trend({ value }) {
+  const isPositive = value >= 0;
   return (
-    <div className="flex-1 px-5 py-2 flex flex-col gap-3">
-      <div className="flex items-start justify-between">
-        <div className={`h-11 w-11 rounded-full flex items-center justify-center ${bgClass}`}>
-          <Icon size={18} className="text-current" />
-        </div>
-        {trend !== undefined && (
-          <span
-            className={`flex items-center gap-1 text-xs font-bold px-2 py-0.5 rounded-full ${isPositive ? 'bg-slate-100 text-slate-700' : 'bg-slate-100 text-slate-500'}`}
-          >
-            {isPositive ? <ArrowUpRight size={12} /> : <ArrowDownRight size={12} />}
-            {Math.abs(trend)}%
-          </span>
-        )}
-      </div>
-      <div>
-        <p className="text-3xl font-black text-slate-900 leading-none">{value}</p>
-        <p className="text-[11px] font-black text-slate-500 mt-1.5 uppercase tracking-wider">
-          {label}
-        </p>
-      </div>
-      {sub && <p className="text-[11px] text-slate-400 font-bold">{sub}</p>}
-    </div>
+    <p className="flex items-center gap-2 text-sm text-slate-500">
+      <span>vs. periodo anterior</span>
+      <span
+        className={`flex items-center gap-0.5 font-semibold tabular-nums ${isPositive ? 'text-slate-800' : 'text-slate-500'}`}
+      >
+        {isPositive ? <ArrowUpRight size={14} /> : <ArrowDownRight size={14} />}
+        {Math.abs(value)}%
+      </span>
+    </p>
   );
 }
+
+const utilidadMensual = recaudacionMensual.map((m) => ({
+  mes: m.mes,
+  utilidad: m.ingresos - m.gastos,
+}));
 
 // ─── MAIN COMPONENT ──────────────────────────────────────────────────────────
 
@@ -394,12 +388,14 @@ export default function EjecutivoDashboard() {
     .reduce((a, m) => a + m.monto, 0);
 
   return (
-    <div className="min-h-screen bg-slate-50 p-6">
+    <div className="min-h-screen bg-[#F5F7FB] px-4 sm:px-6 lg:px-8 xl:px-12 py-6 sm:py-8">
       <div className="max-w-screen-2xl mx-auto space-y-6">
         {/* ── Header ── */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
           <div>
-            <h1 className="text-2xl font-black text-slate-900 tracking-tight">Panel Ejecutivo</h1>
+            <h1 className="text-xl sm:text-2xl lg:text-3xl font-black text-slate-900 tracking-tight">
+              Panel Ejecutivo
+            </h1>
             <p className="text-sm text-slate-500 mt-0.5">
               Inteligencia de Negocios · Ciclos{' '}
               <span className="font-bold text-slate-700">2026-I / 2026-II</span>
@@ -418,45 +414,54 @@ export default function EjecutivoDashboard() {
           </div>
         </div>
 
-        {/* ── Panel KPI unificado ── */}
-        <div className="bg-white rounded-[22px] px-4 py-6 shadow-[0_8px_24px_rgba(15,23,42,0.08)]">
-          <div className="flex flex-col xl:flex-row xl:items-stretch divide-y xl:divide-y-0 divide-slate-100">
-            <KPICard
-              icon={DollarSign}
-              label="Recaudación Total"
-              value={fmtShort(recaudacionTotal)}
-              sub={`${recaudacionMensual.length} meses acumulados · Ciclos 2026-I / II`}
-              trend={+8.3}
-              bgClass="bg-brand-50 text-brand-700"
+        {/* ── Tarjetas KPI ── */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 lg:gap-5">
+          <StatCard
+            title="Recaudación total"
+            info="Ingresos acumulados por pensiones y matrículas"
+            value={fmtShort(recaudacionTotal)}
+            footer={
+              <span className="text-slate-500 font-normal">
+                {recaudacionMensual.length} meses · Ciclos 2026-I / II
+              </span>
+            }
+          >
+            <Trend value={8.3} />
+          </StatCard>
+          <StatCard
+            title="Ingresos vs. gastos"
+            info="Evolución mensual (área azul: ingresos; gris: gastos)"
+            value={fmtShort(recaudacionMensual[recaudacionMensual.length - 1].ingresos)}
+            footer={<span className="text-slate-500 font-normal">Último mes registrado</span>}
+          >
+            <MiniArea
+              id="kpi-ejecutivo"
+              data={recaudacionMensual}
+              labelKey="mes"
+              series={[
+                { key: 'ingresos', name: 'Ingresos', color: '#3b82f6' },
+                { key: 'gastos', name: 'Gastos', color: '#94a3b8' },
+              ]}
             />
-            <div className="hidden xl:block w-px bg-brand-200 self-center h-16" />
-            <KPICard
-              icon={AlertCircle}
-              label="Cuentas por Cobrar"
-              value={fmtShort(totalDeuda)}
-              sub={`${estadoDeuda.slice(1).reduce((a, d) => a + d.value, 0)} alumnos con deuda activa`}
-              trend={-4.1}
-              bgClass="bg-slate-100 text-slate-600"
-            />
-            <div className="hidden xl:block w-px bg-brand-200 self-center h-16" />
-            <KPICard
-              icon={TrendingUp}
-              label="Utilidad Neta"
-              value={fmtShort(utilidadNeta)}
-              sub="Ingresos − Gastos (excluye ajustes contables)"
-              trend={+12.7}
-              bgClass="bg-brand-50 text-brand-800"
-            />
-            <div className="hidden xl:block w-px bg-brand-200 self-center h-16" />
-            <KPICard
-              icon={Percent}
-              label="Margen de Ganancia"
-              value={`${margenGanancia}%`}
-              sub="Sobre total de ingresos acumulados del ciclo"
-              trend={+2.4}
-              bgClass="bg-slate-100 text-slate-700"
-            />
-          </div>
+          </StatCard>
+          <StatCard
+            title="Utilidad neta"
+            info="Ingresos − gastos (excluye ajustes contables)"
+            value={fmtShort(utilidadNeta)}
+            footer={
+              <span className="text-slate-500 font-normal">
+                Cuentas por cobrar{' '}
+                <span className="font-semibold text-slate-700">{fmtShort(totalDeuda)}</span>
+              </span>
+            }
+          >
+            <MiniBars data={utilidadMensual} dataKey="utilidad" name="Utilidad" labelKey="mes" />
+          </StatCard>
+          <StatCard title="Margen de ganancia" value={`${margenGanancia}%`} centered>
+            <p className="text-sm text-slate-500">
+              {estadoDeuda.slice(1).reduce((a, d) => a + d.value, 0)} alumnos con deuda activa
+            </p>
+          </StatCard>
         </div>
 
         {/* ── Charts Row ── */}

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
   Home,
@@ -24,6 +24,9 @@ import {
   Monitor,
   CheckCircle2,
   Lightbulb,
+  LayoutDashboard,
+  Headphones,
+  X,
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext.jsx';
 import { ROLES } from '../../features/auth/roles.js';
@@ -99,6 +102,13 @@ const NAV_BY_ROLE = {
   [ROLES.ADMIN]: [
     { items: [{ label: 'Dashboard', icon: Home, to: '/admin' }] },
     {
+      title: 'Vistas',
+      items: [
+        { label: 'Vista Docente', icon: LayoutDashboard, to: '/docente' },
+        { label: 'Vista Call Center', icon: Headphones, to: '/callcenter' },
+      ],
+    },
+    {
       title: 'Gestión',
       items: [
         { label: 'Usuarios', icon: Users, to: '/admin/usuarios' },
@@ -129,9 +139,9 @@ const NAV_BY_ROLE = {
 
 // Color del ítem activo por rol (admin usa el azul oscuro institucional)
 const ACTIVE_CLASS = {
-  [ROLES.DOCENTE]: 'bg-brand-600',
-  [ROLES.CALLCENTER]: 'bg-brand-600',
-  [ROLES.ADMIN]: 'bg-brand-900',
+  [ROLES.DOCENTE]: 'bg-brand-500',
+  [ROLES.CALLCENTER]: 'bg-brand-500',
+  [ROLES.ADMIN]: 'bg-brand-700',
 };
 
 function FooterCard({ role, students, onAlerts, navigate }) {
@@ -216,6 +226,7 @@ export default function Sidebar() {
   const { state, actions } = useApp();
   const navigate = useNavigate();
   const { pathname } = useLocation();
+  const { isSidebarOpen, sidebarCollapsed } = state;
 
   const role = state.currentUser?.role;
   const sections = NAV_BY_ROLE[role] || NAV_BY_ROLE[ROLES.DOCENTE];
@@ -225,6 +236,19 @@ export default function Sidebar() {
     state.alerts.length > 0
       ? state.alerts.filter((a) => !a.atendida).length
       : state.students.filter((s) => s.riesgo === 'CRITICO').length;
+
+  // En móvil, el cajón abierto bloquea el scroll de la página de fondo
+  useEffect(() => {
+    document.body.style.overflow = isSidebarOpen ? 'hidden' : '';
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isSidebarOpen]);
+
+  // Cerrar el cajón al cambiar de ruta (incluye el botón "atrás" del navegador)
+  useEffect(() => {
+    actions.closeSidebar();
+  }, [pathname, actions]);
 
   // Solo el primer ítem que coincide con la ruta se resalta: evita que
   // "Inicio" y "Mis Secciones" (ambos → /docente) se marquen a la vez.
@@ -237,81 +261,122 @@ export default function Sidebar() {
     });
   });
 
+  const go = (to) => {
+    actions.closeSidebar();
+    navigate(to);
+  };
+
   const handleItem = (item) => {
     if (item.action === 'alerts') {
+      actions.closeSidebar();
       actions.toggleNotifications();
       return;
     }
-    if (item.to) navigate(item.to);
+    if (item.to) go(item.to);
   };
 
-  return (
-    <aside className="hidden lg:flex flex-col w-64 shrink-0 bg-[#0f1b3d] text-white sticky top-0 h-screen overflow-y-auto">
-      {/* Logo */}
-      <div
-        className="flex items-center gap-1 px-5 h-16 cursor-pointer select-none flex-shrink-0"
-        onClick={() => navigate('/')}
-      >
-        <div className="flex gap-0.5">
-          {['U', 'T', 'P'].map((l) => (
-            <span
-              key={l}
-              className="bg-white/10 text-white w-6 h-6 flex items-center justify-center rounded-sm font-black text-xs border border-white/20"
-            >
-              {l}
-            </span>
-          ))}
-        </div>
-        <span className="text-[#ff5252] font-black text-lg mx-1">+</span>
-        <span className="text-white font-black text-lg tracking-tight">VIGÍA</span>
-      </div>
+  // En escritorio compacto se ocultan los textos y queda solo el icono
+  const textClass = sidebarCollapsed ? 'lg:hidden' : '';
 
-      {/* Navegación */}
-      <nav className="flex-1 px-3 py-4 space-y-5">
-        {sections.map((section, si) => (
-          <div key={section.title || si}>
-            {section.title && (
-              <p className="px-3 mb-1.5 text-[10px] font-black uppercase tracking-widest text-slate-400">
-                {section.title}
-              </p>
-            )}
-            <div className="space-y-0.5">
+  return (
+    <>
+      {/* Fondo oscuro detrás del cajón (solo móvil) */}
+      <div
+        onClick={actions.closeSidebar}
+        aria-hidden="true"
+        className={`fixed inset-0 z-40 bg-slate-950/50 backdrop-blur-[2px] transition-opacity lg:hidden ${
+          isSidebarOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
+        }`}
+      />
+
+      <aside
+        aria-label="Navegación principal"
+        className={`fixed lg:sticky top-0 left-0 z-50 h-screen w-72 shrink-0 bg-[#0f1b3d] text-white flex flex-col transition-[transform,width] duration-300 ease-out lg:translate-x-0 lg:shadow-none ${
+          isSidebarOpen ? 'translate-x-0 shadow-2xl' : '-translate-x-full'
+        } ${sidebarCollapsed ? 'lg:w-[76px]' : 'lg:w-64'}`}
+      >
+        {/* Logo */}
+        <div
+          className={`flex items-center h-16 flex-shrink-0 border-b border-white/5 px-5 ${
+            sidebarCollapsed ? 'lg:px-0 lg:justify-center' : ''
+          }`}
+        >
+          <button onClick={() => go('/')} className="flex items-center gap-2.5 select-none">
+            <img src="/favicon.svg" alt="" className="h-8 w-8 rounded-lg flex-shrink-0" />
+            <span className={`flex items-baseline gap-1 ${textClass}`}>
+              <span className="text-white/60 font-black text-xs tracking-widest">UTP</span>
+              <span className="text-[#ff5252] font-black text-lg leading-none">+</span>
+              <span className="text-white font-black text-lg tracking-tight leading-none">
+                VIGÍA
+              </span>
+            </span>
+          </button>
+          <button
+            onClick={actions.closeSidebar}
+            aria-label="Cerrar menú"
+            className="ml-auto p-2 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 lg:hidden"
+          >
+            <X size={20} />
+          </button>
+        </div>
+
+        {/* Navegación */}
+        <nav className="flex-1 overflow-y-auto py-4 space-y-4">
+          {sections.map((section, si) => (
+            <div key={section.title || si}>
+              {section.title && (
+                <p
+                  className={`px-6 mb-1 text-[10px] font-black uppercase tracking-widest text-slate-500 ${textClass}`}
+                >
+                  {section.title}
+                </p>
+              )}
+              {section.title && sidebarCollapsed && (
+                <div className="hidden lg:block mx-5 mb-2 border-t border-white/10" />
+              )}
               {section.items.map((item, ii) => {
                 const active = activeKey === `${si}:${ii}`;
                 return (
                   <button
                     key={item.label}
                     onClick={() => handleItem(item)}
-                    className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] font-bold transition-colors text-left ${
+                    title={sidebarCollapsed ? item.label : undefined}
+                    className={`relative w-full flex items-center gap-3 px-6 py-3 text-sm font-semibold text-left transition-colors ${
+                      sidebarCollapsed ? 'lg:justify-center lg:px-0' : ''
+                    } ${
                       active
                         ? `${activeClass} text-white`
-                        : 'text-slate-300 hover:bg-white/10 hover:text-white'
+                        : 'text-slate-300 hover:bg-white/5 hover:text-white'
                     }`}
                   >
-                    <item.icon size={16} className="flex-shrink-0" />
-                    <span className="flex-1 truncate">{item.label}</span>
+                    <item.icon size={18} className="flex-shrink-0" />
+                    <span className={`flex-1 truncate ${textClass}`}>{item.label}</span>
                     {item.action === 'alerts' && alertCount > 0 && (
-                      <span className="h-5 min-w-5 px-1 bg-risk-critical rounded-full text-[10px] flex items-center justify-center text-white font-black">
-                        {alertCount}
+                      <span
+                        className={`h-5 min-w-5 px-1.5 bg-risk-critical rounded-full text-[10px] flex items-center justify-center text-white font-black ${
+                          sidebarCollapsed ? 'lg:absolute lg:top-1 lg:right-3' : ''
+                        }`}
+                      >
+                        {alertCount > 99 ? '99+' : alertCount}
                       </span>
                     )}
                   </button>
                 );
               })}
             </div>
-          </div>
-        ))}
-      </nav>
+          ))}
+        </nav>
 
-      {/* Tarjeta informativa inferior */}
-      <div className="px-3 pb-4 pt-2 border-t border-white/10 flex-shrink-0">
-        <FooterCard
-          role={role}
-          students={state.students}
-          onAlerts={actions.toggleNotifications}
-          navigate={navigate}
-        />
-      </div>
-    </aside>
+        {/* Tarjeta informativa inferior */}
+        <div className={`px-4 pb-4 pt-3 border-t border-white/10 flex-shrink-0 ${textClass}`}>
+          <FooterCard
+            role={role}
+            students={state.students}
+            onAlerts={() => handleItem({ action: 'alerts' })}
+            navigate={go}
+          />
+        </div>
+      </aside>
+    </>
   );
 }

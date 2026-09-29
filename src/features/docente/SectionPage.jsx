@@ -487,7 +487,7 @@ export default function SectionPage() {
   if (!selectedCourse) return null;
 
   return (
-    <div className="min-h-screen bg-slate-100 max-w-screen-2xl mx-auto px-4 sm:px-6 py-8 text-slate-900">
+    <div className="min-h-screen bg-[#F5F7FB] max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 py-6 sm:py-8 text-slate-900">
       <div className="flex items-start justify-between mb-6 animate-fade-in">
         <div>
           <button
@@ -496,7 +496,7 @@ export default function SectionPage() {
           >
             <ArrowLeft size={15} /> Volver al Dashboard
           </button>
-          <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
+          <h1 className="text-xl sm:text-2xl lg:text-3xl font-black text-slate-900 tracking-tight">
             {selectedCourse.nombre}
           </h1>
           <p className="text-sm font-bold text-slate-500 mt-0.5">

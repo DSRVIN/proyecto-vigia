@@ -712,7 +712,7 @@ export default function AdminPage() {
   const { adminTab } = state;
 
   return (
-    <div className="min-h-screen bg-[#F5F7FB] text-slate-900 max-w-screen-2xl mx-auto px-4 sm:px-6 py-8">
+    <div className="min-h-screen bg-[#F5F7FB] text-slate-900 max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 py-6 sm:py-8">
       <div className="mb-8 animate-fade-in">
         <button
           onClick={() => navigate('/docente')}
@@ -728,7 +728,7 @@ export default function AdminPage() {
                 Panel Protegido
               </span>
             </div>
-            <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
+            <h1 className="text-xl sm:text-2xl lg:text-3xl font-black text-slate-900 tracking-tight">
               Panel Administrativo
             </h1>
             <p className="text-xs text-slate-600 mt-1 font-bold bg-white border border-slate-200 px-3 py-1.5 rounded-lg w-fit shadow-sm">

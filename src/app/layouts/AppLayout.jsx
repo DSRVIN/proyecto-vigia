@@ -41,17 +41,17 @@ export default function AppLayout() {
           </Suspense>
         </main>
 
-        <footer className="border-t border-slate-200 py-6 px-6 bg-white/60">
-          <div className="max-w-screen-2xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500">
-            <div className="flex items-center gap-2">
+        <footer className="border-t border-slate-200 py-5 px-4 sm:px-6 bg-white/60">
+          <div className="max-w-screen-2xl mx-auto flex flex-col md:flex-row items-center justify-between gap-2 text-xs text-slate-500 text-center">
+            <div className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1">
               <span className="font-bold text-slate-600 text-sm">VIGÍA</span>
-              <span>·</span>
+              <span className="hidden sm:inline">·</span>
               <span>Sistema de Alerta Temprana Académica</span>
-              <span>·</span>
+              <span className="hidden sm:inline">·</span>
               <span>UTP 2026-I</span>
             </div>
             <div className="flex items-center gap-4">
-              <span>v2.0.0 · React + Recharts</span>
+              <span className="hidden sm:inline">v2.1.0 · React + Recharts</span>
               <span className="flex items-center gap-1.5">
                 <span className="h-1.5 w-1.5 bg-risk-low rounded-full animate-pulse" />
                 Sistema operativo
